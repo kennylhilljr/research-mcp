@@ -1,10 +1,10 @@
 # Agent instructions for Research MCP v2
 
-Read this file, then [SPEC v1](docs/spec/SPEC-v1.md) section 0 and the sections your work unit names, before changing anything. The specification is the contract; the [PRD](docs/prd/PRD-v4.md) says why and the [HLD](docs/design/HLD-v3.md) gives the shape.
+Read this file, then [SPEC v2](docs/spec/SPEC-v2.md) section 0 and the sections your work unit names, before changing anything. The specification is the contract; the [PRD](docs/prd/PRD-v4.md) says why and the [HLD](docs/design/HLD-v3.md) gives the shape.
 
 ## Documents
 
-- **SPEC v1** owns every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes), every interface and format, and the work breakdown. Code follows it. If it is wrong or contradicts the PRD or the test plan, do not pick a side: record the conflict in your handoff and build everything it does not touch (SPEC 0.3).
+- **SPEC v2** owns every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes), every interface and format, and the work breakdown. Code follows it. If it is wrong or contradicts the PRD or the test plan, do not pick a side: record the conflict in your handoff and build everything it does not touch (SPEC 0.3).
 - **TEST-PLAN v3** owns test ids. Put each acceptance test id first in its test's docstring (`"""AT-SRCH-11: ..."""`).
 - **Section 0.6** of the specification lists defects the first M0 attempt shipped. They are requirements.
 - Docs are versioned: to change one, add the next `-vN` file and update links; never edit an earlier version. Do not edit generated files (`docs/test-plan/TEST-PLAN-v3.md` sections 4 to 6 and Appendix A, `docs/generated/*`, `.orchestration/plan-m0.json`); run their generators.

@@ -1,6 +1,6 @@
 # M0 run guide
 
-Milestone M0 (SPEC v1 section 12.3: 16 units in 10 waves) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
+Milestone M0 (SPEC v2 section 12.3: 16 units in 10 waves) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
 
 ## Providers
 
@@ -21,15 +21,15 @@ Codex and Claude write code; Codex, Claude and Gemini review, verify and play th
 
 ```sh
 cd ~/Documents/GitHub/research-mcp
-ecc create-run --run-id rm-m0a --plan .orchestration/plan-m0.json
-ecc drive --run-id rm-m0a
+ecc create-run --run-id rm-m0b --plan .orchestration/plan-m0.json
+ecc drive --run-id rm-m0b
 ```
 
 The drive checks the plan (architect), then builds, reviews, verifies and merges units wave by wave. Agents merge into `main` locally; nothing is pushed.
 
 ## When the drive stops
 
-It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0a` shows every unit.
+It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0b` shows every unit.
 
 ## Done
 

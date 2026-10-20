@@ -1,6 +1,6 @@
 ---
 name: review-change
-description: Review a unit's changes against SPEC v1, the test plan and AGENTS.md, and report findings by severity. Use as the author's self-review before handoff, and as the PR reviewer or verifier.
+description: Review a unit's changes against the current SPEC (docs/spec, newest version), the test plan and AGENTS.md, and report findings by severity. Use as the author's self-review before handoff, and as the PR reviewer or verifier.
 ---
 
 # Review a change

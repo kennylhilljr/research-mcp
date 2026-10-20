@@ -7,7 +7,7 @@ A local research server for MCP clients: federated scholarly and web search, ide
 | Document | Role |
 |---|---|
 | [PRD v4](docs/prd/PRD-v4.md) and [component PRDs](docs/prd/components/) | Requirements: what and why |
-| [SPEC v1](docs/spec/SPEC-v1.md) | The build contract: names, interfaces, formats, behavior, work breakdown |
+| [SPEC v2](docs/spec/SPEC-v2.md) | The build contract: names, interfaces, formats, behavior, work breakdown |
 | [HLD v3](docs/design/HLD-v3.md) | Shape and rationale |
 | [TEST-PLAN v3](docs/test-plan/TEST-PLAN-v3.md) | Acceptance tests and owner checks, mapped to requirements and units |
 | [ADRs](docs/adr/) | Decisions |

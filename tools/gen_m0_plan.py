@@ -1,4 +1,4 @@
-"""Builds .orchestration/plan-m0.json from SPEC-v1 section 12.3 and TEST-PLAN-v3 Appendix A.
+"""Builds .orchestration/plan-m0.json from SPEC-v2 section 12.3 and TEST-PLAN-v3 Appendix A.
 
 `--check` exits 1 when the committed plan is stale (tools/ci.sh runs it)."""
 import json
@@ -7,7 +7,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = "docs/spec/SPEC-v1.md"
+SPEC = "docs/spec/SPEC-v2.md"
 TEST_PLAN = "docs/test-plan/TEST-PLAN-v3.md"
 spec = (ROOT / SPEC).read_text()
 plan = (ROOT / TEST_PLAN).read_text()
@@ -40,7 +40,7 @@ RULES = (
     "(M0-01 owns them). Never touch the v1 repository (my-research-mcp-server) or ~/arxiv-papers, never read real "
     "credentials or the Keychain, and use fakes and recorded fixtures for every external system; tests pass with the "
     "network blocked. A prior attempt exists read-only at ~/Documents/GitHub/my-research-mcp; you may read it, but "
-    "SPEC-v1 wins wherever they differ, and section 0.6 lists defects that attempt shipped."
+    "SPEC-v2 wins wherever they differ, and section 0.6 lists defects that attempt shipped."
 )
 
 units = []
@@ -69,7 +69,7 @@ for row in rows:
     nums = list(dict.fromkeys(re.findall(r"\b\d+(?:\.\d+)*\b", re.sub(r"`[^`]*`", "", impl))))
     implemented = "sections " + (", ".join(nums[:-1]) + " and " + nums[-1] if len(nums) > 1 else nums[0])
     desc = (f"Read AGENTS.md first. Build work unit {uid} exactly as {SPEC} specifies: its row in section 12.3, "
-            f"{implemented}, which it implements ({impl}), and section 0 (conformance).{note} SPEC-v1 owns every "
+            f"{implemented}, which it implements ({impl}), and section 0 (conformance).{note} SPEC-v2 owns every "
             "name. Write the "
             f"acceptance tests {TEST_PLAN} Appendix A assigns to this unit: {at}; put each test id first in its test's "
             "docstring (test plan section 1.3). Keep tools/ci.sh --python-only green; gates run commands without a "

@@ -8,6 +8,7 @@ The lessons of the first M0 attempt (`my-research-mcp`, run `rmcp-m0f`) were app
 
 | Lesson | Date | Changed | Rule |
 |---|---|---|---|
+| rm-m0a plan check (architect) | 2026-10-20 | SPEC v2 section 12.3 | A unit depends on every unit that owns a module it imports, and a unit that generates from other units' output depends on all of them. |
 
 ## Proposed for the owner
 
