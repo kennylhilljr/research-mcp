@@ -4,7 +4,7 @@ Milestone M0 (SPEC v1 section 12.3: 16 units in 10 waves) delivered by the agent
 
 ## Providers
 
-Codex and Claude write code; Codex, Claude and Gemini review, verify and play the architect, delivery lead and product owners (`.orchestration/config.yaml`, `team.json`). Gemini uses Flash-Lite for standard roles and Gemini Pro for advanced ones.
+Codex and Claude write code; Codex, Claude and Gemini review, verify and play the architect, delivery lead and product owners (`.orchestration/config.yaml`, `team.json`). Gemini uses Flash-Lite for standard roles and Gemini Pro for advanced ones. Every unit applies the build skills in `.agents/skills` (AGENTS.md); after a unit written by Codex, a Claude Code skills pass runs `/simplify`, `/verify` and `/code-review` on it before the gates (TEAM-DELIVERY v6).
 
 ## Before the first run
 

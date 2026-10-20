@@ -91,5 +91,10 @@
     "gate_commands": [
       "tools/ci.sh"
     ]
+  },
+  "skills_pass": {
+    "runner": "claude",
+    "class": "standard",
+    "timeout_minutes": 30
   }
 }

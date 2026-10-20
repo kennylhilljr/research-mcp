@@ -21,6 +21,26 @@ Read this file, then [SPEC v1](docs/spec/SPEC-v1.md) section 0 and the sections 
 - A failed attempt comes back with a brief: the failing gate output, or the reviewers' findings. Fix exactly those, keep everything that passed, and say in the handoff how each finding was addressed. Reviewers re-check the same findings.
 - Never weaken, skip or delete a test to make it pass. A test that contradicts the specification is a conflict to record, not a test to change.
 
+## Skills while building (every agent)
+
+The skills live in the repository at `.agents/skills/` (Codex and Gemini read that folder; `.claude/skills` points to it for Claude Code). They are required, not optional: skip one only when its trigger does not apply, and say so in your handoff.
+
+| When | Skill | Claude Code | Codex | Gemini |
+|---|---|---|---|---|
+| While developing anything you can run (a module API, an MCP tool, the daemon, the CLI) | `run-research-mcp` | `/run`, following the skill | `$run-research-mcp` | ask for the run-research-mcp skill |
+| After the change works, before verifying | `simplify-change` | `/simplify` | `$simplify-change` | ask for the simplify-change skill |
+| After the acceptance commands and `tools/ci.sh --python-only` pass | `verify-change` | `/verify`, following the skill | `$verify-change` | ask for the verify-change skill |
+| Before your handoff (self-review), and when reviewing | `review-change` | `/code-review`, then the skill's checklist | `codex review --base main`, then `$review-change` | the skill (plus the `code-review` extension if installed) |
+| High-risk units (SPEC 0.6 rows, `platform/secrets.py`, `redact.py`, `http.py`, `stores.py`, `app.py`, `shim.py`, `tests/security/`) | `security-review` | `/security-review`, then the skill | `$security-review` | the skill (plus `/security:analyze` if installed) |
+
+**When Claude Code's own skills are not available.** Codex and Gemini have no built-in simplify, verify or run, so the repository skills carry those steps for them. In addition, when a unit is written by any agent other than Claude Code, ECC runs a **Claude skills pass** after the author's attempt and before the gates: a fresh Claude Code session in the unit's worktree runs `/simplify`, `/verify` and `/code-review` (and `/security-review` for high-risk units) with these skills, and commits any fixes within the unit's scope. Outside ECC (for example a Gemini build in Antigravity), run the same pass by hand before handing off:
+
+```sh
+claude -p "Read AGENTS.md. For this branch's changes against main, run /simplify, /verify and /code-review (and /security-review if the unit is high risk), using the skills in .agents/skills. Fix what they find within the unit's scope and commit on this branch."
+```
+
+Later these skills will also be distributed from ctxd's shared skill library; the files here stay the source of truth.
+
 ## Rules
 
 - Work only inside this repository. v1 (`~/Documents/GitHub/my-research-mcp-server`) and `~/arxiv-papers` are read-only: never edit them, and never open the v1 database except through the legacy import job.
