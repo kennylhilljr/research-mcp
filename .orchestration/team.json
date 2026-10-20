@@ -1,0 +1,95 @@
+{
+  "schema_version": "2.0",
+  "merge_approval": "agents",
+  "handoff_repair_turns": 1,
+  "preflight": "required",
+  "share_cap": 0.4,
+  "roles": {
+    "pr_reviewer": {
+      "panels": {
+        "economical": [
+          "gemini",
+          "codex",
+          "claude"
+        ],
+        "standard": [
+          "gemini",
+          "codex",
+          "claude"
+        ],
+        "advanced": [
+          "codex",
+          "gemini",
+          "claude"
+        ]
+      }
+    },
+    "security_reviewer": {
+      "panel": [
+        "codex",
+        "gemini",
+        "claude"
+      ]
+    },
+    "architect": {
+      "contract_paths": [
+        "src/research_mcp/core/specs.py",
+        "src/research_mcp/core/models.py",
+        "src/research_mcp/sources/base.py",
+        "src/research_mcp/platform/migrations/**"
+      ],
+      "panel": [
+        "gemini",
+        "codex",
+        "claude"
+      ]
+    },
+    "designer": {
+      "when_paths": [
+        "src/research_mcp/ui/**"
+      ]
+    },
+    "delivery_lead": {
+      "class": "standard",
+      "panel": [
+        "gemini",
+        "codex",
+        "claude"
+      ]
+    },
+    "product_owner": {
+      "panel": [
+        "gemini",
+        "codex",
+        "claude"
+      ]
+    }
+  },
+  "milestone": {
+    "name": "M0",
+    "docs": [
+      {
+        "path": "docs/spec/SPEC-v1.md",
+        "sections": [
+          "0",
+          "12.3"
+        ]
+      },
+      {
+        "path": "docs/prd/PRD-v4.md",
+        "sections": [
+          "10"
+        ]
+      },
+      {
+        "path": "docs/test-plan/TEST-PLAN-v3.md",
+        "sections": [
+          "8"
+        ]
+      }
+    ],
+    "gate_commands": [
+      "tools/ci.sh"
+    ]
+  }
+}
