@@ -41,6 +41,10 @@ claude -p "Read AGENTS.md. For this branch's changes against main, run /simplify
 
 Later these skills will also be distributed from ctxd's shared skill library; the files here stay the source of truth.
 
+## Lessons
+
+The team's practices evolve during a build (TEAM-DELIVERY v7). Every reviewer, the verifier, the architect and the designer may add `lessons` to their verdicts; when you hand off, add a `Lesson:` line to your handoff `notes` for anything future units should do differently (for example "Lesson: the spec does not say whether trailing dots are part of a DOI; I assumed not"). The delivery lead turns lessons that generalize into this file, the skills and [.agents/LESSONS.md](.agents/LESSONS.md), and those changes are reviewed and merged like code. Read the ledger before you start; it records why each rule exists.
+
 ## Rules
 
 - Work only inside this repository. v1 (`~/Documents/GitHub/my-research-mcp-server`) and `~/arxiv-papers` are read-only: never edit them, and never open the v1 database except through the legacy import job.

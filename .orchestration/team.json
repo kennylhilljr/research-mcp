@@ -96,5 +96,10 @@
     "runner": "claude",
     "class": "standard",
     "timeout_minutes": 30
+  },
+  "learning": {
+    "gate_commands": [
+      "tools/ci.sh --python-only"
+    ]
   }
 }
