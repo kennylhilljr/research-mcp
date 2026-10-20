@@ -42,10 +42,14 @@ def _is_loopback_host(host: object) -> bool:
         host = bytes(host).decode("ascii", "replace")
     if not isinstance(host, str):
         return False
-    if host.lower().rstrip(".") == "localhost":
+    if host.lower() == "localhost":
         return True
+    # The OS resolves the whole string, so a scope suffix such as "127.0.0.1%example.org"
+    # can reach the resolver even though its prefix is a loopback address.
+    if "%" in host:
+        return False
     try:
-        address = ipaddress.ip_address(host.split("%", 1)[0])
+        address = ipaddress.ip_address(host)
     except ValueError:
         return False
     if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None:

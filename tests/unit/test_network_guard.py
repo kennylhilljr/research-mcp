@@ -113,6 +113,26 @@ def test_blocks_reverse_lookup_before_io(socket_events: list[str]) -> None:
         _assert_refused_before_io(lambda h=host: socket.gethostbyaddr(h), socket_events)
 
 
+# Names that start like loopback but that the OS would hand to the resolver whole.
+LOOPBACK_LOOKALIKES = (f"127.0.0.1%{PUBLIC_NAME}", f"::1%{PUBLIC_NAME}", "localhost.")
+
+
+@pytest.mark.parametrize("host", LOOPBACK_LOOKALIKES)
+def test_blocks_loopback_lookalikes_before_io(host: str, socket_events: list[str]) -> None:
+    """AT-PLAT-05: a loopback prefix with a scope suffix or trailing dot is refused before I/O."""
+    _assert_refused_before_io(lambda: socket.getaddrinfo(host, 443), socket_events)
+    _assert_refused_before_io(lambda: socket.gethostbyname(host), socket_events)
+    _assert_refused_before_io(lambda: socket.gethostbyname_ex(host), socket_events)
+    _assert_refused_before_io(lambda: socket.gethostbyaddr(host), socket_events)
+    _assert_refused_before_io(
+        lambda: socket.create_connection((host, 80), timeout=0.5), socket_events
+    )
+    family = socket.AF_INET6 if ":" in host else socket.AF_INET
+    with socket.socket(family, socket.SOCK_STREAM) as sock:
+        _assert_refused_before_io(lambda: sock.connect((host, 80)), socket_events)
+        _assert_refused_before_io(lambda: sock.connect_ex((host, 80)), socket_events)
+
+
 def _blocked(error: BaseException) -> bool:
     if isinstance(error, BaseExceptionGroup):
         return any(_blocked(inner) for inner in error.exceptions)
