@@ -260,3 +260,18 @@ def test_webhook_accepts_plain_url() -> None:
     """AT-PLAT-08: A webhook URL without credentials is accepted."""
     url = "https://notify.invalid/inbox"
     assert Settings(notify={"webhook_url": url}).notify.webhook_url == url
+
+
+def test_rotate_by_is_utc(monkeypatch: pytest.MonkeyPatch) -> None:
+    """AT-PLAT-08: Credential rotate_by is normalized to UTC and needs a timezone."""
+    settings = Settings(credentials={"CORE_API_KEY": {"rotate_by": "2027-01-01T05:00:00+05:00"}})
+    rotate_by = settings.credentials["CORE_API_KEY"].rotate_by
+    assert rotate_by == datetime(2027, 1, 1, tzinfo=UTC)
+    assert rotate_by is not None
+    assert rotate_by.tzinfo is UTC
+    for naive in ("2027-01-01T00:00:00", datetime(2027, 1, 1)):  # noqa: DTZ001 - refusal case
+        with pytest.raises(ValidationError, match="rotate_by"):
+            Settings(credentials={"CORE_API_KEY": {"rotate_by": naive}})
+    monkeypatch.setenv("RESEARCH_MCP_CREDENTIALS__CORE_API_KEY__ROTATE_BY", "2027-01-01T00:00:00")
+    with pytest.raises(ValidationError, match="rotate_by"):
+        Settings()

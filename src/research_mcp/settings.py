@@ -4,12 +4,12 @@ from __future__ import annotations
 
 import ipaddress
 import re
-from datetime import datetime
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
 from pydantic_settings import (
     BaseSettings,
     EnvSettingsSource,
@@ -169,7 +169,12 @@ class WebSettings(_Config):
 
 
 class CredentialSettings(_Config):
-    rotate_by: datetime | None = None
+    rotate_by: AwareDatetime | None = None
+
+    @field_validator("rotate_by")
+    @classmethod
+    def utc(cls, value: datetime | None) -> datetime | None:
+        return None if value is None else value.astimezone(UTC)
 
 
 def _site_sets() -> dict[str, list[str]]:
