@@ -41,12 +41,25 @@ def test_doi(raw: str, expected: str) -> None:
         "10.1000/%FF",
         "10.1000/%C3%28",
         "10.1000/%xy",
+        "10.١٢٣٤/x",
     ],
 )
 def test_bad_doi(raw: str) -> None:
     """AT-SRCH-10: Invalid DOI forms and invalid UTF-8 are refused."""
     with pytest.raises(ids.IdentifierError):
         ids.normalize_doi(raw)
+
+
+@pytest.mark.parametrize("space", [" ", " ", "　", "%C2%A0", "%E2%80%83"])
+@pytest.mark.parametrize(
+    ("normalizer", "prefix"), [(ids.normalize_doi, "10.1000/"), (ids.normalize_handle, "1234/")]
+)
+def test_unicode_whitespace_in_suffix(
+    normalizer: Callable[[str], str], prefix: str, space: str
+) -> None:
+    """AT-SRCH-10: DOI and handle suffixes refuse Unicode whitespace, literal or percent-encoded."""
+    with pytest.raises(ids.IdentifierError):
+        normalizer(f"{prefix}a{space}b")
 
 
 @pytest.mark.parametrize(

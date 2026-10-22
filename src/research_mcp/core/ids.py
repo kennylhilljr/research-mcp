@@ -44,7 +44,8 @@ def _is_url(s: str) -> bool:
 
 
 def _match(s: str, pattern: str) -> str:
-    if re.fullmatch(pattern, s, flags=re.ASCII) is None:
+    # Unicode mode, so \S also refuses non-ASCII whitespace; digit classes are spelled [0-9].
+    if re.fullmatch(pattern, s) is None:
         raise IdentifierError("Invalid identifier form")
     return s
 
@@ -68,7 +69,7 @@ def _payload(s: str, prefixes: tuple[str, ...], hosts: tuple[str, ...] = ()) -> 
 
 def normalize_doi(s: str) -> str:
     s = _payload(s, ("doi",), ("doi.org", "dx.doi.org"))
-    return _match(s.lower().rstrip(".,;:!?)]}"), r"10\.\d{4,9}/\S+")
+    return _match(s.lower().rstrip(".,;:!?)]}"), r"10\.[0-9]{4,9}/\S+")
 
 
 def normalize_arxiv(s: str) -> tuple[str, int | None]:
@@ -81,7 +82,7 @@ def normalize_arxiv(s: str) -> tuple[str, int | None]:
         s = s[: version_match.start()]
     s = s.lower()
     s = re.sub(r"\.[a-z]{2}/", lambda m: m[0].upper(), s)
-    return _match(s, r"(?:\d{4}\.\d{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/\d{7})"), version
+    return _match(s, r"(?:[0-9]{4}\.[0-9]{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/[0-9]{7})"), version
 
 
 def normalize_pmid(s: str) -> str:
