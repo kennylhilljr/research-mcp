@@ -226,9 +226,12 @@ def parse_any(s: str) -> Identifier:
     s = _text(s)
     if not _is_url(s) and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
         raise IdentifierError("File names are not identifiers")
-    prefix, separator, _ = s.partition(":")
+    prefix, separator, rest = s.partition(":")
     scheme = _ALIASES.get(prefix.lower(), prefix.lower())
-    if not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
+    if separator and scheme == "url":
+        # The other normalizers strip their own prefix; normalize_url takes a bare URL.
+        s = rest
+    elif not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
         if _is_url(s):
             try:
                 host = (urlsplit(s).hostname or "").removeprefix("www.")

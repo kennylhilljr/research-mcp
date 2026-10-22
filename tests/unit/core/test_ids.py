@@ -170,6 +170,9 @@ def test_invalid_url(raw: str) -> None:
         ("github:Owner/Repo.git.git", "github", "owner/repo"),
         ("https://GitHub.com/Owner/Repo.git", "github", "owner/repo"),
         ("https://example.org/Doc.pdf", "url", "https://example.org/Doc.pdf"),
+        ("url:https://example.org/A", "url", "https://example.org/A"),
+        ("URL: https://Example.org/A", "url", "https://example.org/A"),
+        ("url:https://doi.org/10.1000/x", "url", "https://doi.org/10.1000/x"),
         ("10.1000/https://example.org", "doi", "10.1000/https://example.org"),
     ],
 )
