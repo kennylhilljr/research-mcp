@@ -133,6 +133,7 @@ def test_invalid_url(raw: str) -> None:
         ("PMC123", "pmcid", "PMC123"),
         ("123", "pmid", "123"),
         ("core:123", "core", "123"),
+        ("https://www.ncbi.nlm.nih.gov/pmc/articles/PMC123/", "pmcid", "PMC123"),
         ("W123", "openalex", "W123"),
         ("NCT01234567", "nct", "NCT01234567"),
         ("RFC 9110", "rfc", "9110"),

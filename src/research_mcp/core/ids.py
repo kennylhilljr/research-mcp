@@ -189,6 +189,7 @@ _HOSTS = {
     "arxiv.org": "arxiv",
     "pubmed.ncbi.nlm.nih.gov": "pmid",
     "pmc.ncbi.nlm.nih.gov": "pmcid",
+    "ncbi.nlm.nih.gov": "pmcid",
     "openalex.org": "openalex",
     "api.openalex.org": "openalex",
     "semanticscholar.org": "s2",
