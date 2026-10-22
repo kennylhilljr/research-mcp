@@ -68,8 +68,11 @@ def _payload(s: str, prefixes: tuple[str, ...], hosts: tuple[str, ...] = ()) -> 
 
 
 def normalize_doi(s: str) -> str:
-    s = _payload(s, ("doi",), ("doi.org", "dx.doi.org"))
-    return _match(s.lower().rstrip(".,;:!?)]}"), r"10\.[0-9]{4,9}/\S+")
+    s = _payload(s, ("doi",), ("doi.org", "dx.doi.org")).lower()
+    # Any Unicode punctuation trails off, except the slash some DOI suffixes end with.
+    while s and s[-1] != "/" and unicodedata.category(s[-1]).startswith("P"):
+        s = s[:-1]
+    return _match(s, r"10\.[0-9]{4,9}/\S+")
 
 
 def normalize_arxiv(s: str) -> tuple[str, int | None]:
