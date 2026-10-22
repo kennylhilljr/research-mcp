@@ -5,7 +5,7 @@ import pytest
 from pydantic import ValidationError
 
 from research_mcp.core.ids import Identifier
-from research_mcp.core.models import CallRecord, SearchFilters, WorkRecord
+from research_mcp.core.models import CallRecord, SearchFilters, Work, WorkRecord
 from research_mcp.core.specs import AuthSpec, RateSpec, SourcePolicy
 from research_mcp.core.timeutil import SystemClock
 from research_mcp.testing.clock import FakeClock, FakeSleeper
@@ -54,6 +54,26 @@ async def test_models_and_clock():
         extra={"nested": [True, None, {"number": 1}]},
     )
     assert WorkRecord.model_validate_json(record.model_dump_json()) == record
+    work = Work(
+        ids=[Identifier("doi", "10.1234/test")],
+        title="Study",
+        authors=[],
+        year=None,
+        venue=None,
+        work_type="article",
+        abstract=None,
+        oa_locations=[],
+        found_in=["arxiv"],
+    )
+    assert (work.fuzzy, work.conflicts, work.integrity_status, work.cache_state) == (
+        False,
+        [],
+        "unknown",
+        "none",
+    )
+    assert Work.model_validate_json(work.model_dump_json()) == work
+    with pytest.raises(ValidationError):
+        Work.model_validate({"ids": [], "authors": [], "found_in": []})
     call = CallRecord(
         ts=clock.now(),
         source="arxiv",

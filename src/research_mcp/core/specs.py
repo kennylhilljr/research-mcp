@@ -32,6 +32,7 @@ class AuthSpec:
                 or any(c.isspace() for c in origin)
             ):
                 raise ValueError("Expected an HTTP origin without credentials or path")
+            # .port parses lazily and raises ValueError on a non-numeric port (e.g. ":bad").
             _ = url.port
 
 
