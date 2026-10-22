@@ -228,14 +228,15 @@ _SHAPES = (
 
 def parse_any(s: str) -> Identifier:
     s = _text(s)
-    if not _is_url(s) and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
-        raise IdentifierError("File names are not identifiers")
     prefix, separator, rest = s.partition(":")
     scheme = _ALIASES.get(prefix.lower(), prefix.lower())
     if separator and scheme == "url":
         # The other normalizers strip their own prefix; normalize_url takes a bare URL.
-        s = rest
-    elif not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
+        s = rest.strip()
+    # Run after the url: prefix is gone so a prefixed URL ending .pdf is judged as a URL.
+    if not _is_url(s) and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
+        raise IdentifierError("File names are not identifiers")
+    if not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
         if _is_url(s):
             try:
                 host = (urlsplit(s).hostname or "").removeprefix("www.")
