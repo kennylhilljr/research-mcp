@@ -25,17 +25,22 @@ def _text(s: str) -> str:
     return s
 
 
+def _unquote(s: str) -> str:
+    if re.search(r"%(?![0-9a-fA-F]{2})", s):
+        raise IdentifierError("Invalid percent escape")
+    try:
+        return unquote(s, errors="strict")
+    except UnicodeError as exc:
+        raise IdentifierError("Invalid UTF-8 escape") from exc
+
+
 def _decode(s: str) -> str:
-    # Decode to a fixed point so escaped escapes cannot change on a second call.
-    while "%" in s:
-        if re.search(r"%(?![0-9a-fA-F]{2})", s):
-            raise IdentifierError("Invalid percent escape")
-        try:
-            decoded = unquote(s, errors="strict")
-        except UnicodeError as exc:
-            raise IdentifierError("Invalid UTF-8 escape") from exc
-        s = decoded
-    return _text(s)
+    # Decode once and keep literal percent signs escaped, so a second call is a no-op.
+    return _text(_unquote(s).replace("%", "%25"))
+
+
+def _is_url(s: str) -> bool:
+    return re.match(r"[a-z][a-z0-9+.-]*://", s, flags=re.I) is not None
 
 
 def _match(s: str, pattern: str) -> str:
@@ -50,7 +55,7 @@ def _payload(s: str, prefixes: tuple[str, ...], hosts: tuple[str, ...] = ()) -> 
         if s.lower().startswith(prefix + ":"):
             s = s[len(prefix) + 1 :].strip()
             break
-    if "://" in s:
+    if _is_url(s):
         try:
             url = urlsplit(s)
             if url.scheme.lower() not in {"http", "https"} or url.hostname not in hosts:
@@ -147,7 +152,7 @@ def normalize_github(s: str) -> str:
 
 def normalize_url(s: str) -> str:
     s = _text(s)
-    _decode(s)  # Validate escapes, retaining reserved URL characters in their encoded form.
+    _unquote(s)  # Validate escapes, retaining reserved URL characters in their encoded form.
     try:
         url = urlsplit(s)
         scheme = url.scheme.lower()
@@ -218,12 +223,12 @@ _SHAPES = (
 
 def parse_any(s: str) -> Identifier:
     s = _text(s)
-    if "://" not in s and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
+    if not _is_url(s) and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
         raise IdentifierError("File names are not identifiers")
     prefix, separator, _ = s.partition(":")
     scheme = _ALIASES.get(prefix.lower(), prefix.lower())
     if not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
-        if "://" in s:
+        if _is_url(s):
             try:
                 host = (urlsplit(s).hostname or "").removeprefix("www.")
             except ValueError as exc:

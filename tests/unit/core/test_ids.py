@@ -18,7 +18,11 @@ from research_mcp.core import ids
         ("http://dx.doi.org/10.1000/ABC);", "10.1000/abc"),
         ("10.1000/part/subpart/", "10.1000/part/subpart/"),
         ("10.123456789/ABC", "10.123456789/abc"),
-        ("10.1000/%252FABC", "10.1000//abc"),
+        ("10.1000/%252FABC", "10.1000/%252fabc"),
+        ("10.1000/100%25", "10.1000/100%25"),
+        ("10.1000/https://example.org", "10.1000/https://example.org"),
+        ("doi:10.1000/HTTP://Example.org/x", "10.1000/http://example.org/x"),
+        ("https://doi.org/10.1000/https://example.org", "10.1000/https://example.org"),
     ],
 )
 def test_doi(raw: str, expected: str) -> None:
@@ -101,6 +105,11 @@ def test_canonical_forms(normalizer: Callable[[str], str], raw: str, expected: s
         ("http://EXAMPLE.org:80/?gclid=x&empty=&a=1&a=2", "http://example.org/?empty=&a=1&a=2"),
         ("https://example.org:8443/A%2Fb", "https://example.org:8443/A%2Fb"),
         ("http://[::1]:80/", "http://[::1]/"),
+        (
+            "https://example.org/report?progress=100%25",
+            "https://example.org/report?progress=100%25",
+        ),
+        ("https://example.org/a%2525b", "https://example.org/a%2525b"),
     ],
 )
 def test_url(raw: str, expected: str) -> None:
@@ -148,6 +157,7 @@ def test_invalid_url(raw: str) -> None:
         ("github:Owner/Repo.git.git", "github", "owner/repo"),
         ("https://GitHub.com/Owner/Repo.git", "github", "owner/repo"),
         ("https://example.org/Doc.pdf", "url", "https://example.org/Doc.pdf"),
+        ("10.1000/https://example.org", "doi", "10.1000/https://example.org"),
     ],
 )
 def test_detect(raw: str, scheme: str, value: str) -> None:
