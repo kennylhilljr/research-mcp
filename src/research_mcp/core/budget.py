@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import base64
-import binascii
 import hashlib
 import hmac
 import json
@@ -90,5 +89,5 @@ def decode_cursor(cursor: str, key: bytes) -> dict[str, JsonValue]:
         if not isinstance(payload, dict):
             raise ValueError("Expected cursor object")
         return payload
-    except (ValueError, UnicodeError, binascii.Error) as exc:
+    except ValueError as exc:
         raise ToolError(ErrorCode.INVALID_ARGUMENT, "Invalid cursor") from exc
