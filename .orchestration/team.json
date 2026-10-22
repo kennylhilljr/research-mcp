@@ -8,26 +8,18 @@
     "pr_reviewer": {
       "panels": {
         "economical": [
-          "gemini",
-          "codex",
           "claude"
         ],
         "standard": [
-          "gemini",
-          "codex",
           "claude"
         ],
         "advanced": [
-          "codex",
-          "gemini",
           "claude"
         ]
       }
     },
     "security_reviewer": {
       "panel": [
-        "codex",
-        "gemini",
         "claude"
       ]
     },
@@ -39,28 +31,30 @@
         "src/research_mcp/platform/migrations/**"
       ],
       "panel": [
-        "gemini",
-        "codex",
         "claude"
       ]
     },
     "designer": {
       "when_paths": [
         "src/research_mcp/ui/**"
+      ],
+      "panel": [
+        "claude"
       ]
     },
     "delivery_lead": {
       "class": "standard",
       "panel": [
-        "gemini",
-        "codex",
         "claude"
       ]
     },
     "product_owner": {
       "panel": [
-        "gemini",
-        "codex",
+        "claude"
+      ]
+    },
+    "verifier": {
+      "panel": [
         "claude"
       ]
     }
@@ -95,7 +89,8 @@
   "skills_pass": {
     "runner": "claude",
     "class": "standard",
-    "timeout_minutes": 30
+    "timeout_minutes": 30,
+    "enabled": false
   },
   "learning": {
     "gate_commands": [

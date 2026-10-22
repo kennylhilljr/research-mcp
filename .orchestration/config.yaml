@@ -24,14 +24,12 @@
     "launchctl *"
   ],
   "allowed_providers": [
-    "claude",
-    "codex",
-    "gemini"
+    "claude"
   ],
   "author_providers": [
-    "claude",
-    "codex"
+    "claude"
   ],
+  "review_independence": "persona",
   "budget": {
     "max_cost_usd_per_unit": 10.0,
     "max_cost_usd_total": 150.0,
@@ -42,11 +40,6 @@
       "economical": "haiku",
       "standard": "sonnet",
       "advanced": "opus"
-    },
-    "codex": {
-      "economical": "gpt-6-luna",
-      "standard": "gpt-6-astra",
-      "advanced": "gpt-6-astra"
     }
   },
   "runner_costs": {
@@ -54,25 +47,6 @@
       "economical": 0.02,
       "standard": 0.5,
       "advanced": 1.0
-    },
-    "codex": {
-      "economical": 0.05,
-      "standard": 0.4,
-      "advanced": 1.5
-    }
-  },
-  "model_preferences": {
-    "gemini": {
-      "economical": [
-        "gemini-3.5-flash-lite*"
-      ],
-      "standard": [
-        "gemini-3.5-flash-lite*"
-      ],
-      "advanced": [
-        "gemini-3.1-pro*",
-        "gemini-pro-latest"
-      ]
     }
   }
 }

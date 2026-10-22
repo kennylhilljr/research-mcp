@@ -4,7 +4,7 @@ Milestone M0 (SPEC v2 section 12.3: 16 units in 10 waves) delivered by the agent
 
 ## Providers
 
-Codex and Claude write code; Codex, Claude and Gemini review, verify and play the architect, delivery lead and product owners (`.orchestration/config.yaml`, `team.json`). Gemini uses Flash-Lite for standard roles and Gemini Pro for advanced ones. Every unit applies the build skills in `.agents/skills` (AGENTS.md); after a unit written by Codex, a Claude Code skills pass runs `/simplify`, `/verify` and `/code-review` on it before the gates (TEAM-DELIVERY v6).
+Claude is the only provider. It writes code and plays every team role: PR reviewer, security reviewer, verifier, architect, designer, delivery lead and product owners (`.orchestration/config.yaml`, `team.json`). Independence comes from each role's persona and its own session, not from a different provider (`review_independence: persona` in `config.yaml`; TEAM-DELIVERY v3). The model follows the unit's class: Haiku, Sonnet or Opus (`cli_models`). Every unit applies the build skills in `.agents/skills` (AGENTS.md) in the author's own session, so the separate skills pass is off.
 
 ## Before the first run
 
@@ -15,7 +15,7 @@ Codex and Claude write code; Codex, Claude and Gemini review, verify and play th
    ecc() { ~/Documents/GitHub/openclaw-ecc-orchestrator/bin/with-keychain-secrets ~/Documents/GitHub/openclaw-ecc-orchestrator/bin/ecc "$@" --config ~/Documents/GitHub/research-mcp/.orchestration/ecc.json; }
    ```
 
-2. `ecc catalog-refresh`, then `ecc preflight`. Preflight must pass for both coding CLIs before a run.
+2. `ecc catalog-refresh`, then `ecc preflight --runner claude`. Preflight must pass for Claude Code before a run.
 
 ## Run
 
