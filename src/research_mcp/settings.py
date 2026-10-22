@@ -132,8 +132,14 @@ class NotifySettings(_Config):
     def tokenless(cls, value: str | None) -> str | None:
         if value is None:
             return None
-        url = urlsplit(value)
-        if url.scheme not in {"http", "https"} or not url.hostname:
+        # Parser errors quote the input, so they are replaced by a fixed message.
+        try:
+            url = urlsplit(value)
+            valid = url.scheme in {"http", "https"} and bool(url.hostname)
+            url.port  # noqa: B018 - raises ValueError on a malformed port
+        except ValueError:
+            valid = False
+        if not valid:
             raise ValueError("notify.webhook_url must be an http or https URL")
         # The token belongs in Keychain NOTIFY_WEBHOOK_TOKEN, sent as a bearer header.
         if "@" in url.netloc or url.query or url.fragment or "?" in value or "#" in value:

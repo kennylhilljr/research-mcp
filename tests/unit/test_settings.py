@@ -243,6 +243,9 @@ def test_optional_email() -> None:
         "https://synthetic-marker@notify.invalid/inbox",
         "ftp://notify.invalid/synthetic-marker",
         "synthetic-marker",
+        "https://[synthetic-marker]/inbox",
+        "https://[synthetic-marker/inbox",
+        "https://notify.invalid:synthetic-marker/inbox",
     ],
 )
 def test_webhook_rejects_tokens(url: str, monkeypatch: pytest.MonkeyPatch) -> None:
