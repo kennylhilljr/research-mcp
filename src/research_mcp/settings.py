@@ -9,7 +9,8 @@ from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, field_validator
+from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic_core import PydanticCustomError
 from pydantic_settings import (
     BaseSettings,
     EnvSettingsSource,
@@ -19,8 +20,30 @@ from pydantic_settings import (
 )
 
 
+def _hide_inputs(exc: ValidationError) -> ValidationError:
+    # hide_input_in_errors only covers str(); errors() and json() still carry the
+    # rejected value, which may be a token, so the errors are rebuilt without it.
+    return ValidationError.from_exception_data(
+        exc.title,
+        [
+            {"type": PydanticCustomError(e["type"], e["msg"]), "loc": e["loc"], "input": "[hidden]"}
+            for e in exc.errors(include_url=False, include_context=False, include_input=False)
+        ],
+        hide_input=True,
+    )
+
+
 class _Config(BaseModel):
     model_config = ConfigDict(extra="forbid", validate_default=True, defer_build=True)
+
+    def __init__(self, **values: Any) -> None:
+        try:
+            super().__init__(**values)
+        except ValidationError as exc:
+            error = _hide_inputs(exc)
+        else:
+            return
+        raise error
 
 
 class ServerSettings(_Config):
@@ -237,6 +260,15 @@ class Settings(BaseSettings):
         validate_default=True,
     )
 
+    def __init__(self, **values: Any) -> None:
+        try:
+            super().__init__(**values)
+        except ValidationError as exc:
+            error = _hide_inputs(exc)
+        else:
+            return
+        raise error
+
     server: ServerSettings = Field(default_factory=ServerSettings)
     paths: PathSettings = Field(default_factory=PathSettings)
     contact: ContactSettings = Field(default_factory=ContactSettings)
@@ -261,9 +293,14 @@ class Settings(BaseSettings):
 
     @field_validator("sources", mode="before")
     @classmethod
-    def web_defaults(cls, value: dict[str, Any]) -> dict[str, Any]:
+    def web_defaults(cls, value: Any) -> Any:
+        if not isinstance(value, dict):
+            return value
         result = dict(value)
         for name, config in value.items():
+            if isinstance(config, SourceSettings):
+                # Only explicitly set fields override the web-source defaults.
+                config = config.model_dump(exclude_unset=True)
             if isinstance(config, dict) and (
                 name in {"brave_search", "serpapi", "google_pse", "vertex_search"}
                 or config.get("instance_of") == "vertex_search"

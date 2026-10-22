@@ -7,7 +7,7 @@ from pathlib import Path
 import pytest
 from pydantic import ValidationError
 
-from research_mcp.settings import Settings, SourceSettings
+from research_mcp.settings import NotifySettings, Settings, SourceSettings
 
 
 @pytest.fixture(autouse=True)
@@ -125,6 +125,23 @@ base_url = "https://repository.invalid"
     assert settings.sources["vertex_library"].enabled is False
     assert settings.sources["dspace_penn"].base_url == "https://repository.invalid"
     assert settings.federation.default_groups == ["reference"]
+
+
+def test_typed_web_source_defaults() -> None:
+    """AT-PLAT-08: Typed SourceSettings input gets the same web defaults as a table."""
+    typed = Settings(
+        sources={
+            "brave_search": SourceSettings(),
+            "serpapi": SourceSettings(enabled=True, budget_cap=5),
+            "vertex_library": SourceSettings(instance_of="vertex_search"),
+            "crossref": SourceSettings(),
+        }
+    ).sources
+    assert typed["brave_search"] == Settings(sources={"brave_search": {}}).sources["brave_search"]
+    assert (typed["brave_search"].enabled, typed["brave_search"].budget_cap) == (False, 100)
+    assert (typed["serpapi"].enabled, typed["serpapi"].budget_cap) == (True, 5)
+    assert (typed["vertex_library"].enabled, typed["vertex_library"].budget_cap) == (False, 100)
+    assert (typed["crossref"].enabled, typed["crossref"].budget_cap) == (None, None)
 
 
 @pytest.mark.parametrize(
@@ -250,13 +267,21 @@ def test_optional_email() -> None:
 )
 def test_webhook_rejects_tokens(url: str, monkeypatch: pytest.MonkeyPatch) -> None:
     """AT-PLAT-08: A webhook token is refused in the URL and never echoed in the error."""
+
+    def assert_hidden(error: ValidationError) -> None:
+        for output in (str(error), repr(error), error.json(), repr(error.errors())):
+            assert "synthetic-marker" not in output
+
     with pytest.raises(ValidationError, match="notify.webhook_url") as caught:
         Settings(notify={"webhook_url": url})
-    assert "synthetic-marker" not in str(caught.value)
+    assert_hidden(caught.value)
+    with pytest.raises(ValidationError, match="notify.webhook_url") as caught:
+        NotifySettings(webhook_url=url)
+    assert_hidden(caught.value)
     monkeypatch.setenv("RESEARCH_MCP_NOTIFY__WEBHOOK_URL", url)
     with pytest.raises(ValidationError, match="notify.webhook_url") as caught:
         Settings()
-    assert "synthetic-marker" not in str(caught.value)
+    assert_hidden(caught.value)
 
 
 def test_webhook_accepts_plain_url() -> None:
