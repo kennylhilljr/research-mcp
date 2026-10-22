@@ -231,3 +231,32 @@ def test_optional_email() -> None:
     assert Settings(contact={"email": "researcher@university.edu"}).contact.email == (
         "researcher@university.edu"
     )
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://notify.invalid/inbox?token=synthetic-marker",
+        "https://notify.invalid/inbox?synthetic-marker",
+        "https://notify.invalid/inbox#synthetic-marker",
+        "https://user:synthetic-marker@notify.invalid/inbox",
+        "https://synthetic-marker@notify.invalid/inbox",
+        "ftp://notify.invalid/synthetic-marker",
+        "synthetic-marker",
+    ],
+)
+def test_webhook_rejects_tokens(url: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """AT-PLAT-08: A webhook token is refused in the URL and never echoed in the error."""
+    with pytest.raises(ValidationError, match="notify.webhook_url") as caught:
+        Settings(notify={"webhook_url": url})
+    assert "synthetic-marker" not in str(caught.value)
+    monkeypatch.setenv("RESEARCH_MCP_NOTIFY__WEBHOOK_URL", url)
+    with pytest.raises(ValidationError, match="notify.webhook_url") as caught:
+        Settings()
+    assert "synthetic-marker" not in str(caught.value)
+
+
+def test_webhook_accepts_plain_url() -> None:
+    """AT-PLAT-08: A webhook URL without credentials is accepted."""
+    url = "https://notify.invalid/inbox"
+    assert Settings(notify={"webhook_url": url}).notify.webhook_url == url

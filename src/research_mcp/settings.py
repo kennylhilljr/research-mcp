@@ -7,6 +7,7 @@ import re
 from datetime import datetime
 from pathlib import Path
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 from pydantic_settings import (
@@ -126,6 +127,22 @@ class NotifySettings(_Config):
         pattern=r"^(?:[01]\d|2[0-3]):[0-5]\d-(?:[01]\d|2[0-3]):[0-5]\d$",
     )
 
+    @field_validator("webhook_url")
+    @classmethod
+    def tokenless(cls, value: str | None) -> str | None:
+        if value is None:
+            return None
+        url = urlsplit(value)
+        if url.scheme not in {"http", "https"} or not url.hostname:
+            raise ValueError("notify.webhook_url must be an http or https URL")
+        # The token belongs in Keychain NOTIFY_WEBHOOK_TOKEN, sent as a bearer header.
+        if "@" in url.netloc or url.query or url.fragment or "?" in value or "#" in value:
+            raise ValueError(
+                "notify.webhook_url must not carry credentials, a query or a fragment; "
+                "store the token in Keychain NOTIFY_WEBHOOK_TOKEN"
+            )
+        return value
+
 
 class DiskSettings(_Config):
     cache_warn_bytes: int = Field(default=5368709120, ge=0)
@@ -204,6 +221,8 @@ class Settings(BaseSettings):
         env_prefix="RESEARCH_MCP_",
         env_nested_delimiter="__",
         extra="forbid",
+        # A rejected value such as a webhook URL may carry a token; errors never echo input.
+        hide_input_in_errors=True,
         validate_default=True,
     )
 
