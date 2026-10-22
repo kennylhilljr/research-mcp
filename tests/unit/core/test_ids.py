@@ -311,3 +311,21 @@ def test_strict_utf8_decoding(normalizer: Callable[[str], object], escape: str) 
     raw = f"https://example.org/{escape}" if normalizer is ids.normalize_url else escape
     with pytest.raises(ids.IdentifierError, match="Invalid UTF-8 escape"):
         normalizer(raw)
+
+
+@pytest.mark.parametrize(
+    "raw",
+    [
+        "https://example.org/Case ?utm_source=x",
+        "https://example.org/a b/c",
+        "https://example.org/Case ?q=1",
+        "https://exa mple.org/",
+    ],
+)
+def test_url_unencoded_whitespace(raw: str) -> None:
+    """AT-SRCH-15: URLs with raw inner whitespace are refused, so a second pass cannot differ."""
+    with pytest.raises(ids.IdentifierError):
+        ids.normalize_url(raw)
+    encoded = ids.normalize_url("https://example.org/Case%20?utm_source=x")
+    assert encoded == "https://example.org/Case%20"
+    assert ids.normalize_url(encoded) == encoded

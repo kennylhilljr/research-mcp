@@ -153,6 +153,9 @@ def normalize_github(s: str) -> str:
 
 def normalize_url(s: str) -> str:
     s = _text(s)
+    if any(c.isspace() for c in s):
+        # urlsplit strips trailing spaces, so a raw space would not survive a second pass.
+        raise IdentifierError("Unencoded whitespace in URL")
     _unquote(s)  # Validate escapes, retaining reserved URL characters in their encoded form.
     try:
         url = urlsplit(s)
@@ -160,8 +163,6 @@ def normalize_url(s: str) -> str:
         if scheme not in {"http", "https"} or not url.hostname or url.username is not None:
             raise IdentifierError("Expected an absolute HTTP URL without credentials")
         host = url.hostname.lower()
-        if any(c.isspace() for c in host):
-            raise IdentifierError("Invalid URL host")
         host = f"[{host}]" if ":" in host else host
         port = url.port
         if port is not None and (scheme, port) not in {("http", 80), ("https", 443)}:
