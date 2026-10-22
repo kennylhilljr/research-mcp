@@ -258,3 +258,29 @@ def test_invalid_scheme_forms(normalizer: Callable[[str], object], raw: str) -> 
     """AT-SRCH-12: Scheme normalizers refuse malformed values and unexpected URL hosts."""
     with pytest.raises(ids.IdentifierError):
         normalizer(raw)
+
+
+@pytest.mark.parametrize(
+    "normalizer",
+    [
+        ids.normalize_doi,
+        ids.normalize_arxiv,
+        ids.normalize_pmid,
+        ids.normalize_pmcid,
+        ids.normalize_openalex,
+        ids.normalize_s2,
+        ids.normalize_core,
+        ids.normalize_nct,
+        ids.normalize_rfc,
+        ids.normalize_handle,
+        ids.normalize_dspace_uuid,
+        ids.normalize_github,
+        ids.normalize_url,
+    ],
+)
+@pytest.mark.parametrize("escape", ["%FF", "%C3%28", "%ED%A0%80"])
+def test_strict_utf8_decoding(normalizer: Callable[[str], object], escape: str) -> None:
+    """AT-SRCH-15: Every identifier normalizer rejects invalid UTF-8 escapes."""
+    raw = f"https://example.org/{escape}" if normalizer is ids.normalize_url else escape
+    with pytest.raises(ids.IdentifierError, match="Invalid UTF-8 escape"):
+        normalizer(raw)
