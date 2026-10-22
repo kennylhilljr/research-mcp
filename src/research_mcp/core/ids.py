@@ -217,18 +217,17 @@ def parse_any(s: str) -> Identifier:
     s = _text(s)
     if "://" not in s and (s.lower().endswith(".pdf") or re.match(r"(?i)(doi|core)_", s)):
         raise IdentifierError("File names are not identifiers")
-    prefix, separator, rest = s.partition(":")
+    prefix, separator, _ = s.partition(":")
     scheme = _ALIASES.get(prefix.lower(), prefix.lower())
-    if separator and scheme in {*_NORMALIZERS, "arxiv"}:
-        s = rest
-    elif "://" in s:
-        try:
-            host = (urlsplit(s).hostname or "").removeprefix("www.")
-        except ValueError as exc:
-            raise IdentifierError("Invalid URL") from exc
-        scheme = _HOSTS.get(host, "url")
-    else:
-        scheme = next((name for pattern, name in _SHAPES if re.match(pattern, s, re.I)), "")
+    if not (separator and scheme in {*_NORMALIZERS, "arxiv"}):
+        if "://" in s:
+            try:
+                host = (urlsplit(s).hostname or "").removeprefix("www.")
+            except ValueError as exc:
+                raise IdentifierError("Invalid URL") from exc
+            scheme = _HOSTS.get(host, "url")
+        else:
+            scheme = next((name for pattern, name in _SHAPES if re.match(pattern, s, re.I)), "")
     if scheme == "arxiv":
         value, version = normalize_arxiv(s)
         return Identifier(scheme, value, version)
