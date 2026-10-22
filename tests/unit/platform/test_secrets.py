@@ -176,6 +176,8 @@ def test_secret_has_no_dict_and_refuses_pickle() -> None:
     assert not hasattr(secret, "__dict__")
     with pytest.raises(TypeError):
         pickle.dumps(secret)
+    with pytest.raises(TypeError):
+        secret.__getstate__()
     assert copy.copy(secret) is secret
     assert copy.deepcopy(secret) is secret
 
@@ -325,6 +327,16 @@ def test_keychain_set_failure_hides_stderr() -> None:
         KeychainProvider("tester", runner=runner).set(CORE, VALUE)
     assert VALUE not in str(caught.value)
     assert "diagnostic" not in str(caught.value)
+
+
+def test_keychain_set_timeout_does_not_chain_stderr() -> None:
+    """AT-SEC-13: a timed-out write raises without chaining the exception that holds stderr."""
+    timeout = subprocess.TimeoutExpired(["/usr/bin/security", "-i"], 5, stderr=STDERR)
+    runner = Recorder(raises=timeout)
+    with pytest.raises(RuntimeError) as caught:
+        KeychainProvider("tester", runner=runner).set(CORE, VALUE)
+    assert caught.value.__context__ is None
+    assert caught.value.__cause__ is None
 
 
 def test_set_refuses_env_reference() -> None:

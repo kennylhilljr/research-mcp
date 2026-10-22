@@ -7,6 +7,7 @@ and the stderr of ``security`` is inspected for the locked case but never logged
 
 from __future__ import annotations
 
+import contextlib
 import hashlib
 import os
 import re
@@ -113,6 +114,9 @@ class Secret:
     def __reduce__(self) -> NoReturn:
         raise TypeError("Secret cannot be pickled")
 
+    def __getstate__(self) -> NoReturn:
+        raise TypeError("Secret cannot be pickled")
+
     def __copy__(self) -> Secret:
         return self
 
@@ -211,10 +215,12 @@ class KeychainProvider:
     def set(self, ref: SecretRef, value: str) -> None:
         _check_writable(ref)
         script = _write_script(ref, self._user, value)
-        try:
+        # Raised outside the except block so no __context__ carries the captured stderr.
+        done: subprocess.CompletedProcess[str] | None = None
+        with contextlib.suppress(OSError, subprocess.SubprocessError):
             done = self._run([_SECURITY, "-i"], stdin=script)
-        except (OSError, subprocess.SubprocessError):
-            raise RuntimeError(f"could not run security to store {ref.name}") from None
+        if done is None:
+            raise RuntimeError(f"could not run security to store {ref.name}")
         if done.returncode != 0:
             raise RuntimeError(f"security could not store {ref.name} (exit {done.returncode})")
 
