@@ -139,7 +139,7 @@ class BackupSettings(_Config):
 
 class SourceSettings(_Config):
     # An absent enabled flag defers to the adapter's SourceSpec.
-    model_config = ConfigDict(extra="allow", validate_default=True, defer_build=True)
+    model_config = ConfigDict(extra="allow")
     enabled: bool | None = None
     budget_cap: int | None = Field(default=None, ge=0)
 
