@@ -85,7 +85,9 @@ def normalize_pmid(s: str) -> str:
 
 
 def normalize_pmcid(s: str) -> str:
-    s = _payload(s, ("pmcid",), ("pmc.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov"))
+    s = _payload(
+        s, ("pmcid",), ("pmc.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov")
+    )
     s = re.sub(r"^(?:pmc/)?articles/", "", s, flags=re.I).rstrip("/").upper()
     return "PMC" + _match(s.removeprefix("PMC"), r"[0-9]+")
 
