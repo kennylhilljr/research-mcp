@@ -18,9 +18,9 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 | Vision | [docs/vision/vision-v2.md](docs/vision/vision-v2.md) | Why, for whom, the outcomes |
 | Parent PRD | [docs/prd/PRD-v7.md](docs/prd/PRD-v7.md) | Outcomes `OUT-n`, cross-cutting `NFR-n`, invariants `INV-n`, components, milestones |
 | Component PRDs | [docs/prd/components/](docs/prd/components/) | Requirements `<PREFIX>-FR-n` and acceptance criteria `<PREFIX>-n` (PLAT, SEC, SRC, SRCH, CACHE, HLTH, UI, MIG) |
-| SPEC (system high level design) | [docs/spec/SPEC-v3.md](docs/spec/SPEC-v3.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
+| SPEC (system high level design) | [docs/spec/SPEC-v4.md](docs/spec/SPEC-v4.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
 | LLDs, one per component | [docs/lld/](docs/lld/) | Every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes, error codes), every interface and format |
-| Test plan | [docs/test/test-plan-v2.md](docs/test/test-plan-v2.md) | How each criterion is verified; owner checks; milestone exit gates |
+| Test plan | [docs/test/test-plan-v3.md](docs/test/test-plan-v3.md) | How each criterion is verified; owner checks; milestone exit gates |
 | Milestone plan | [docs/build/M0-plan-v1.md](docs/build/M0-plan-v1.md) | Work units, their criteria, scope and dependencies |
 | Runbooks and contracts | [docs/runbooks/](docs/runbooks/), [docs/contracts/](docs/contracts/) | Operating steps; the MCP prompt texts |
 
