@@ -7,9 +7,11 @@ LLD-platform-v2 5.4; LLD-cache-v2 5.13. The resolver is a fake and every upstrea
 from __future__ import annotations
 
 import asyncio
+import gzip
 import hashlib
 import os
 import socket
+import zlib
 from collections.abc import AsyncIterator, Callable
 from pathlib import Path
 from typing import Any
@@ -113,6 +115,9 @@ async def rejected(downloader: Downloader, url: str, **kwargs: Any) -> HttpError
         "ff02::1",
         "::ffff:10.0.0.1",
         "::",
+        "64:ff9b::a00:1",  # NAT64 of 10.0.0.1
+        "64:ff9b::7f00:1",  # NAT64 of 127.0.0.1
+        "2002:a00:1::1",  # 6to4 of 10.0.0.1
     ],
 )
 async def test_rejects_http_private_loopback_linklocal_also_after_redirect(
@@ -327,6 +332,130 @@ async def test_rejects_media_type_magic_bytes_and_oversize(tmp_path: Path) -> No
 
     assert stored(tmp_path, "files") == []
     assert stored(tmp_path, "tmp") == []
+
+
+class Wire(httpx.AsyncByteStream):
+    """A body as a network transport hands it over: raw and not yet read.
+
+    ``httpx.Response(content=...)`` reads and decodes its body when it is built, which
+    would hide what the downloader does with an encoded body.
+    """
+
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield self.body
+
+
+def encoded(raw: bytes, encoding: str) -> httpx.Response:
+    headers = {"Content-Type": "application/pdf", "Content-Encoding": encoding}
+    return httpx.Response(200, stream=Wire(raw), headers=headers)
+
+
+class InflationMeter:
+    """Wraps ``zlib.decompressobj`` and keeps the largest output of any one call."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        self.largest = 0
+        real = zlib.decompressobj
+        meter = self
+
+        class Metered:
+            def __init__(self, *args: Any) -> None:
+                self._inner = real(*args)
+
+            def decompress(self, data: bytes, max_length: int = 0) -> bytes:
+                return meter.saw(self._inner.decompress(data, max_length))
+
+            def flush(self, *args: int) -> bytes:
+                return meter.saw(self._inner.flush(*args))
+
+            def __getattr__(self, name: str) -> Any:
+                return getattr(self._inner, name)
+
+        monkeypatch.setattr(zlib, "decompressobj", Metered)
+
+    def saw(self, out: bytes) -> bytes:
+        self.largest = max(self.largest, len(out))
+        return out
+
+
+async def test_nested_gzip_bomb_is_too_large_without_inflating(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """@spec CACHE-1: a body sent encoded despite identity is decoded under the byte cap."""
+    bomb = gzip.compress(gzip.compress(b"%PDF-" + b"\0" * 64_000_000, 9), 9)
+    upstream = Upstream(
+        {
+            "https://arxiv.org/bomb": lambda request: encoded(bomb, "gzip, gzip"),
+            "https://arxiv.org/gz": lambda request: encoded(gzip.compress(PDF), "gzip"),
+            "https://arxiv.org/br": lambda request: encoded(PDF, "br"),
+        }
+    )
+    downloader, _ = make(tmp_path, upstream)
+    meter = InflationMeter(monkeypatch)
+    error = await rejected(downloader, "https://arxiv.org/bomb")
+    assert error.code is ErrorCode.TOO_LARGE
+    assert 0 < meter.largest <= POLICY.max_bytes + 1
+    assert upstream.requests[0].headers["Accept-Encoding"] == "identity"
+
+    error = await rejected(downloader, "https://arxiv.org/br")
+    assert error.code is ErrorCode.UPSTREAM_ERROR
+    assert stored(tmp_path, "tmp") == []
+
+    result = await downloader.download("https://arxiv.org/gz")
+    assert result.sha256 == hashlib.sha256(PDF).hexdigest()
+    assert result.size == len(PDF)
+
+
+class DrippingStream(httpx.AsyncByteStream):
+    def __init__(self) -> None:
+        self.pulled = 0
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield b"%PDF-"
+        for _ in range(200):
+            self.pulled += 1
+            await asyncio.sleep(0.01)
+            yield b"1"
+
+
+async def test_slow_drip_body_hits_the_total_deadline(tmp_path: Path) -> None:
+    """@spec CACHE-1: timeout_s bounds the whole download, not each read."""
+    stream = DrippingStream()
+    upstream = Upstream(
+        {
+            "https://arxiv.org/slow": httpx.Response(
+                200, stream=stream, headers={"Content-Type": "application/pdf"}
+            )
+        }
+    )
+    downloader, _ = make(tmp_path, upstream)
+    quick = DownloadPolicy(
+        media_types=POLICY.media_types,
+        max_bytes=POLICY.max_bytes,
+        allowed_hosts=POLICY.allowed_hosts,
+        timeout_s=0.3,
+    )
+    error = await rejected(downloader, "https://arxiv.org/slow", policy=quick)
+    assert error.code is ErrorCode.UPSTREAM_TIMEOUT
+    assert stream.pulled < 200
+    assert stored(tmp_path, "tmp") == []
+
+
+async def test_resolver_failure_is_an_upstream_error(tmp_path: Path) -> None:
+    """@spec CACHE-1: a name that does not resolve fails with a code, not a raw OSError."""
+
+    class FailingResolver(FakeResolver):
+        async def resolve(self, host: str) -> list[str]:
+            raise socket.gaierror(socket.EAI_NONAME, "nodename nor servname provided")
+
+    upstream = Upstream({})
+    downloader, _ = make(tmp_path, upstream, FailingResolver())
+    error = await rejected(downloader, "https://arxiv.org/pdf/1")
+    assert error.code is ErrorCode.UPSTREAM_ERROR
+    assert upstream.requests == []
 
 
 async def test_accepts_html_after_whitespace_and_media_type_parameters(tmp_path: Path) -> None:

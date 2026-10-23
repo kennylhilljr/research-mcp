@@ -18,6 +18,7 @@ import os
 import socket
 import ssl
 from collections.abc import Callable, Iterable
+from contextlib import aclosing
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Protocol
@@ -29,7 +30,7 @@ from ulid import ULID
 
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.models import DownloadedFile
-from research_mcp.platform.http import build_user_agent
+from research_mcp.platform.http import build_user_agent, capped_body
 from research_mcp.version import __version__
 
 MAX_REDIRECTS = 5
@@ -37,6 +38,8 @@ REDIRECT_STATUSES = frozenset({301, 302, 303, 307, 308})
 EXTENSIONS = {"application/pdf": "pdf", "text/html": "html"}
 # Enough of the body to see the magic bytes, or the first character after leading whitespace.
 _HEAD_BYTES = 1024
+# The NAT64 well-known prefix; its last 32 bits are the IPv4 address reached (RFC 6052).
+_NAT64 = ipaddress.IPv6Network("64:ff9b::/96")
 
 
 class Resolver(Protocol):
@@ -63,13 +66,26 @@ class DownloadPolicy:
 
 
 def is_public_address(text: str) -> bool:
-    """True only for a globally routable unicast address, IPv4 or IPv6."""
+    """True only for a globally routable unicast address, IPv4 or IPv6.
+
+    An IPv6 address that carries an IPv4 address (mapped, 6to4 or NAT64) is public only
+    when the carried address is public too.
+    """
     try:
         address = ipaddress.ip_address(text)
     except ValueError:
         return False
-    if isinstance(address, ipaddress.IPv6Address) and address.ipv4_mapped is not None:
-        address = address.ipv4_mapped
+    if isinstance(address, ipaddress.IPv6Address):
+        if address.ipv4_mapped is not None:
+            return _public(address.ipv4_mapped)
+        if address.sixtofour is not None and not _public(address.sixtofour):
+            return False
+        if address in _NAT64 and not _public(ipaddress.IPv4Address(int(address) & 0xFFFF_FFFF)):
+            return False
+    return _public(address)
+
+
+def _public(address: ipaddress.IPv4Address | ipaddress.IPv6Address) -> bool:
     return address.is_global and not (
         address.is_private
         or address.is_loopback
@@ -143,6 +159,13 @@ def _blocked(detail: str) -> HttpError:
     return HttpError(ErrorCode.BLOCKED_BY_POLICY, detail=detail)
 
 
+def _remaining(deadline: float) -> float:
+    left = deadline - anyio.current_time()
+    if left <= 0:
+        raise HttpError(ErrorCode.UPSTREAM_TIMEOUT)
+    return left
+
+
 def _status_error(status: int) -> HttpError | None:
     if 200 <= status < 300:
         return None
@@ -199,11 +222,13 @@ class Downloader:
     async def download(self, url: str, *, policy: DownloadPolicy | None = None) -> DownloadedFile:
         """Download ``url``; raise ``HttpError`` (``blocked_by_policy``, ``too_large``, ...)."""
         policy = policy or self._policy
+        # timeout_s bounds the whole download, redirects included, not each read.
+        deadline = anyio.current_time() + policy.timeout_s
         current = url
         for _ in range(MAX_REDIRECTS + 1):
             code: ErrorCode | None = None
             try:
-                outcome = await self._hop(current, policy)
+                outcome = await self._hop(current, policy, deadline)
             except httpx.TimeoutException:
                 code = ErrorCode.UPSTREAM_TIMEOUT
             except httpx.HTTPError:
@@ -230,20 +255,23 @@ class Downloader:
             ipaddress.ip_address(host)
             addresses = [host]
         except ValueError:
-            addresses = await self._resolver.resolve(host)
+            try:
+                addresses = await self._resolver.resolve(host)
+            except OSError:
+                raise HttpError(ErrorCode.UPSTREAM_ERROR, detail="resolve") from None
         if not addresses or not all(is_public_address(a) for a in addresses):
             raise _blocked("address")
         return target, addresses[0]
 
-    async def _hop(self, url: str, policy: DownloadPolicy) -> DownloadedFile | str:
+    async def _hop(self, url: str, policy: DownloadPolicy, deadline: float) -> DownloadedFile | str:
         """One checked request: the stored file, or the next URL of a redirect."""
         target, ip = await self._check(url, policy)
         transport = self._transport_factory(target.host, ip)
         async with (
             httpx.AsyncClient(
-                transport=transport, follow_redirects=False, timeout=policy.timeout_s
+                transport=transport, follow_redirects=False, timeout=_remaining(deadline)
             ) as client,
-            # identity: a compressed body could inflate far past the cap within one chunk.
+            # A server may encode the body anyway; capped_body inflates it under the cap.
             client.stream(
                 "GET",
                 target,
@@ -258,17 +286,14 @@ class Downloader:
             error = _status_error(response.status_code)
             if error is not None:
                 raise error
-            return await self._store(response, target, policy)
+            return await self._store(response, target, policy, deadline)
 
     async def _store(
-        self, response: httpx.Response, target: httpx.URL, policy: DownloadPolicy
+        self, response: httpx.Response, target: httpx.URL, policy: DownloadPolicy, deadline: float
     ) -> DownloadedFile:
         media_type = response.headers.get("content-type", "").split(";")[0].strip().lower()
         if media_type not in policy.media_types:
             raise _blocked("media type")
-        declared = response.headers.get("content-length", "")
-        if declared.isdigit() and int(declared) > policy.max_bytes:
-            raise HttpError(ErrorCode.TOO_LARGE, status=response.status_code)
 
         tmp = self._data_dir / "tmp"
         await anyio.Path(tmp).mkdir(parents=True, exist_ok=True)
@@ -277,11 +302,14 @@ class Downloader:
         size = 0
         head = b""
         try:
-            async with await anyio.open_file(part, "xb") as out:
-                async for chunk in response.aiter_bytes():
+            async with (
+                await anyio.open_file(part, "xb") as out,
+                aclosing(capped_body(response, policy.max_bytes)) as body,
+            ):
+                async for chunk in body:
+                    if anyio.current_time() > deadline:
+                        raise HttpError(ErrorCode.UPSTREAM_TIMEOUT)
                     size += len(chunk)
-                    if size > policy.max_bytes:
-                        raise HttpError(ErrorCode.TOO_LARGE, status=response.status_code)
                     if len(head) < _HEAD_BYTES:
                         head += chunk[: _HEAD_BYTES - len(head)]
                     digest.update(chunk)

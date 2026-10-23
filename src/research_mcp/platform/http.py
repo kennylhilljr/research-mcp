@@ -17,9 +17,10 @@ import logging
 import math
 import random
 import time
-from collections.abc import Mapping
+import zlib
+from collections.abc import AsyncGenerator, Mapping
 from dataclasses import dataclass, field
-from datetime import datetime, timedelta
+from datetime import UTC, datetime, timedelta
 from email.utils import parsedate_to_datetime
 from types import TracebackType
 from typing import Protocol, cast
@@ -42,7 +43,12 @@ MAX_CONNECTIONS = 50
 MAX_CONNECTIONS_PER_HOST = 8
 RETRIED_5XX = frozenset({500, 502, 503, 504})
 CRED_EXPIRY_HEADER = "github-authentication-token-expiration"
+# The codings ``capped_body`` can inflate under a cap; nothing else is asked for.
+ACCEPT_ENCODING = "gzip, deflate"
 
+_WBITS = {"gzip": 16 + zlib.MAX_WBITS, "x-gzip": 16 + zlib.MAX_WBITS, "deflate": zlib.MAX_WBITS}
+# Longer waits are reported as one day; they fail at once either way (MAX_RETRY_AFTER_S).
+_MAX_WAIT_S = 86_400.0
 _DEFAULT_PORTS = {"http": 80, "https": 443}
 _log = logging.getLogger(__name__)
 
@@ -109,17 +115,23 @@ def _origin(url: httpx.URL) -> tuple[str, str, int | None]:
 
 
 def _retry_after_s(value: str | None, now: datetime) -> float | None:
-    """Seconds to wait from a ``Retry-After`` header (delta seconds or an HTTP date)."""
+    """Seconds to wait from a ``Retry-After`` header (delta seconds or an HTTP date).
+
+    The header comes from upstream, so any value it holds gives a number or ``None``.
+    """
     if value is None:
         return None
     value = value.strip()
     if value.isdigit():
-        return float(value)
+        return min(float(value), _MAX_WAIT_S)
     try:
         when = parsedate_to_datetime(value)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, IndexError, OverflowError):
         return None
-    return max(0.0, (when - now).total_seconds())
+    if when.tzinfo is None:
+        # A "-0000" zone parses to a naive datetime; RFC 5322 reads it as UTC.
+        when = when.replace(tzinfo=UTC)
+    return min(max(0.0, (when - now).total_seconds()), _MAX_WAIT_S)
 
 
 def _rl_remaining(headers: httpx.Headers) -> str | None:
@@ -130,8 +142,76 @@ def _rl_remaining(headers: httpx.Headers) -> str | None:
     return f"{left}/{limit}" if limit is not None else left
 
 
-class _TooLargeError(Exception):
-    pass
+class _Inflater:
+    """Undoes each ``Content-Encoding`` layer with every layer's output held to the cap."""
+
+    def __init__(self, content_encoding: str, cap: int, status: int) -> None:
+        names = [name.strip().lower() for name in content_encoding.split(",")]
+        names = [name for name in names if name and name != "identity"]
+        if any(name not in _WBITS for name in names):
+            raise HttpError(ErrorCode.UPSTREAM_ERROR, status=status, detail="content encoding")
+        # The encoding applied last is the first one to undo.
+        self._layers = [zlib.decompressobj(_WBITS[name]) for name in reversed(names)]
+        self._sizes = [0] * len(self._layers)
+        self._cap = cap
+        self._status = status
+
+    def feed(self, data: bytes) -> bytes:
+        for index in range(len(self._layers)):
+            data = self._step(index, data)
+        return data
+
+    def flush(self) -> bytes:
+        data = b""
+        for index, layer in enumerate(self._layers):
+            data = self._step(index, data)
+            data += self._count(index, layer.flush())
+        return data
+
+    def _step(self, index: int, data: bytes) -> bytes:
+        # max_length stops inflation one byte past the cap, so a bomb never grows further.
+        room = self._cap + 1 - self._sizes[index]
+        try:
+            out = self._layers[index].decompress(data, room)
+        except zlib.error:
+            raise HttpError(ErrorCode.UPSTREAM_ERROR, status=self._status) from None
+        return self._count(index, out)
+
+    def _count(self, index: int, out: bytes) -> bytes:
+        self._sizes[index] += len(out)
+        if self._sizes[index] > self._cap:
+            raise HttpError(ErrorCode.TOO_LARGE, status=self._status)
+        return out
+
+
+# @spec PLAT-38
+async def capped_body(response: httpx.Response, cap: int) -> AsyncGenerator[bytes]:
+    """The decoded body in chunks; ``too_large`` once the raw or decoded size passes ``cap``.
+
+    httpx's own decoders inflate a whole chunk at once, so a few hundred bytes of nested
+    gzip grow to gigabytes before a count of decoded chunks sees them. This reads the raw
+    bytes and inflates under ``_Inflater``; an encoding other than gzip or deflate fails
+    with ``upstream_error``.
+    """
+    status = response.status_code
+    declared = response.headers.get("content-length", "")
+    if declared.isdigit() and int(declared) > cap:
+        raise HttpError(ErrorCode.TOO_LARGE, status=status)
+    if response.is_stream_consumed:
+        # A transport that hands over a body already in memory (httpx.MockTransport) has
+        # had it decoded by httpx; a network transport never does.
+        if len(response.content) > cap:
+            raise HttpError(ErrorCode.TOO_LARGE, status=status)
+        yield response.content
+        return
+    inflater = _Inflater(response.headers.get("content-encoding", ""), cap, status)
+    raw = 0
+    async for chunk in response.aiter_raw():
+        raw += len(chunk)
+        if raw > cap:
+            raise HttpError(ErrorCode.TOO_LARGE, status=status)
+        yield inflater.feed(chunk)
+    yield inflater.flush()
 
 
 @dataclass
@@ -271,6 +351,7 @@ class HttpClient:
         public_url = str(target)
         send_headers = httpx.Headers(headers or {})
         send_headers["User-Agent"] = self._user_agent
+        send_headers["Accept-Encoding"] = ACCEPT_ENCODING
         target = self._attach(policy, source, target, send_headers, auth)
         request = self._client.build_request(
             method,
@@ -386,11 +467,11 @@ class HttpClient:
                 result.status = response.status_code
                 result.headers = response.headers
                 result.encoding = response.charset_encoding
-                result.content = await self._read_capped(response, cap)
+                result.content = b"".join([chunk async for chunk in capped_body(response, cap)])
             finally:
                 await response.aclose()
-        except _TooLargeError:
-            result.error = HttpError(ErrorCode.TOO_LARGE, status=result.status)
+        except HttpError as exc:
+            result.error = exc
         except httpx.TimeoutException as exc:
             result.error = HttpError(ErrorCode.UPSTREAM_TIMEOUT)
             result.exception = type(exc).__name__
@@ -402,20 +483,6 @@ class HttpClient:
             result.error = HttpError(ErrorCode.UPSTREAM_ERROR, status=result.status)
             result.exception = type(exc).__name__
         return result
-
-    @staticmethod
-    async def _read_capped(response: httpx.Response, cap: int) -> bytes:
-        declared = response.headers.get("content-length", "")
-        if declared.isdigit() and int(declared) > cap:
-            raise _TooLargeError
-        chunks: list[bytes] = []
-        total = 0
-        async for chunk in response.aiter_bytes():
-            total += len(chunk)
-            if total > cap:
-                raise _TooLargeError
-            chunks.append(chunk)
-        return b"".join(chunks)
 
     def _classify(self, policy: SourcePolicy, result: _Attempt, now: datetime) -> None:
         """Map a non-2xx status to a code, whether to retry and how long to wait (6.1)."""

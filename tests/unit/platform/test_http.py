@@ -6,9 +6,12 @@ wait goes through ``FakeSleeper``, so nothing touches the network or sleeps for 
 
 from __future__ import annotations
 
+import gzip
+import zlib
 from collections.abc import AsyncIterator, Callable
 from datetime import timedelta
 from email.utils import format_datetime
+from typing import Any
 
 import httpx
 import pytest
@@ -147,6 +150,18 @@ async def test_retry_after_as_http_date() -> None:
     harness = Harness(replies(httpx.Response(429, headers={"Retry-After": when}), ok()))
     await harness.client.get_json(URL, source="crossref")
     assert harness.sleeper.sleeps == [5.0]
+
+
+@pytest.mark.parametrize(
+    "value",
+    ["Sat, 01 Jan 2000 00:00:05 -0000", "9" * 400, "Mon, 99 Xyz 2000 99:99:99 GMT"],
+)
+async def test_hostile_retry_after_still_gives_rate_limited(value: str) -> None:
+    """@spec PLAT-35: an odd Retry-After (zone -0000, huge, malformed) still maps to a code."""
+    harness = Harness(replies(*[httpx.Response(429, headers={"Retry-After": value})] * 3))
+    error = await fails(harness)
+    assert error.code is ErrorCode.RATE_LIMITED
+    assert len(harness.sink.records) == len(harness.requests)
 
 
 async def test_long_retry_after_sets_rl_reset_on_the_record() -> None:
@@ -316,6 +331,92 @@ async def test_byte_cap_defaults_to_the_policy() -> None:
     harness = Harness(replies(ok('{"much": "longer than ten bytes"}')), small)
     error = await fails(harness)
     assert error.code is ErrorCode.TOO_LARGE
+
+
+def gzipped(body: bytes, layers: int = 1) -> bytes:
+    for _ in range(layers):
+        body = gzip.compress(body, compresslevel=9)
+    return body
+
+
+class Wire(httpx.AsyncByteStream):
+    """A body as a network transport hands it over: raw and not yet read.
+
+    ``httpx.Response(content=...)`` reads and decodes its body when it is built, which
+    would hide what the client does with an encoded body.
+    """
+
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield self.body
+
+
+def encoded(raw: bytes, encoding: str) -> httpx.Response:
+    return httpx.Response(200, stream=Wire(raw), headers={"Content-Encoding": encoding})
+
+
+class InflationMeter:
+    """Wraps ``zlib.decompressobj`` and keeps the largest output of any one call."""
+
+    def __init__(self, monkeypatch: pytest.MonkeyPatch) -> None:
+        self.largest = 0
+        real = zlib.decompressobj
+        meter = self
+
+        class Metered:
+            def __init__(self, *args: Any) -> None:
+                self._inner = real(*args)
+
+            def decompress(self, data: bytes, max_length: int = 0) -> bytes:
+                return meter.saw(self._inner.decompress(data, max_length))
+
+            def flush(self, *args: int) -> bytes:
+                return meter.saw(self._inner.flush(*args))
+
+            def __getattr__(self, name: str) -> Any:
+                return getattr(self._inner, name)
+
+        monkeypatch.setattr(zlib, "decompressobj", Metered)
+
+    def saw(self, out: bytes) -> bytes:
+        self.largest = max(self.largest, len(out))
+        return out
+
+
+async def test_byte_cap_counts_decoded_bytes_of_a_nested_gzip_bomb(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """@spec PLAT-38: a nested-gzip bomb fails too_large without inflating past the cap."""
+    bomb = gzipped(b"\0" * 64_000_000, layers=2)
+    assert len(bomb) < 2_000
+    harness = Harness(replies(encoded(bomb, "gzip, gzip")))
+    meter = InflationMeter(monkeypatch)
+    with pytest.raises(HttpError) as caught:
+        await harness.client.get_text(URL, source="crossref", max_bytes=1_000_000)
+    assert caught.value.code is ErrorCode.TOO_LARGE
+    assert 0 < meter.largest <= 1_000_001
+    assert harness.requests[0].headers["Accept-Encoding"] == "gzip, deflate"
+
+
+async def test_gzip_and_deflate_bodies_are_decoded_and_unknown_codings_refused() -> None:
+    """@spec PLAT-38: gzip and deflate bodies under the cap decode; other codings fail."""
+    body = b'{"ok": true}'
+    for encoding, raw in (
+        ("gzip", gzipped(body)),
+        ("gzip, gzip", gzipped(body, layers=2)),
+        ("deflate", zlib.compress(body)),
+        ("identity", body),
+    ):
+        harness = Harness(replies(encoded(raw, encoding)))
+        assert await harness.client.get_json(URL, source="crossref") == {"ok": True}, encoding
+
+    for encoding, raw in (("br", b"\x0b\x05\x80"), ("gzip", b"not gzip at all")):
+        harness = Harness(replies(encoded(raw, encoding)))
+        error = await fails(harness)
+        assert error.code is ErrorCode.UPSTREAM_ERROR, encoding
+        assert len(harness.requests) == 1
 
 
 # PLAT-39 and PLAT-11
