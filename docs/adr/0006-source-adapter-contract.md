@@ -1,6 +1,6 @@
 # ADR 0006: Every source is an adapter with a declarative SourceSpec
 
-- **Status:** Proposed (accepted when the owner approves PRD v1)
+- **Status:** Accepted (2026-10-22, with the owner's Gate 1 approval of [PRD-v7](../prd/PRD-v7.md))
 - **Date:** 2026-10-19
 
 ## Context

@@ -2,7 +2,9 @@
 title: "Migration and Cutover"
 type: prd-component
 version: 5
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: MIG
@@ -74,13 +76,13 @@ MIG-OUT-1 is carried over from the PRD-v4 M4 exit (owner decision, 2026-10-22). 
 
 > **Owner:** H · **Persona:** none
 
-Each bet restates a premise the sources already make (proposed for owner approval).
+Each bet restates a premise the sources already make.
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| No credential is re-entered: the `env` blocks of the v1 client entries hold every credential v2 needs, so the import can move them into the Keychain (MIGRATION-v2 1, principle 2; PRD-migration-v3 1) (proposed for owner approval) | MIG-1 and MIG-3 on fake configs; then owner check OC-06, where cutover step 3 shows each credential `ok` or `unknown_expiry` on the Credentials page (MIGRATION-v2 3) | M4 exit |
-| Rollback is one config change until v1 is retired, so the owner can switch with little risk (MIGRATION-v2 1, principle 4; ADR 0001 consequence "Rollback is re-enabling the v1 client entry") (proposed for owner approval) | Owner check OC-06 (test-plan-v2 3) | M4 exit |
-| v2 replaces v1 for daily work, and agents can move to it from the tool map without a fallback to v1 (MIG-OUT-1; MIGRATION-v2 4; PRD-v6 2.6 halt condition "a fallback to v1 during the 14-day window") (proposed for owner approval) | MIG-21 (the tool map covers all 53 v1 tools); owner check OC-07 (14 days on v2 with no fallback) | M4 exit |
+| No credential is re-entered: the `env` blocks of the v1 client entries hold every credential v2 needs, so the import can move them into the Keychain (MIGRATION-v2 1, principle 2; PRD-migration-v3 1) | MIG-1 and MIG-3 on fake configs; then owner check OC-06, where cutover step 3 shows each credential `ok` or `unknown_expiry` on the Credentials page (MIGRATION-v2 3) | M4 exit |
+| Rollback is one config change until v1 is retired, so the owner can switch with little risk (MIGRATION-v2 1, principle 4; ADR 0001 consequence "Rollback is re-enabling the v1 client entry") | Owner check OC-06 (test-plan-v2 3) | M4 exit |
+| v2 replaces v1 for daily work, and agents can move to it from the tool map without a fallback to v1 (MIG-OUT-1; MIGRATION-v2 4; PRD-v6 2.6 halt condition "a fallback to v1 during the 14-day window") | MIG-21 (the tool map covers all 53 v1 tools); owner check OC-07 (14 days on v2 with no fallback) | M4 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -113,7 +115,7 @@ The owner confirmed MIG-INV-1 to MIG-INV-3 as component invariants (owner decisi
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -131,7 +133,7 @@ The deep review of v1 ([REVIEW v1](../../../docs-archive/review/REVIEW-v1.md) an
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories rest on the owner's need in 1.2 (PRD-migration-v3 1; MIGRATION-v2 1) and on the parent user needs (PRD-v6 1.2). No requirement serves the ECC orchestrator, so it has no story.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories rest on the owner's need in 1.2 (PRD-migration-v3 1; MIGRATION-v2 1) and on the parent user needs (PRD-v6 1.2). No requirement serves the ECC orchestrator, so it has no story.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -262,8 +264,8 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner may fall back to v1 during the 14-day window, which halts the rollout (PRD-v6 2.6) and resets MIG-OUT-1 (proposed for owner approval). | A parallel period of 3 to 7 days with v1 still available (MIGRATION-v2 3, step 7); rollback by re-enabling v1 (MIG-FR-25); retirement only on the owner's go-ahead (MIG-FR-24) (proposed for owner approval). |
-| Usability | Can customers use it, including with accessibility needs? | The cutover is ten command-line steps (MIGRATION-v2 3), and agent instructions that name v1 tools stop working after cutover because v1 names are not kept (PRD-v6 1.3; MIGRATION-v2 4). The sources state no accessibility need (proposed for owner approval). | Dry runs for both imports (MIG-FR-4, MIG-FR-10); a runbook with a check per step (MIGRATION-v2 3); a tool map that covers all 53 v1 tools (MIG-21) (proposed for owner approval). |
+| Value | Will customers choose to use this? | The owner may fall back to v1 during the 14-day window, which halts the rollout (PRD-v6 2.6) and resets MIG-OUT-1. | A parallel period of 3 to 7 days with v1 still available (MIGRATION-v2 3, step 7); rollback by re-enabling v1 (MIG-FR-25); retirement only on the owner's go-ahead (MIG-FR-24). |
+| Usability | Can customers use it, including with accessibility needs? | The cutover is ten command-line steps (MIGRATION-v2 3), and agent instructions that name v1 tools stop working after cutover because v1 names are not kept (PRD-v6 1.3; MIGRATION-v2 4). The sources state no accessibility need. | Dry runs for both imports (MIG-FR-4, MIG-FR-10); a runbook with a check per step (MIGRATION-v2 3); a tool map that covers all 53 v1 tools (MIG-21). |
 | Viability | Does it work for the business: economics, legal, compliance, operations? | Two server processes may run side by side during the parallel period, and v2's global rate limits do not cover v1's calls (ADR 0001). | The parallel period should be short (ADR 0001). |
 
 ## 2.9 Rollout risk tolerance and support
@@ -360,7 +362,7 @@ New IDs and editorial changes in this version; these rows are not definitions.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 
@@ -403,4 +405,4 @@ New IDs and editorial changes in this version; these rows are not definitions.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |

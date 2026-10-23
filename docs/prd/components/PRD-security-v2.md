@@ -2,7 +2,9 @@
 title: "Security"
 type: prd-component
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: SEC
@@ -76,9 +78,9 @@ Drafted from the sources by the product writer (owner decision, 2026-10-22, to d
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Keychain items written by `/usr/bin/security` trust that binary, so the daemon reads every item without a prompt, even after Python upgrades (SPEC-v2 3.1; LLD-security-v1 4.1). (proposed for owner approval) | Owner check OC-02 (the daemon reads every Keychain item with no prompt) and SEC-2 | M0 exit |
-| The masking of registered secret values plus the credential patterns of PLAT-FR-13 cover every credential format in use, closing the v1 leaks through URLs and exception text (PLAT-FR-13; REVIEW-v1 2.4, finding 7). (proposed for owner approval) | SEC-6 and the SEC-7 property test at M0; the OUT-7 measure (secret-leak tests cover every error path) | M0 exit for SEC-6 and SEC-7; M2 exit for OUT-7 |
-| Taking SQL, hard delete and caller-chosen paths off the tool surface, and labeling fetched text untrusted, is enough to stop a prompt-injected model from reading local files or deleting data (HLD-v3 9 threat model; ADR 0009). (proposed for owner approval) | SEC-20, SEC-21, SEC-22, SEC-25 and CACHE-11 | M2 exit |
+| Keychain items written by `/usr/bin/security` trust that binary, so the daemon reads every item without a prompt, even after Python upgrades (SPEC-v2 3.1; LLD-security-v1 4.1). | Owner check OC-02 (the daemon reads every Keychain item with no prompt) and SEC-2 | M0 exit |
+| The masking of registered secret values plus the credential patterns of PLAT-FR-13 cover every credential format in use, closing the v1 leaks through URLs and exception text (PLAT-FR-13; REVIEW-v1 2.4, finding 7). | SEC-6 and the SEC-7 property test at M0; the OUT-7 measure (secret-leak tests cover every error path) | M0 exit for SEC-6 and SEC-7; M2 exit for OUT-7 |
+| Taking SQL, hard delete and caller-chosen paths off the tool surface, and labeling fetched text untrusted, is enough to stop a prompt-injected model from reading local files or deleting data (HLD-v3 9 threat model; ADR 0009). | SEC-20, SEC-21, SEC-22, SEC-25 and CACHE-11 | M2 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -124,7 +126,7 @@ Each row restates a "never" or "no" statement a source already makes. The owner 
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -246,8 +248,8 @@ Kenny Hill owns every integration. None has an SLA; upstream services are best e
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner asked for these controls: they answer problem 5 of PRD-v6 1.1 and findings 1, 7 and 8 of REVIEW-v1. The value risk is a breach that leaves v2 no safer than v1; any secret in an output halts the rollout (PRD-v6 2.6). (proposed for owner approval) | The OUT-7 suite stays green at every milestone exit (PRD-v6 1.4), and every invariant in 1.6 has a P1 criterion. (proposed for owner approval) |
-| Usability | Can customers use it, including with accessibility needs? | A locked or unreadable Keychain, for example right after login, could stop the sources that need a key (PRD-v6 2.10). (proposed for owner approval) | Reads go through `/usr/bin/security` with a timeout; a locked Keychain is one `keychain_locked` state and one notification, not a notice per key; `doctor` gives the fix (PRD-v6 2.10). SEC-2 and owner check OC-02 check it. (proposed for owner approval) |
+| Value | Will customers choose to use this? | The owner asked for these controls: they answer problem 5 of PRD-v6 1.1 and findings 1, 7 and 8 of REVIEW-v1. The value risk is a breach that leaves v2 no safer than v1; any secret in an output halts the rollout (PRD-v6 2.6). | The OUT-7 suite stays green at every milestone exit (PRD-v6 1.4), and every invariant in 1.6 has a P1 criterion. |
+| Usability | Can customers use it, including with accessibility needs? | A locked or unreadable Keychain, for example right after login, could stop the sources that need a key (PRD-v6 2.10). | Reads go through `/usr/bin/security` with a timeout; a locked Keychain is one `keychain_locked` state and one notification, not a notice per key; `doctor` gives the fix (PRD-v6 2.10). SEC-2 and owner check OC-02 check it. |
 | Viability | Does it work for the business: economics, legal, compliance, operations? | Not stated | Not stated |
 
 ## 2.9 Rollout risk tolerance and support
@@ -333,7 +335,7 @@ The IDs added in version 2, and editorial changes that keep their ID; these rows
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

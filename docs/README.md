@@ -50,15 +50,15 @@ From [scope/scope-map.yaml](scope/scope-map.yaml).
 | Artifact type | Latest document | Version | Status | Scope | Derives from | Owner |
 | --- | --- | --- | --- | --- | --- | --- |
 | Vision and direction | [Research MCP v2 vision](vision/vision-v2.md) | v2 | approved | `research-mcp` | docs-archive/prd/PRD-v4.md | Kenny Hill |
-| Product specification (parent PRD) | [Research MCP v2: one tool, many sources](prd/PRD-v7.md) | v7 | draft | `research-mcp` | docs-archive/prd/PRD-v4.md | Kenny Hill |
-| Product specification (component PRD) | [Retrieval and Cache](prd/components/PRD-cache-v4.md) | v4 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Health, Credentials and Notifications](prd/components/PRD-health-v4.md) | v4 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Migration and Cutover](prd/components/PRD-migration-v5.md) | v5 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Platform and Security](prd/components/PRD-platform-v4.md) | v4 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Search and Identity](prd/components/PRD-search-v3.md) | v3 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Security](prd/components/PRD-security-v2.md) | v2 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Sources](prd/components/PRD-sources-v5.md) | v5 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
-| Product specification (component PRD) | [Local UI](prd/components/PRD-ui-v4.md) | v4 | draft | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (parent PRD) | [Research MCP v2: one tool, many sources](prd/PRD-v7.md) | v7 | approved | `research-mcp` | docs-archive/prd/PRD-v4.md | Kenny Hill |
+| Product specification (component PRD) | [Retrieval and Cache](prd/components/PRD-cache-v4.md) | v4 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Health, Credentials and Notifications](prd/components/PRD-health-v4.md) | v4 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Migration and Cutover](prd/components/PRD-migration-v5.md) | v5 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Platform and Security](prd/components/PRD-platform-v4.md) | v4 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Search and Identity](prd/components/PRD-search-v3.md) | v3 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Security](prd/components/PRD-security-v2.md) | v2 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Sources](prd/components/PRD-sources-v5.md) | v5 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
+| Product specification (component PRD) | [Local UI](prd/components/PRD-ui-v4.md) | v4 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
 | High level design (SPEC) | [Research MCP v2 system design](spec/SPEC-v3.md) | v3 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Retrieval and Cache low level design](lld/LLD-cache-v1.md) | v1 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Health, Credentials and Notifications low level design](lld/LLD-health-v1.md) | v1 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
@@ -72,7 +72,7 @@ From [scope/scope-map.yaml](scope/scope-map.yaml).
 | Plan | [M0 plan: foundations and three sources](build/M0-plan-v1.md) | v1 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Operations | [Cutover from v1 to v2](runbooks/migration-cutover-v1.md) | v1 | draft | `research-mcp` | docs-archive/migration/MIGRATION-v2.md | Kenny Hill |
 | Standard | [Persona standard](standards/agent-personas-v2.md) | v2 | draft |  |  | Framework owner |
-| Standard | [Spec-driven development standard](standards/spec-driven-development-v2.md) | v2 | in-review |  |  | Framework owner |
+| Standard | [Spec-driven development standard](standards/spec-driven-development-v3.md) | v3 | in-review |  |  | Framework owner |
 | contract | [MCP prompt texts](contracts/prompts-v3.md) | v3 | draft | `research-mcp` |  | Kenny Hill |
 | Decision (ADR) | [0001-new-repo-v1-read-only.md](adr/0001-new-repo-v1-read-only.md) | 0001 | ? | `research-mcp` | |  |
 | Decision (ADR) | [0002-one-daemon-with-stdio-shims.md](adr/0002-one-daemon-with-stdio-shims.md) | 0002 | ? | `research-mcp` | |  |

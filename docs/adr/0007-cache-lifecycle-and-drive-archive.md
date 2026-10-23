@@ -1,6 +1,6 @@
 # ADR 0007: 30-day cache with owner review; archive to the Google Drive sync folder
 
-- **Status:** Proposed; amended by [ADR 0011](0011-archive-keeps-text-searchable-120-day-retention.md) (120-day retention; archived papers keep their searchable text)
+- **Status:** Accepted (2026-10-22, with the owner's Gate 1 approval of [PRD-v7](../prd/PRD-v7.md)); amended by [ADR 0011](0011-archive-keeps-text-searchable-120-day-retention.md) (120-day retention; archived papers keep their searchable text)
 - **Date:** 2026-10-19
 
 ## Context

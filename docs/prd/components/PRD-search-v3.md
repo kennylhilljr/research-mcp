@@ -2,7 +2,9 @@
 title: "Search and Identity"
 type: prd-component
 version: 3
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: SRCH
@@ -81,9 +83,9 @@ Drafted by the product writer from the sources, each marked for the owner's appr
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| One merged call is what makes the reach usable: an agent answers a cross-source question in 1 to 3 tool calls instead of 10 to 20 (D1; PRD-v6 1.1, problem 1; OUT-2) (proposed for owner approval) | The OUT-2 tool-call measure in the parent 30-day review (PRD-v6 1.4) | M4 exit, measured 30 days after cutover (PRD-v6 1.4) (proposed for owner approval) |
-| A five-source search can return within the 8 s deadline even though the project does not control upstream latency (OUT-2; test plan 5, risk 3) (proposed for owner approval) | Owner check OC-12: five-source live search p95 under 8 s over 20 runs | M1 exit (PRD-v6 1.4) (proposed for owner approval) |
-| Consistent identifier normalization is enough to remove most duplicates, since the v1 duplicates came from inconsistent identifier handling; the fuzzy merge is only a fallback (REVIEW-v1 3, finding 4) (proposed for owner approval) | Criteria SRCH-4 and SRCH-10 to SRCH-15 pass | M0 exit (proposed for owner approval) |
+| One merged call is what makes the reach usable: an agent answers a cross-source question in 1 to 3 tool calls instead of 10 to 20 (D1; PRD-v6 1.1, problem 1; OUT-2) | The OUT-2 tool-call measure in the parent 30-day review (PRD-v6 1.4) | M4 exit, measured 30 days after cutover (PRD-v6 1.4) |
+| A five-source search can return within the 8 s deadline even though the project does not control upstream latency (OUT-2; test plan 5, risk 3) | Owner check OC-12: five-source live search p95 under 8 s over 20 runs | M1 exit (PRD-v6 1.4) |
+| Consistent identifier normalization is enough to remove most duplicates, since the v1 duplicates came from inconsistent identifier handling; the fuzzy merge is only a fallback (REVIEW-v1 3, finding 4) | Criteria SRCH-4 and SRCH-10 to SRCH-15 pass | M0 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -116,7 +118,7 @@ The owner confirmed the drafted "never" rules as component invariants (owner dec
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -130,7 +132,7 @@ No research notes exist in `docs/research/` for this component. The evidence com
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and section 1.2 of this PRD. No requirement of this component serves the ECC orchestrator, so it has no story.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and section 1.2 of this PRD. No requirement of this component serves the ECC orchestrator, so it has no story.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -263,8 +265,8 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | Upstream APIs change faster than one person can follow (PRD-v6 2.10), and three default sources are degraded today (PRD-v6 1.1). If sources drop out silently, the merged list loses the reach that is the server's value (D1) (proposed for owner approval) | Every result reports each source's status and a failing source never fails the search (SRCH-FR-27, SRCH-INV-1); `auto` skips unhealthy sources and says so (SRCH-FR-8); probes and recorded fixtures make breakage visible (PRD-v6 2.10) (proposed for owner approval) |
-| Usability | Can customers use it, including with accessibility needs? | v1 makes an agent juggle different argument names and result shapes across 53 tools, and repeats the same paper (PRD-v6 1.1, problem 1). A merged result that is too large or loosely shaped would be just as hard for an agent to use (proposed for owner approval) | One tool contract with an output schema (SRCH-20); bounded results with a combined cursor (NFR-5; SRCH-FR-6); `compact` detail by default (SRCH-FR-7); bad arguments rejected before any source is called (SRCH-21). The owner's direct surface is the local UI, whose usability is in [PRD-ui-v4](PRD-ui-v4.md) (proposed for owner approval) |
+| Value | Will customers choose to use this? | Upstream APIs change faster than one person can follow (PRD-v6 2.10), and three default sources are degraded today (PRD-v6 1.1). If sources drop out silently, the merged list loses the reach that is the server's value (D1) | Every result reports each source's status and a failing source never fails the search (SRCH-FR-27, SRCH-INV-1); `auto` skips unhealthy sources and says so (SRCH-FR-8); probes and recorded fixtures make breakage visible (PRD-v6 2.10) |
+| Usability | Can customers use it, including with accessibility needs? | v1 makes an agent juggle different argument names and result shapes across 53 tools, and repeats the same paper (PRD-v6 1.1, problem 1). A merged result that is too large or loosely shaped would be just as hard for an agent to use | One tool contract with an output schema (SRCH-20); bounded results with a combined cursor (NFR-5; SRCH-FR-6); `compact` detail by default (SRCH-FR-7); bad arguments rejected before any source is called (SRCH-21). The owner's direct surface is the local UI, whose usability is in [PRD-ui-v4](PRD-ui-v4.md) |
 | Viability | Does it work for the business: economics, legal, compliance, operations? | Metered sources (OpenAlex budget, web-search providers) can run out mid-task or cost more than expected (PRD-v4 risks) | Federation skips exhausted sources and says so; web-search sources are off until configured, capped per day, and never in the default fan-out (PRD-v4 risks) |
 
 ## 2.9 Rollout risk tolerance and support
@@ -285,7 +287,7 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 | Outcome | Measured by | Experiment (if any) |
 | --- | --- | --- |
 | OUT-2 (parent), latency | Owner check OC-12: five-source live search p95 under 8 s over 20 runs ([test plan](../../test/test-plan-v2.md) 3), at the M1 exit (PRD-v6 1.4) | None |
-| OUT-2 (parent), tool calls | Tool calls per cross-source question in the parent 30-day review after cutover (PRD-v6 1.4) (proposed for owner approval) | None |
+| OUT-2 (parent), tool calls | Tool calls per cross-source question in the parent 30-day review after cutover (PRD-v6 1.4) | None |
 
 ## 2.11 Definition of done
 
@@ -366,13 +368,13 @@ Changes in version 3 that keep their ID, and IDs added in version 3. The first c
 | SRCH-INV-1 | Added: a failing source never fails the search (from SRCH-FR-27) | 2026-10-22 | Owner decision, 2026-10-22 |
 | SRCH-INV-2 | Added: identity is never derived from a file name (from SRCH-FR-13) | 2026-10-22 | Owner decision, 2026-10-22 |
 | SRCH-INV-3 | Added: unknown citation styles and formats are never silently replaced (from SRCH-FR-22) | 2026-10-22 | Owner decision, 2026-10-22 |
-| SRCH-US-1 to SRCH-US-6 | Added: user stories drafted for owner approval | 2026-10-22 | Owner decision, 2026-10-22 |
+| SRCH-US-1 to SRCH-US-6 | Added: user stories drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 | 2026-10-22 | Owner decision, 2026-10-22 |
 
 ### Gate 1: Requirements approved
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 
@@ -435,4 +437,4 @@ Changes in version 3 that keep their ID, and IDs added in version 3. The first c
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |

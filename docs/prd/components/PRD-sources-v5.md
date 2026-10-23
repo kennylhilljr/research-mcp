@@ -2,7 +2,9 @@
 title: "Sources"
 type: prd-component
 version: 5
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: SRC
@@ -136,13 +138,13 @@ SRC-OUT-2 holds as written: a new source's Keychain name lives in its `SourceSpe
 
 > **Owner:** H · **Persona:** none
 
-Drafted by the product writer from the sources; each bet is proposed for owner approval (owner decision, 2026-10-22, to draft them).
+Drafted by the product writer from the sources; each bet was approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them).
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Every catalog source fits one adapter contract with a declarative `SourceSpec`; only unusual upstreams (upstream MCP servers, crawled docs sites) need small base classes of their own (ADR 0006 decision and consequences) (proposed for owner approval) | SRC-20 (conformance passes for every M1 adapter), with SRC-21, SRC-22 and SRC-23 for the instance, upstream MCP and docs-site kinds | M1 exit |
-| Adding a source is one module and one fixtures folder, and an agent can add a new free source in one work unit (ADR 0006 consequence; PRD-v6 OUT-3) (proposed for owner approval) | Owner check OC-11 (test plan section 3); the OUT-3 30-day measure confirms it afterward | M1 exit |
-| The metered web-search sources stay affordable when they are off until configured, capped per day, outside the default fan-out and called in fallback order (ADR 0012 decision 4; PRD-v6 2.10, metered spend risk) (proposed for owner approval) | SRC-28 (never in auto selection), SRC-29 (daily cap) and SRC-30 (one paid query per page under `fallback`) | M1 exit |
+| Every catalog source fits one adapter contract with a declarative `SourceSpec`; only unusual upstreams (upstream MCP servers, crawled docs sites) need small base classes of their own (ADR 0006 decision and consequences) | SRC-20 (conformance passes for every M1 adapter), with SRC-21, SRC-22 and SRC-23 for the instance, upstream MCP and docs-site kinds | M1 exit |
+| Adding a source is one module and one fixtures folder, and an agent can add a new free source in one work unit (ADR 0006 consequence; PRD-v6 OUT-3) | Owner check OC-11 (test plan section 3); the OUT-3 30-day measure confirms it afterward | M1 exit |
+| The metered web-search sources stay affordable when they are off until configured, capped per day, outside the default fan-out and called in fallback order (ADR 0012 decision 4; PRD-v6 2.10, metered spend risk) | SRC-28 (never in auto selection), SRC-29 (daily cap) and SRC-30 (one paid query per page under `fallback`) | M1 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -184,7 +186,7 @@ The owner confirmed SRC-INV-1 to SRC-INV-6 as the invariants of this component (
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -204,7 +206,7 @@ No documents in `docs/research/` cover this component yet.
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). A story is P1 when a Must (P1) requirement serves it, otherwise P2.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). A story is P1 when a Must (P1) requirement serves it, otherwise P2.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -343,11 +345,11 @@ Kenny Hill owns every integration. No integration has an SLA: upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner is the only user and asked for horizontal reach (D1); the risk is sources that are added but not cheap to keep healthy, so breadth decays (D1; PRD-v6 2.10, upstream change) (proposed for owner approval) | Every source ships fixtures and a probe (2.11); any source can be disabled without a code change (SRC-FR-5); OUT-1 is measured again 30 days after cutover (PRD-v6 1.4) (proposed for owner approval) |
-| Usability | Can customers use it, including with accessibility needs? | The risk is that a missing key, extra or contact address fails silently, as breakage and credentials did in v1 (PRD-v6 1.1, items 2 and 3) (proposed for owner approval) | `unconfigured` with the exact fix (SRC-FR-6, SRC-FR-7, SRC-FR-24; SRC-8); skipped sources report their status (SRC-FR-5). UI accessibility belongs to the UI component (PRD-ui-v4) (proposed for owner approval) |
-| Viability | Does it work for the business: economics, legal, compliance, operations? | Economics is the metered spend risk and operations the upstream change risk below; upstream terms are respected (NFR-8) (proposed for owner approval) | As in the two rows below; NFR-8 and SRC-10 for upstream terms (proposed for owner approval) |
-| Upstream change (PRD-v4 12) | Upstream APIs change faster than one person can follow. | As in the parent risk table (PRD-v6 2.10); no component assessment added (proposed for owner approval) | Probes check response shape, not just status; recorded fixtures make breakage visible in tests; each source can be disabled with a flag (PRD-v4 12) |
-| Metered spend (PRD-v4 12) | Metered sources (OpenAlex budget, web-search providers) run out mid-task or cost more than expected. | As in the parent risk table (PRD-v6 2.10); no component assessment added (proposed for owner approval) | Budget tracking with `quota_low`, `rate_limited` and `budget_exhausted` states; federation skips exhausted sources and says so; web-search sources are off until configured, capped per day, and never in the default fan-out (PRD-v4 12) |
+| Value | Will customers choose to use this? | The owner is the only user and asked for horizontal reach (D1); the risk is sources that are added but not cheap to keep healthy, so breadth decays (D1; PRD-v6 2.10, upstream change) | Every source ships fixtures and a probe (2.11); any source can be disabled without a code change (SRC-FR-5); OUT-1 is measured again 30 days after cutover (PRD-v6 1.4) |
+| Usability | Can customers use it, including with accessibility needs? | The risk is that a missing key, extra or contact address fails silently, as breakage and credentials did in v1 (PRD-v6 1.1, items 2 and 3) | `unconfigured` with the exact fix (SRC-FR-6, SRC-FR-7, SRC-FR-24; SRC-8); skipped sources report their status (SRC-FR-5). UI accessibility belongs to the UI component (PRD-ui-v4) |
+| Viability | Does it work for the business: economics, legal, compliance, operations? | Economics is the metered spend risk and operations the upstream change risk below; upstream terms are respected (NFR-8) | As in the two rows below; NFR-8 and SRC-10 for upstream terms |
+| Upstream change (PRD-v4 12) | Upstream APIs change faster than one person can follow. | As in the parent risk table (PRD-v6 2.10); no component assessment added | Probes check response shape, not just status; recorded fixtures make breakage visible in tests; each source can be disabled with a flag (PRD-v4 12) |
+| Metered spend (PRD-v4 12) | Metered sources (OpenAlex budget, web-search providers) run out mid-task or cost more than expected. | As in the parent risk table (PRD-v6 2.10); no component assessment added | Budget tracking with `quota_low`, `rate_limited` and `budget_exhausted` states; federation skips exhausted sources and says so; web-search sources are off until configured, capped per day, and never in the default fan-out (PRD-v4 12) |
 
 ## 2.9 Rollout risk tolerance and support
 
@@ -452,14 +454,14 @@ Three requirements left this PRD in this version: each was superseded by a new I
 | SRC-FR-26 | New: replaces SRC-FR-16; the new-source checklist (SPEC-v2 5.4) without its step 5 is the definition of done | 2026-10-22 | owner decision, 2026-10-22 |
 | SRC-20 | Requirement column cites SRC-FR-26 instead of SRC-FR-16; wording unchanged | 2026-10-22 | owner decision, 2026-10-22 |
 | SRC-FR-1 to SRC-FR-23 (except the superseded SRC-FR-11, SRC-FR-13 and SRC-FR-16) | Story column filled with one story ID each | 2026-10-22 | owner decision, 2026-10-22 |
-| SRC-US-1 to SRC-US-6 | New stories, drafted for owner approval | 2026-10-22 | owner decision, 2026-10-22 |
+| SRC-US-1 to SRC-US-6 | New stories, drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 | 2026-10-22 | owner decision, 2026-10-22 |
 | SRC-INV-1 to SRC-INV-6 | Confirmed as component invariants; each names its verifying P1 criterion (SRC-INV-6 now cites SEC-8 instead of SRC-33, and is marked as the same rule as SEC-INV-5) | 2026-10-22 | owner decision, 2026-10-22 |
 
 ### Gate 1: Requirements approved
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

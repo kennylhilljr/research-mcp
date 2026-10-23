@@ -2,7 +2,9 @@
 title: "Platform and Security"
 type: prd-component
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: PLAT
@@ -86,9 +88,9 @@ Drafted from the sources by the product writer (owner decision, 2026-10-22, to d
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| One daemon behind a stdio shim serves every MCP client the owner uses, even though the shim is a second moving part to manage (ADR 0002 consequences). (proposed for owner approval) | PLAT-72 and PLAT-77 pass, then owner check OC-01 on the Mac: a client searches three sources through the shim | M0 exit |
-| The daemon reads every Keychain item unattended, with no prompt, because items written by `/usr/bin/security` trust that binary (ADR 0003 consequences); a locked Keychain is the stated risk (PRD-v6 2.10). (proposed for owner approval) | Owner check OC-02 on the Mac; SEC-2 for the `keychain_locked` mapping | M0 exit |
-| The modular core lets an agent add a source with one adapter file and one fixtures folder (OUT-3; ADR 0004). (proposed for owner approval) | Owner check OC-11, then the OUT-3 measure 30 days after cutover | M1 exit |
+| One daemon behind a stdio shim serves every MCP client the owner uses, even though the shim is a second moving part to manage (ADR 0002 consequences). | PLAT-72 and PLAT-77 pass, then owner check OC-01 on the Mac: a client searches three sources through the shim | M0 exit |
+| The daemon reads every Keychain item unattended, with no prompt, because items written by `/usr/bin/security` trust that binary (ADR 0003 consequences); a locked Keychain is the stated risk (PRD-v6 2.10). | Owner check OC-02 on the Mac; SEC-2 for the `keychain_locked` mapping | M0 exit |
+| The modular core lets an agent add a source with one adapter file and one fixtures folder (OUT-3; ADR 0004). | Owner check OC-11, then the OUT-3 measure 30 days after cutover | M1 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -126,7 +128,7 @@ This component defines no invariant of its own: the Security component owns the 
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -151,7 +153,7 @@ No separate research note exists in `docs/research/`.
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and in 1.2 above. Priority is P1 when a P1 requirement serves the story.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and in 1.2 above. Priority is P1 when a P1 requirement serves the story.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -343,8 +345,8 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner gets the platform's value only through the other components, and its stated cost is a second moving part (the shim) and a background service to manage (ADR 0002 consequences). (proposed for owner approval) | `doctor` and a 15-minute launchd watchdog cover both (ADR 0002); a fallback to v1 during the 14-day window halts the rollout (PRD-v6 2.6). |
-| Usability | Can customers use it, including with accessibility needs? | The owner sets up keys in the Keychain and clients from the CLI; a Keychain that is locked or prompts would block use (ADR 0003; PRD-v6 2.10). The platform has no pages of its own; UI accessibility belongs to the UI component. (proposed for owner approval) | Install prints client snippets with no secrets (PLAT-FR-54); rotation is "update the Keychain item, press Reload" with no restart (ADR 0003); `doctor` gives the fix for a locked Keychain (PRD-v6 2.10). |
+| Value | Will customers choose to use this? | The owner gets the platform's value only through the other components, and its stated cost is a second moving part (the shim) and a background service to manage (ADR 0002 consequences). | `doctor` and a 15-minute launchd watchdog cover both (ADR 0002); a fallback to v1 during the 14-day window halts the rollout (PRD-v6 2.6). |
+| Usability | Can customers use it, including with accessibility needs? | The owner sets up keys in the Keychain and clients from the CLI; a Keychain that is locked or prompts would block use (ADR 0003; PRD-v6 2.10). The platform has no pages of its own; UI accessibility belongs to the UI component. | Install prints client snippets with no secrets (PLAT-FR-54); rotation is "update the Keychain item, press Reload" with no restart (ADR 0003); `doctor` gives the fix for a locked Keychain (PRD-v6 2.10). |
 | Viability | Does it work for the business: economics, legal, compliance, operations? | Operations: the Keychain may be locked or unreadable, for example right after login (PRD-v4 12). | Reads go through `/usr/bin/security` with a timeout; a locked Keychain is one `keychain_locked` state and one notification, not a notice per key; `doctor` gives the fix (PRD-v4 12). |
 
 ## 2.9 Rollout risk tolerance and support
@@ -454,7 +456,7 @@ Changes in version 4. Editorial changes keep their ID; new IDs are listed once.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

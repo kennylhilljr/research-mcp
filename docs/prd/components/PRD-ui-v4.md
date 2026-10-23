@@ -2,7 +2,9 @@
 title: "Local UI"
 type: prd-component
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: UI
@@ -73,9 +75,9 @@ The parent outcomes OUT-1 to OUT-8 and NFR-1 to NFR-12 suffice; no other compone
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Interactivity limited to what htmx does well is enough, because the UI is a read-mostly status page (ADR 0010, consequences) (proposed for owner approval) | OC-05, the owner walkthrough of every UI page (test-plan-v2 3), with UI-5 and UI-10 to UI-19 passing | M3 exit |
-| Review fatigue stays low: batching and the keep default let the owner answer the archive-or-discard review on one page (ADR 0007, "review fatigue is possible"; amended by ADR 0011) (proposed for owner approval) | UI-15 (per-item and bulk decisions with one summary confirmation) and UI-21 (unanswered items stay listed with their times asked), then OC-05 | M3 exit |
-| Pages can read the same services the MCP tools use, so the UI needs no second API (ADR 0010, consequences; HLD-v3 8) (proposed for owner approval) | UI-10 to UI-19 passing against the daemon's services, with UI-OUT-1 measured as in 2.10 | M3 exit |
+| Interactivity limited to what htmx does well is enough, because the UI is a read-mostly status page (ADR 0010, consequences) | OC-05, the owner walkthrough of every UI page (test-plan-v2 3), with UI-5 and UI-10 to UI-19 passing | M3 exit |
+| Review fatigue stays low: batching and the keep default let the owner answer the archive-or-discard review on one page (ADR 0007, "review fatigue is possible"; amended by ADR 0011) | UI-15 (per-item and bulk decisions with one summary confirmation) and UI-21 (unanswered items stay listed with their times asked), then OC-05 | M3 exit |
+| Pages can read the same services the MCP tools use, so the UI needs no second API (ADR 0010, consequences; HLD-v3 8) | UI-10 to UI-19 passing against the daemon's services, with UI-OUT-1 measured as in 2.10 | M3 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -113,7 +115,7 @@ The owner confirmed these "never" rules as component invariants (owner decision,
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -127,7 +129,7 @@ The v1 deep review (REVIEW-v1, 2026-10-19) found that nothing in v1 is monitored
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories come from the user needs in PRD-v6 1.2 and in 1.2 above.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories come from the user needs in PRD-v6 1.2 and in 1.2 above.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -254,9 +256,9 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner asked for the UI (D6), and the review and credential flows send him to it (SPEC-v3 11.3, 11.4); without it, breakage stays silent as in v1 (PRD-v6 1.1, item 2) (proposed for owner approval) | Notifications open the matching page (HLTH-FR-32; OC-03); the owner walks every page at M3 (OC-05) |
-| Usability | Can customers use it, including with accessibility needs? | Review fatigue is possible (ADR 0007, amended by ADR 0011); interactivity is limited to what htmx does well (ADR 0010). The sources state no accessibility need for the one user (proposed for owner approval) | Batching and the keep default (ADR 0007, amended by ADR 0011); bulk decisions with one summary confirmation (UI-FR-15, UI-15); Safari and Chrome at laptop width (UI-FR-6) |
-| Viability | Does it work for the business: economics, legal, compliance, operations? | Operations: the Keychain may be locked right after login, and the Drive sync folder may be unavailable or not uploading (PRD-v6 2.10) (proposed for owner approval) | One `keychain_locked` state on the pages that read credentials (UI-23); archive target health and upload state on the Archive page (UI-FR-16, UI-16) |
+| Value | Will customers choose to use this? | The owner asked for the UI (D6), and the review and credential flows send him to it (SPEC-v3 11.3, 11.4); without it, breakage stays silent as in v1 (PRD-v6 1.1, item 2) | Notifications open the matching page (HLTH-FR-32; OC-03); the owner walks every page at M3 (OC-05) |
+| Usability | Can customers use it, including with accessibility needs? | Review fatigue is possible (ADR 0007, amended by ADR 0011); interactivity is limited to what htmx does well (ADR 0010). The sources state no accessibility need for the one user | Batching and the keep default (ADR 0007, amended by ADR 0011); bulk decisions with one summary confirmation (UI-FR-15, UI-15); Safari and Chrome at laptop width (UI-FR-6) |
+| Viability | Does it work for the business: economics, legal, compliance, operations? | Operations: the Keychain may be locked right after login, and the Drive sync folder may be unavailable or not uploading (PRD-v6 2.10) | One `keychain_locked` state on the pages that read credentials (UI-23); archive target health and upload state on the Archive page (UI-FR-16, UI-16) |
 
 ## 2.9 Rollout risk tolerance and support
 
@@ -345,13 +347,13 @@ Changes and new IDs in version 4. Editorial changes keep their ID; new IDs are l
 | UI-22 | New: a notification from the built-in fallback shows in the page banner | 2026-10-22 | owner decision, 2026-10-22 |
 | UI-23 | New: a locked Keychain shows one `keychain_locked` state on the Credentials and Settings pages | 2026-10-22 | owner decision, 2026-10-22 |
 | UI-24 | New: job retry resubmits through `JobService.submit` | 2026-10-22 | owner decision, 2026-10-22 |
-| UI-US-1 to UI-US-6 | New: stories drafted for owner approval | 2026-10-22 | owner decision, 2026-10-22 |
+| UI-US-1 to UI-US-6 | New: stories drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 | 2026-10-22 | owner decision, 2026-10-22 |
 
 ### Gate 1: Requirements approved
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

@@ -2,7 +2,9 @@
 title: "Health, Credentials and Notifications"
 type: prd-component
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: HLTH
@@ -83,9 +85,9 @@ Drafted from bets and risks the sources already state (owner decision, 2026-10-2
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Probes that check the response shape, not only the status, notice upstream drift before an agent hits it. The sources state the risk: upstream APIs change faster than one person can follow (PRD-v6 2.10), and three sources degraded unnoticed in v1 (PRD-v6 1.1). (proposed for owner approval) | HLTH-3 and HLTH-2 pass; afterward the 30-day metric HLTH-OUT-6 (PRD-v6 OUT-4) | M1 exit |
-| Providers expose enough expiry and validity signals (expiry headers, free account or rate-limit endpoints, the Google token refresh), and `rotate_by` covers keys that never expire, so no credential expires without a notice. The sources state the target of 0 expired without a prior notice (PRD-v6 OUT-5) and the fallback for keys with no expiry (HLTH-FR-21, HLTH-FR-22). (proposed for owner approval) | HLTH-21, HLTH-22, HLTH-24 and HLTH-25 pass; afterward the 30-day metric HLTH-OUT-7 (PRD-v6 OUT-5) | M1 exit |
-| The daemon can read the Keychain, and a locked or unreadable Keychain shows as one state and one notification, not a notice per key. The sources state the risk: the Keychain is locked or unreadable, for example right after login (PRD-v6 2.10). (proposed for owner approval) | Owner check OC-02 on the Mac (M0) and HLTH-13 | M1 exit |
+| Probes that check the response shape, not only the status, notice upstream drift before an agent hits it. The sources state the risk: upstream APIs change faster than one person can follow (PRD-v6 2.10), and three sources degraded unnoticed in v1 (PRD-v6 1.1). | HLTH-3 and HLTH-2 pass; afterward the 30-day metric HLTH-OUT-6 (PRD-v6 OUT-4) | M1 exit |
+| Providers expose enough expiry and validity signals (expiry headers, free account or rate-limit endpoints, the Google token refresh), and `rotate_by` covers keys that never expire, so no credential expires without a notice. The sources state the target of 0 expired without a prior notice (PRD-v6 OUT-5) and the fallback for keys with no expiry (HLTH-FR-21, HLTH-FR-22). | HLTH-21, HLTH-22, HLTH-24 and HLTH-25 pass; afterward the 30-day metric HLTH-OUT-7 (PRD-v6 OUT-5) | M1 exit |
+| The daemon can read the Keychain, and a locked or unreadable Keychain shows as one state and one notification, not a notice per key. The sources state the risk: the Keychain is locked or unreadable, for example right after login (PRD-v6 2.10). | Owner check OC-02 on the Mac (M0) and HLTH-13 | M1 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -119,7 +121,7 @@ The owner confirmed HLTH-INV-1 to HLTH-INV-5, taken from the "never" statements 
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -143,7 +145,7 @@ No study exists yet in `docs/research/`.
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories come from the user needs in PRD-v6 1.2 and section 1.2 here. No requirement of this component serves the ECC orchestrator, so it has no story.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories come from the user needs in PRD-v6 1.2 and section 1.2 here. No requirement of this component serves the ECC orchestrator, so it has no story.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -312,9 +314,9 @@ Kenny Hill owns every integration. No integration has an SLA: upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner asked for it: v2 must be monitored and must notify when a credential is expiring or invalid (D5). The open part is whether notices reach the owner before an agent hits the problem (HLTH-OUT-6). (proposed for owner approval) | Notices fire on state changes only and unresolved issues roll into one daily digest (HLTH-FR-30, HLTH-FR-31); HLTH-OUT-6 is measured 30 days after cutover (PRD-v6 OUT-4) |
-| Usability | Can customers use it, including with accessibility needs? | Each fix text names the Keychain item, the provider's key page and a copyable command with no value (HLTH-FR-24, HLTH-FR-25). Without `terminal-notifier` the built-in notification cannot be clicked through (HLTH-FR-32). The sources state no accessibility need. (proposed for owner approval) | HLTH-23 and HLTH-24 check the fix text; OC-03 checks that a real notification opens the right UI page; the UI banner stays until resolved or acknowledged (HLTH-FR-32) |
-| Viability | Does it work for the business: economics, legal, compliance, operations? | One person on one Mac (PRD-v6 1.2; NFR-12). The cost exposure is metered spend, the parent risk in the metered spend row below (PRD-v6 2.10). (proposed for owner approval) | Validation never spends a billed query when a free method exists (HLTH-FR-21; HLTH-INV-4) |
+| Value | Will customers choose to use this? | The owner asked for it: v2 must be monitored and must notify when a credential is expiring or invalid (D5). The open part is whether notices reach the owner before an agent hits the problem (HLTH-OUT-6). | Notices fire on state changes only and unresolved issues roll into one daily digest (HLTH-FR-30, HLTH-FR-31); HLTH-OUT-6 is measured 30 days after cutover (PRD-v6 OUT-4) |
+| Usability | Can customers use it, including with accessibility needs? | Each fix text names the Keychain item, the provider's key page and a copyable command with no value (HLTH-FR-24, HLTH-FR-25). Without `terminal-notifier` the built-in notification cannot be clicked through (HLTH-FR-32). The sources state no accessibility need. | HLTH-23 and HLTH-24 check the fix text; OC-03 checks that a real notification opens the right UI page; the UI banner stays until resolved or acknowledged (HLTH-FR-32) |
+| Viability | Does it work for the business: economics, legal, compliance, operations? | One person on one Mac (PRD-v6 1.2; NFR-12). The cost exposure is metered spend, the parent risk in the metered spend row below (PRD-v6 2.10). | Validation never spends a billed query when a free method exists (HLTH-FR-21; HLTH-INV-4) |
 | Upstream drift | Upstream APIs change faster than one person can follow (PRD-v4 12) | From PRD-v4 12 | Probes check response shape, not just status; recorded fixtures; each source can be disabled with a flag |
 | Metered spend | Metered sources run out mid-task or cost more than expected (PRD-v4 12) | From PRD-v4 12 | `quota_low`, `rate_limited` and `budget_exhausted` states; federation skips exhausted sources and says so |
 | Keychain locked | The Keychain is locked or unreadable, for example right after login (PRD-v4 12) | From PRD-v4 12 | Reads through `/usr/bin/security` with a timeout; one `keychain_locked` state and one notification; `doctor` gives the fix |
@@ -336,13 +338,13 @@ Kenny Hill owns every integration. No integration has an SLA: upstream services 
 
 | Outcome | Measured by | Experiment (if any) |
 | --- | --- | --- |
-| HLTH-OUT-1 | Criteria HLTH-2 (probes run at their cadence) and SRC-20 (every M1 adapter passes conformance) at the M1 exit. (proposed for owner approval) | None |
-| HLTH-OUT-2 | Criterion HLTH-30, then a notification log query at the M1 exit: the time from each source state change in `source_health` to its row in `notifications`, outside quiet hours. (proposed for owner approval) | None |
-| HLTH-OUT-3 | Criterion HLTH-41 and the 15-minute watchdog cadence of HLTH-FR-41, then a notification log query at the M1 exit: the time from the daemon stopping to the watchdog's notice in `notifications`. (proposed for owner approval) | None |
-| HLTH-OUT-4 | Criterion HLTH-30 at M1, then a notification log query at the parent 30-day review: each expiring credential has a notice at 14, 7, 3 and 1 days. (proposed for owner approval) | None |
-| HLTH-OUT-5 | Criterion HLTH-20 at M1, then a notification log query at the parent 30-day review: the time from a credential becoming `invalid` to its notice, against the probe cycle. (proposed for owner approval) | None |
-| HLTH-OUT-6 | The parent 30-day review: for each source state change, compare the notification time with the first failed agent call to that source in `calls`. (proposed for owner approval) | None |
-| HLTH-OUT-7 | The parent 30-day review: count credentials that reached expiry with no earlier expiry notice in `notifications`. (proposed for owner approval) | None |
+| HLTH-OUT-1 | Criteria HLTH-2 (probes run at their cadence) and SRC-20 (every M1 adapter passes conformance) at the M1 exit. | None |
+| HLTH-OUT-2 | Criterion HLTH-30, then a notification log query at the M1 exit: the time from each source state change in `source_health` to its row in `notifications`, outside quiet hours. | None |
+| HLTH-OUT-3 | Criterion HLTH-41 and the 15-minute watchdog cadence of HLTH-FR-41, then a notification log query at the M1 exit: the time from the daemon stopping to the watchdog's notice in `notifications`. | None |
+| HLTH-OUT-4 | Criterion HLTH-30 at M1, then a notification log query at the parent 30-day review: each expiring credential has a notice at 14, 7, 3 and 1 days. | None |
+| HLTH-OUT-5 | Criterion HLTH-20 at M1, then a notification log query at the parent 30-day review: the time from a credential becoming `invalid` to its notice, against the probe cycle. | None |
+| HLTH-OUT-6 | The parent 30-day review: for each source state change, compare the notification time with the first failed agent call to that source in `calls`. | None |
+| HLTH-OUT-7 | The parent 30-day review: count credentials that reached expiry with no earlier expiry notice in `notifications`. | None |
 
 ## 2.11 Definition of done
 
@@ -412,7 +414,7 @@ Changes and new IDs in version 4; these rows are not definitions.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

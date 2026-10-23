@@ -2,7 +2,9 @@
 title: "Research MCP v2: one tool, many sources"
 type: prd
 version: 7
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 artifact_type: product-specification
@@ -150,16 +152,16 @@ INV-1 to INV-9 restate a "never" or "nothing" statement the sources already make
 
 | ADR | Decision | Status |
 | --- | --- | --- |
-| [0001](../adr/0001-new-repo-v1-read-only.md) | v2 is a new repository; v1 stays read-only and running until cutover | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0002](../adr/0002-one-daemon-with-stdio-shims.md) | One daemon per Mac; clients use a stdio shim | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0003](../adr/0003-secrets-in-keychain.md) | Secrets live in the macOS Keychain; configuration holds references | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0004](../adr/0004-modular-core-composition-root.md) | Modular core built by one composition root; no work at import | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0005](../adr/0005-async-io-cpu-off-loop.md) | Async I/O end to end; CPU work in worker processes | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0006](../adr/0006-source-adapter-contract.md) | Every source is an adapter with a declarative `SourceSpec` | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0007](../adr/0007-cache-lifecycle-and-drive-archive.md) | Cache with owner review; archive to the Google Drive sync folder (amended by 0011: 120 days, not 30) | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0008](../adr/0008-sqlite-stores-and-vectors.md) | Two SQLite files; vectors stored in SQLite | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0009](../adr/0009-no-sql-untrusted-content.md) | No free-form SQL; fetched content is labeled untrusted | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
-| [0010](../adr/0010-localhost-ui-stack.md) | The UI is server-rendered inside the daemon | Proposed; accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22) |
+| [0001](../adr/0001-new-repo-v1-read-only.md) | v2 is a new repository; v1 stays read-only and running until cutover | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0002](../adr/0002-one-daemon-with-stdio-shims.md) | One daemon per Mac; clients use a stdio shim | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0003](../adr/0003-secrets-in-keychain.md) | Secrets live in the macOS Keychain; configuration holds references | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0004](../adr/0004-modular-core-composition-root.md) | Modular core built by one composition root; no work at import | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0005](../adr/0005-async-io-cpu-off-loop.md) | Async I/O end to end; CPU work in worker processes | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0006](../adr/0006-source-adapter-contract.md) | Every source is an adapter with a declarative `SourceSpec` | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0007](../adr/0007-cache-lifecycle-and-drive-archive.md) | Cache with owner review; archive to the Google Drive sync folder (amended by 0011: 120 days, not 30) | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0008](../adr/0008-sqlite-stores-and-vectors.md) | Two SQLite files; vectors stored in SQLite | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0009](../adr/0009-no-sql-untrusted-content.md) | No free-form SQL; fetched content is labeled untrusted | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
+| [0010](../adr/0010-localhost-ui-stack.md) | The UI is server-rendered inside the daemon | Accepted (2026-10-22, with Gate 1 approval of this PRD) |
 | [0011](../adr/0011-archive-keeps-text-searchable-120-day-retention.md) | 120-day retention; archived papers keep their text and embeddings and stay searchable | Accepted (2026-10-19) |
 | [0012](../adr/0012-domain-neutral-scope-keep-v1-endpoints-web-search-sources.md) | Domain-neutral scope; every v1 endpoint kept; web search as optional, capped sources | Accepted (2026-10-19) |
 | [0013](../adr/0013-adopt-spec-driven-development.md) | Adopt spec-driven development fully, before the next build (option 2) | Accepted (2026-10-22) |
@@ -359,4 +361,4 @@ PRD-v4 IDs and the IDs that replace them. The wording and targets are unchanged.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |

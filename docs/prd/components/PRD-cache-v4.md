@@ -2,7 +2,9 @@
 title: "Retrieval and Cache"
 type: prd-component
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-22
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: CACHE
@@ -74,9 +76,9 @@ The parent outcomes OUT-1 to OUT-8 and NFR-1 to NFR-12 suffice; no component out
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Papers are usually fetched for a one-time need, so a 120-day working cache with a review serves the owner and no library is needed (D2; PRD-v6 1.3 non-goals) (proposed for owner approval) | The CACHE-OUT-1 measure in 2.10: the `state.db.review_events` log shows each archive, discard, keep and pin decision with `decided_by` and `channel` | M4 exit; read again 30 days after cutover (PRD-v6 1.4) |
-| The owner keeps answering review batches; review fatigue stays low because of batching and the keep default (ADR 0007, amended by ADR 0011: "Review fatigue is possible") (proposed for owner approval) | CACHE-31 (one batch, one notification) and CACHE-33 (unanswered items are kept, nothing deleted), then the same `review_events` log in the 30-day review | M2 exit for the criteria; 30 days after cutover for the log |
-| The locally synced Google Drive folder works as the archive without a Drive API credential, although a local write only means Drive will upload (ADR 0007 consequences, amended by ADR 0011; PRD-v6 2.10, Drive sync risk) (proposed for owner approval) | Owner checks OC-13 and OC-04; CACHE-44 (upload state and 24-hour stall report) | M2 exit |
+| Papers are usually fetched for a one-time need, so a 120-day working cache with a review serves the owner and no library is needed (D2; PRD-v6 1.3 non-goals) | The CACHE-OUT-1 measure in 2.10: the `state.db.review_events` log shows each archive, discard, keep and pin decision with `decided_by` and `channel` | M4 exit; read again 30 days after cutover (PRD-v6 1.4) |
+| The owner keeps answering review batches; review fatigue stays low because of batching and the keep default (ADR 0007, amended by ADR 0011: "Review fatigue is possible") | CACHE-31 (one batch, one notification) and CACHE-33 (unanswered items are kept, nothing deleted), then the same `review_events` log in the 30-day review | M2 exit for the criteria; 30 days after cutover for the log |
+| The locally synced Google Drive folder works as the archive without a Drive API credential, although a local write only means Drive will upload (ADR 0007 consequences, amended by ADR 0011; PRD-v6 2.10, Drive sync risk) | Owner checks OC-13 and OC-04; CACHE-44 (upload state and 24-hour stall report) | M2 exit |
 
 ## 1.6 Invariants: what must never happen
 
@@ -117,7 +119,7 @@ The owner confirmed these drafted "never" rules as component invariants (owner d
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ---
 
@@ -137,7 +139,7 @@ The deep review of v1 ([REVIEW-v1](../../../docs-archive/review/REVIEW-v1.md)) i
 
 > **Owner:** C for stories (`product-writer`), H for priority · **Seed question:** 3
 
-Drafted by the product writer for owner approval (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and 1.2 above. No requirement serves the ECC orchestrator, so it has no story.
+Drafted by the product writer and approved by the owner at Gate 1, 2026-10-22 (owner decision, 2026-10-22, to draft them). The stories rest on the user needs in PRD-v6 1.2 and 1.2 above. No requirement serves the ECC orchestrator, so it has no story.
 
 | ID | As a... I want... so that... | Priority | Why this priority |
 | --- | --- | --- | --- |
@@ -309,9 +311,9 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 
 | Risk | Question | Assessment | Mitigation |
 | --- | --- | --- | --- |
-| Value | Will customers choose to use this? | The owner may pin or keep everything, so the cache turns back into a library and the review loses its point (D2; PRD-v6 2.10, scope creep risk) (proposed for owner approval) | Collections pin only when created with pinning on; the non-goals in 1.3 keep library features out; the `review_events` log in 2.10 shows the decisions taken (PRD-v6 2.10; CACHE-FR-55) |
-| Usability | Can customers use it, including with accessibility needs? | Review fatigue is possible (ADR 0007, amended by ADR 0011) (proposed for owner approval) | One batch and one notification a day; no answer means keep; the review can be answered in the UI or from an agent chat (ADR 0007, amended by ADR 0011; CACHE-FR-31, CACHE-FR-34, CACHE-FR-35) |
-| Viability | Does it work for the business: economics, legal, compliance, operations? | PyMuPDF's AGPL license is acceptable for personal, non-distributed use (O3, PRD-v6 1.6) (proposed for owner approval) | Parsing stays in a worker process (CACHE-FR-10); the server is personal and not distributed (PRD-v6 1.2) |
+| Value | Will customers choose to use this? | The owner may pin or keep everything, so the cache turns back into a library and the review loses its point (D2; PRD-v6 2.10, scope creep risk) | Collections pin only when created with pinning on; the non-goals in 1.3 keep library features out; the `review_events` log in 2.10 shows the decisions taken (PRD-v6 2.10; CACHE-FR-55) |
+| Usability | Can customers use it, including with accessibility needs? | Review fatigue is possible (ADR 0007, amended by ADR 0011) | One batch and one notification a day; no answer means keep; the review can be answered in the UI or from an agent chat (ADR 0007, amended by ADR 0011; CACHE-FR-31, CACHE-FR-34, CACHE-FR-35) |
+| Viability | Does it work for the business: economics, legal, compliance, operations? | PyMuPDF's AGPL license is acceptable for personal, non-distributed use (O3, PRD-v6 1.6) | Parsing stays in a worker process (CACHE-FR-10); the server is personal and not distributed (PRD-v6 1.2) |
 | Drive sync folder unavailable, blocked by macOS privacy controls, or not uploading (PRD-v4 12) | | Stated risk | Install performs the first archive write in the foreground; `doctor` checks access; local fallback with a warning and reconcile; nothing leaves the cache until the archive copy is verified; upload state is checked and a stall is reported (PRD-v4 12) |
 | PyMuPDF crashes on hostile PDFs (PRD-v4 12) | | Stated risk | Parsing in a worker process with CPU, memory, page and time limits (PRD-v4 12) |
 | Scope creep toward a library manager (PRD-v4 12) | | Stated risk | Non-goals in PRD-v4 3.2; collections stay minimal (PRD-v4 12) |
@@ -417,7 +419,7 @@ New IDs and editorial changes in this version; these rows are not definitions.
 | Changed or new ID | Change | Date | Reason |
 | --- | --- | --- | --- |
 | CACHE-63 | New criterion: `cite` with a `collection` exports every item in that collection in the requested format | 2026-10-22 | owner decision, 2026-10-22 |
-| CACHE-US-1 to CACHE-US-6 | New user stories, drafted for owner approval; the Story column of every CACHE-FR row now names one of them | 2026-10-22 | owner decision, 2026-10-22 |
+| CACHE-US-1 to CACHE-US-6 | New user stories, drafted by the product writer and approved by the owner at Gate 1, 2026-10-22; the Story column of every CACHE-FR row now names one of them | 2026-10-22 | owner decision, 2026-10-22 |
 | CACHE-62 | New P1 criterion: archive reindex leaves every Drive file unchanged, the P1 check of CACHE-INV-6 | 2026-10-22 | owner decision, 2026-10-22 |
 | CACHE-FR-30 | Editorial: "per open decision O7" now reads "per decision O7, now closed"; behavior unchanged | 2026-10-22 | owner decision, 2026-10-22 |
 | CACHE-OUT-1 | Baseline added: v1 has no lifecycle; nothing is reviewed or deleted, and the corpus only grows | 2026-10-22 | owner decision, 2026-10-22 |
@@ -427,7 +429,7 @@ New IDs and editorial changes in this version; these rows are not definitions.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| | | |
+| Kenny Hill (Product) | 2026-10-22 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 
