@@ -7,7 +7,7 @@ __pycache__/
 .coverage
 htmlcov/
 dist/
-build/
+/build/
 *.egg-info/
 .DS_Store
 .env
@@ -16,3 +16,6 @@ tests/sources/*/fixtures/_review/
 .hypothesis/
 .claude/*
 !.claude/skills
+!.claude/agents
+!.claude/commands
+!.claude/settings.json
