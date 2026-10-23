@@ -1,6 +1,6 @@
 # Organizational scope map. L0 to L3 name organizational scope only; they are not document
 # stages and not gates. This is a personal project, so the upper levels are placeholders
-# for the owner to name (see the open questions in docs/prd/PRD-v5.md).
+# for the owner to name.
 #   L0  Strategy, declarations and imperatives
 #   L1  Domain
 #   L2  Solution or capability

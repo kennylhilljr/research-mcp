@@ -15,8 +15,8 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 
 | Artifact | Where | Owns |
 | --- | --- | --- |
-| Vision | [docs/vision/vision-v1.md](docs/vision/vision-v1.md) | Why, for whom, the outcomes |
-| Parent PRD | [docs/prd/PRD-v5.md](docs/prd/PRD-v5.md) | Outcomes `OUT-n`, cross-cutting `NFR-n`, invariants `INV-n`, components, milestones |
+| Vision | [docs/vision/vision-v2.md](docs/vision/vision-v2.md) | Why, for whom, the outcomes |
+| Parent PRD | [docs/prd/PRD-v6.md](docs/prd/PRD-v6.md) | Outcomes `OUT-n`, cross-cutting `NFR-n`, invariants `INV-n`, components, milestones |
 | Component PRDs | [docs/prd/components/](docs/prd/components/) | Requirements `<PREFIX>-FR-n` and acceptance criteria `<PREFIX>-n` (PLAT, SEC, SRC, SRCH, CACHE, HLTH, UI, MIG) |
 | SPEC (system high level design) | [docs/spec/SPEC-v3.md](docs/spec/SPEC-v3.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
 | LLDs, one per component | [docs/lld/](docs/lld/) | Every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes, error codes), every interface and format |

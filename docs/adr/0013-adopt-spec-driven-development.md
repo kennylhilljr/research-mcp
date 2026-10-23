@@ -1,6 +1,6 @@
 ---
 title: "Adopt spec-driven development fully, before the next build"
-status: proposed
+status: accepted
 owner: "Kenny Hill"
 date: 2026-10-22
 ---
@@ -23,7 +23,7 @@ Research MCP v2 had a PRD (v4), seven component PRDs, an HLD (v3), a detailed SP
 
 ## Decision
 
-Option 2, as directed by the owner on 2026-10-22, pending the owner's acceptance of this ADR:
+Option 2, as directed by the owner on 2026-10-22 and accepted by the owner on 2026-10-22 (recorded in [PRD-v6](../prd/PRD-v6.md) 1.6):
 
 - The SDD toolkit (skills, personas, hooks, spec-lint, trace-check, templates) is installed with `sdd adopt`, and the checks run in enforced mode in `tools/ci.sh`.
 - The documents are rewritten as the next versions on the SDD templates: `docs/vision/vision-v1.md`, the parent `docs/prd/PRD-v5.md`, eight component PRDs, `docs/spec/SPEC-v3.md` (the system high level design), one LLD per component, `docs/test/test-plan-v1.md` and the milestone plan `docs/build/M0-plan-v1.md`. The superseded originals move unchanged to `docs-archive/`.

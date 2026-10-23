@@ -8,8 +8,8 @@ The documents follow the owner's spec-driven development framework ([ADR 0013](d
 
 | Document | Role |
 |---|---|
-| [Vision](docs/vision/vision-v1.md) | Why, for whom, the outcomes |
-| [PRD v5](docs/prd/PRD-v5.md) and [component PRDs](docs/prd/components/) | Requirements and acceptance criteria: what and why |
+| [Vision](docs/vision/vision-v2.md) | Why, for whom, the outcomes |
+| [PRD v6](docs/prd/PRD-v6.md) and [component PRDs](docs/prd/components/) | Requirements and acceptance criteria: what and why |
 | [SPEC v3](docs/spec/SPEC-v3.md) | The system high level design |
 | [LLDs](docs/lld/) | The build contract per component: names, interfaces, formats, behavior |
 | [Test plan](docs/test/test-plan-v1.md) | How each criterion is verified, owner checks, exit gates |

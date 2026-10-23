@@ -12,7 +12,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-platform-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-platform-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-platform-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-platform-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 45
     linked: 16
     passing: 0
@@ -33,7 +33,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-security-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-security-v1.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-security-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-security-v1.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 18
     linked: 5
     passing: 0
@@ -54,7 +54,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-sources-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-sources-v4.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-sources-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-sources-v4.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 26
     linked: 0
     passing: 0
@@ -75,7 +75,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-search-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-search-v2.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-search-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-search-v2.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 27
     linked: 7
     passing: 0
@@ -96,7 +96,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-cache-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-cache-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-cache-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-cache-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 36
     linked: 0
     passing: 0
@@ -117,7 +117,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-health-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-health-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-health-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-health-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 23
     linked: 0
     passing: 0
@@ -138,7 +138,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-ui-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-ui-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-ui-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-ui-v3.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 16
     linked: 0
     passing: 0
@@ -159,7 +159,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-migration-v1.md@draft, docs/prd/PRD-v5.md@draft, docs/prd/components/PRD-migration-v4.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
+    artifacts: [docs/lld/LLD-migration-v1.md@draft, docs/prd/PRD-v6.md@draft, docs/prd/components/PRD-migration-v4.md@draft, docs/spec/SPEC-v3.md@draft, docs/test/test-plan-v1.md@draft]
     criteria: 13
     linked: 0
     passing: 0
