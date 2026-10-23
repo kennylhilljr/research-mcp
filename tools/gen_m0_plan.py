@@ -1,4 +1,6 @@
-"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v2.md).
+"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v3.md).
+
+Tasks whose status is `done` are already on main: they are left out, and so are dependencies on them.
 
 `--check` exits 1 when the committed plan is stale (tools/ci.sh runs it)."""
 import json
@@ -7,12 +9,13 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PLAN = "docs/build/M0-plan-v2.md"
+PLAN = "docs/build/M0-plan-v3.md"
 plan = (ROOT / PLAN).read_text()
 
 tasks = plan.split("## 2. Tasks", 1)[1].split("\n### ", 1)[0]
 rows = [line for line in tasks.splitlines() if line.startswith("| M0-")]
-clar = plan.split("### 2.2 Clarifications from the first M0 attempt", 1)[1].split("\n## ", 1)[0]
+done = {r.strip("|").split("|")[0].strip() for r in rows if r.strip("|").split("|")[-1].strip() == "done"}
+clar = plan.split("### 2.2 Clarifications from the first M0 attempt and the plan check", 1)[1].split("\n## ", 1)[0]
 clarified = set(re.findall(r"^\| (M0-\d\d) \|", clar, re.M))
 
 CONFIG = json.loads((ROOT / "sdd.config.json").read_text())
@@ -51,6 +54,8 @@ RULES = (
 units = []
 for row in rows:
     uid, title, criteria, deps, _persona, impl, files, risk, _status = [c.strip() for c in row.strip("|").split("|")]
+    if uid in done:
+        continue
     file_list = []
     for f in re.findall(r"`([^`]+)`", files):
         if f.endswith("/*"):
@@ -59,7 +64,7 @@ for row in rows:
             file_list += [f"{base}/{n.format(ext=ext)}" for n in FIXTURES]
         else:
             file_list.append(expand(f))
-    dep_list = [] if deps == "none" else [d.strip() for d in deps.split(",")]
+    dep_list = [] if deps == "none" else [d.strip() for d in deps.split(",") if d.strip() not in done]
     ids = criteria.strip()
     test_files = [f for f in file_list if f.startswith("tests/") and f.endswith(".py") and "/test_" in f]
     if uid == "M0-01":
@@ -70,7 +75,7 @@ for row in rows:
     if m and m.group(1) not in ("base", "registry"):
         cmds.append(f"uv run pytest tests/sources/test_conformance.py -k {m.group(1)} -q")
     cmds.append("tools/ci.sh --python-only")
-    note = (f" {PLAN} section 2.2 lists clarifications for this unit (from the first M0 attempt); they are "
+    note = (f" {PLAN} section 2.2 lists clarifications for this unit; they are "
             "requirements." if uid in clarified else "")
     prds = list(dict.fromkeys(PREFIX_PRD[i.split("-")[0]] for i in ids.split(", ") if i))
     implemented = impl.replace("`", "")
