@@ -1,6 +1,6 @@
 # M0 run guide
 
-Milestone M0 ([M0 plan](../docs/build/M0-plan-v3.md): 23 units in 12 waves; M0-01 to M0-05 merged in `rm-m0b`, so a run builds 18 units from slice 4) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
+Milestone M0 ([M0 plan](../docs/build/M0-plan-v4.md): 23 units in 12 waves; M0-01 to M0-05 merged in `rm-m0b`, so a run builds 18 units from slice 4) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
 
 ## Providers
 
@@ -12,7 +12,7 @@ Each ECC role plays an SDD persona: its prompt starts with the persona file in `
 
 ## SDD gates before a run
 
-The documents follow the SDD framework (ADR 0013). Agents never approve, so before a run the owner approves, in order: the problem framing in [PRD v8](../docs/prd/PRD-v8.md) and the [vision](../docs/vision/vision-v2.md) (intake checkpoint), the PRDs (Gate 1), [SPEC v5](../docs/spec/SPEC-v5.md) (Gate 2) and the v2 LLD of each component the plan builds (Gate 3, approved 2026-10-23; [M0 plan v3](../docs/build/M0-plan-v3.md), approved 2026-10-23). The doc map (`docs/README.md`, `node tools/sdd/cli.mjs docmap`) shows each document's status, and `/sdd-status` in Claude Code summarizes it.
+The documents follow the SDD framework (ADR 0013). Agents never approve, so before a run the owner approves, in order: the problem framing in [PRD v8](../docs/prd/PRD-v8.md) and the [vision](../docs/vision/vision-v2.md) (intake checkpoint), the PRDs (Gate 1), [SPEC v5](../docs/spec/SPEC-v5.md) (Gate 2) and the v2 LLD of each component the plan builds (Gate 3, approved 2026-10-23; [M0 plan v4](../docs/build/M0-plan-v4.md), which the owner approves before the run). The doc map (`docs/README.md`, `node tools/sdd/cli.mjs docmap`) shows each document's status, and `/sdd-status` in Claude Code summarizes it.
 
 ## Before the first run
 
@@ -29,15 +29,15 @@ The documents follow the SDD framework (ADR 0013). Agents never approve, so befo
 
 ```sh
 cd ~/Documents/GitHub/research-mcp
-ecc create-run --run-id rm-m0e --plan .orchestration/plan-m0.json
-ecc drive --run-id rm-m0e
+ecc create-run --run-id rm-m0f --plan .orchestration/plan-m0.json
+ecc drive --run-id rm-m0f
 ```
 
 The drive checks the plan (architect), then builds, reviews, verifies and merges units wave by wave. Agents merge into `main` locally; nothing is pushed.
 
 ## When the drive stops
 
-It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0e` shows every unit.
+It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0f` shows every unit.
 
 ## Done
 

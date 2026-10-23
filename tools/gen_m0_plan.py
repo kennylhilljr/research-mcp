@@ -1,4 +1,4 @@
-"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v3.md).
+"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v4.md).
 
 Tasks whose status is `done` are already on main: they are left out, and so are dependencies on them.
 
@@ -9,7 +9,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PLAN = "docs/build/M0-plan-v3.md"
+PLAN = "docs/build/M0-plan-v4.md"
 plan = (ROOT / PLAN).read_text()
 
 tasks = plan.split("## 2. Tasks", 1)[1].split("\n### ", 1)[0]
