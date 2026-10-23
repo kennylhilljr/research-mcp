@@ -12,7 +12,7 @@ Each ECC role plays an SDD persona: its prompt starts with the persona file in `
 
 ## SDD gates before a run
 
-The documents follow the SDD framework (ADR 0013). Agents never approve, so before a run the owner approves, in order: the problem framing in [PRD v8](../docs/prd/PRD-v8.md) and the [vision](../docs/vision/vision-v2.md) (intake checkpoint), the PRDs (Gate 1), [SPEC v5](../docs/spec/SPEC-v5.md) (Gate 2) and the v2 LLD of each component the plan builds (Gate 3, approved 2026-10-23; [M0 plan v3](../docs/build/M0-plan-v3.md), which the owner approves before the run). The doc map (`docs/README.md`, `node tools/sdd/cli.mjs docmap`) shows each document's status, and `/sdd-status` in Claude Code summarizes it.
+The documents follow the SDD framework (ADR 0013). Agents never approve, so before a run the owner approves, in order: the problem framing in [PRD v8](../docs/prd/PRD-v8.md) and the [vision](../docs/vision/vision-v2.md) (intake checkpoint), the PRDs (Gate 1), [SPEC v5](../docs/spec/SPEC-v5.md) (Gate 2) and the v2 LLD of each component the plan builds (Gate 3, approved 2026-10-23; [M0 plan v3](../docs/build/M0-plan-v3.md), approved 2026-10-23). The doc map (`docs/README.md`, `node tools/sdd/cli.mjs docmap`) shows each document's status, and `/sdd-status` in Claude Code summarizes it.
 
 ## Before the first run
 

@@ -13,7 +13,7 @@ The documents follow the owner's spec-driven development framework ([ADR 0013](d
 | [SPEC v5](docs/spec/SPEC-v5.md) | The system high level design |
 | [LLDs](docs/lld/) | The build contract per component: names, interfaces, formats, behavior |
 | [Test plan](docs/test/test-plan-v4.md) | How each criterion is verified, owner checks, exit gates |
-| [M0 plan](docs/build/M0-plan-v2.md) | Work units of the first milestone |
+| [M0 plan](docs/build/M0-plan-v3.md) | Work units of the first milestone |
 | [ADRs](docs/adr/) | Decisions |
 | [Migration cutover runbook](docs/runbooks/migration-cutover-v1.md) | v1 to v2 cutover |
 | [docs-archive/](docs-archive/) | Superseded originals: PRD v4, HLD v3, SPEC v1 and v2, TEST-PLAN v3, MIGRATION v2 and the design review |
