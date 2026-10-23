@@ -7,8 +7,10 @@ security suite requires; no real credential is read.
 from __future__ import annotations
 
 import io
+import json
 import logging
 import os
+import urllib.parse
 from collections.abc import Iterator
 from pathlib import Path
 
@@ -21,7 +23,11 @@ from research_mcp.platform.logging import configure_logging
 from research_mcp.platform.secrets import Secret, SecretRef
 from research_mcp.settings import Settings
 
-SECRET_ALPHABET = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_."
+# Beyond letters and digits, the characters that percent-encoding, JSON and repr rewrite,
+# so the encoded forms of a value are exercised as well as the literal one.
+SECRET_ALPHABET = (
+    "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789-_.+/=%&?#:@ \\'\"~!$"
+)
 NAMES = ("CORE_API_KEY", "GITHUB_TOKEN", "DAEMON_TOKEN", "NCBI_API_KEY", "ZENODO_TOKEN")
 
 # Like real keys, each value mixes cases and digits, so it cannot equal fixed text such as
@@ -47,7 +53,11 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[io.Str
     names = ("research_mcp", "httpx", "httpcore", "uvicorn.access", "mcp")
     saved_levels = {name: logging.getLogger(name).level for name in names}
     saved_root = root.level
+    last_resort = logging.lastResort
+    saved_last_resort = last_resort.filters[:] if last_resort else []
     yield stderr
+    if last_resort:
+        last_resort.filters[:] = saved_last_resort
     root.setLevel(saved_root)
     for handler in root.handlers[:]:
         if handler not in saved_handlers:
@@ -95,6 +105,22 @@ def emit_everywhere(secret: str, debug_query: bool) -> None:
     logging.getLogger("some_library").warning("library %r", {"token": secret})
     logging.getLogger("httpx").warning("GET https://h.example/x?api_key=%s", secret)
     logging.getLogger("httpx").info("GET https://h.example/x?q=%s", secret)
+    log.warning("GET https://h.example/x?%s", urllib.parse.urlencode({"q": secret}))
+    log.warning("GET https://h.example/%s", urllib.parse.quote(secret, safe=""))
+    log.warning("body %s", json.dumps({"q": secret}))
+    log.warning("headers %r", [(b"x-api", secret.encode())])
+
+
+def encoded_forms(value: str) -> set[str]:
+    """The value as it can appear in a line: literal, percent-encoded or escaped."""
+    return {
+        value,
+        urllib.parse.quote(value, safe=""),
+        urllib.parse.quote_plus(value),
+        json.dumps(value)[1:-1],
+        repr(value)[1:-1],
+        repr(value.encode())[2:-1],
+    }
 
 
 @pytest.mark.parametrize("debug", [False, True])
@@ -120,7 +146,8 @@ def test_registered_secrets_never_reach_log_output(
         text = output.new_text()
         assert text, "the records must reach the outputs being scanned"
         for value in values:
-            assert value not in text
+            for form in encoded_forms(value):
+                assert form not in text, form
 
     check()
 

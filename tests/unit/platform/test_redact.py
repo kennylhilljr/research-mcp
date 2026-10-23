@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 import io
+import json
 import logging
 import sys
+import urllib.parse
 
 import pytest
 
@@ -87,6 +89,38 @@ def test_filter_masks_non_text_extra_fields() -> None:
     assert record.__dict__["attempt"] == 2
 
 
+def test_filter_masks_numeric_extra_fields() -> None:
+    """@spec SEC-5: A numeric secret passed as an int or float extra field is masked."""
+    redactor = Redactor()
+    redactor.register(secret("NCBI_API_KEY", "804512937761"))
+    record = make_record("request", account=804512937761, ratio=804512937761.5, attempt=2)
+    RedactingFilter(redactor).filter(record)
+    assert "804512937761" not in str(record.__dict__)
+    assert record.__dict__["attempt"] == 2
+
+
+def test_encoded_forms_of_a_registered_value_are_masked() -> None:
+    """@spec SEC-5: Percent-encoded, JSON-escaped and repr-escaped forms are masked too."""
+    value = "k+y/Q=9\"z\\w'T 7"
+    redactor = Redactor()
+    redactor.register(secret("CORE_API_KEY", value))
+    forms = [
+        value,
+        urllib.parse.quote(value, safe=""),
+        urllib.parse.quote_plus(value),
+        urllib.parse.quote(value),
+        json.dumps(value),
+        repr(value),
+        repr({"k": value}),
+        repr([value]),
+    ]
+    for form in forms:
+        redacted = redactor.redact(f"before {form} after")
+        assert MASK in redacted, form
+        for piece in ("Q=9", "Q%3D9", "T 7", "T+7", "T%207"):
+            assert piece not in redacted, (form, redacted)
+
+
 def test_filter_survives_a_broken_format_string() -> None:
     """@spec SEC-5: A message whose args do not fit is still masked, not dropped."""
     redactor = Redactor()
@@ -111,6 +145,12 @@ def test_filter_survives_a_broken_format_string() -> None:
         ("key AIzaSyabc123SECRET_-xyz in text", "in text"),
         ("ghp_abc123SECRETabc123SECRETabc123SE pushed", "pushed"),
         ("github_pat_11ABC_abc123SECRET then", "then"),
+        ('{"api_key": "abc123SECRET", "page": 2}', "page"),
+        ("config key = abc123SECRET done", "done"),
+        ("access_token:abc123SECRET done", "done"),
+        ("[(b'authorization', b'Bearer abc123SECRET'), (b'accept', b'*/*')]", "accept"),
+        ("[('x-goog-api-key', 'abc123SECRET')]", "x-goog-api-key"),
+        ("headers=[('X-Subscription-Token', 'abc123SECRET')]", "X-Subscription-Token"),
     ],
 )
 def test_credential_patterns_are_masked(text: str, kept: str) -> None:
@@ -141,3 +181,22 @@ def test_redacting_stream_masks_complete_lines() -> None:
     stream.flush()
     assert target.getvalue() == f"Traceback: {MASK}\ntail {MASK} end"
     assert stream.writable()
+
+
+def test_redacting_stream_has_no_unmasked_write_path() -> None:
+    """@spec SEC-5: writelines is masked, and the raw binary buffer is not reachable."""
+    redactor = Redactor()
+    redactor.register(secret("CORE_API_KEY", VALUE))
+    raw = io.BytesIO()
+    target = io.TextIOWrapper(raw, encoding="utf-8")
+    stream = RedactingStream(target, redactor)
+
+    stream.writelines([f"line {VALUE}\n", f"split {VALUE[:5]}", f"{VALUE[5:]}\n"])
+    stream.flush()
+    assert raw.getvalue().decode() == f"line {MASK}\nsplit {MASK}\n"
+
+    # Anything that would write past the redactor is absent, not forwarded.
+    for name in ("buffer", "detach", "reconfigure", "raw"):
+        assert not hasattr(stream, name), name
+    assert stream.encoding == "utf-8"
+    assert stream.isatty() is False

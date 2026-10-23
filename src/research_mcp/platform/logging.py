@@ -7,6 +7,7 @@ configures nothing.
 from __future__ import annotations
 
 import hashlib
+import io
 import json
 import logging
 import logging.handlers
@@ -106,6 +107,33 @@ class JsonFormatter(logging.Formatter):
         return json.dumps(line, default=str, ensure_ascii=False)
 
 
+class _OwnerOnlyFileHandler(logging.handlers.RotatingFileHandler):
+    """A rotating file handler whose live file is mode 0600 and never a followed symlink.
+
+    Rotated files are renames of the live file, so they keep its mode.
+    """
+
+    def _open(self) -> io.TextIOWrapper:
+        flags = os.O_WRONLY | os.O_CREAT | os.O_APPEND | os.O_NOFOLLOW
+        fd = os.open(self.baseFilename, flags, 0o600)
+        try:
+            os.fchmod(fd, 0o600)
+            return open(fd, "a", encoding=self.encoding, errors=self.errors)  # noqa: SIM115
+        except BaseException:
+            os.close(fd)
+            raise
+
+
+def _all_handlers() -> list[logging.Handler]:
+    """Handlers on the root, on every named logger (some do not propagate) and lastResort."""
+    named = logging.Logger.manager.loggerDict.values()
+    loggers = [logging.getLogger(), *(item for item in named if isinstance(item, logging.Logger))]
+    handlers = [handler for logger in loggers for handler in logger.handlers]
+    if logging.lastResort is not None:
+        handlers.append(logging.lastResort)
+    return list(dict.fromkeys(handlers))
+
+
 def _attach(handler: logging.Handler, redactor: Redactor, debug: bool) -> None:
     handler.filters[:] = [
         f for f in handler.filters if not isinstance(f, RedactingFilter | _QueryFilter)
@@ -119,7 +147,10 @@ def configure_logging(settings: Settings, *, redactor: Redactor | None = None) -
     """Install the JSON file and stderr handlers on the root logger; return the redactor.
 
     The redacting filter goes on every root handler, so records propagated from child and
-    third-party loggers are covered. Calling it again replaces the handlers it installed.
+    third-party loggers are covered, and on the handlers of every other logger that exists
+    at the call and on ``logging.lastResort``. A handler added later is not covered, so
+    the daemon configures uvicorn without its own logging (``log_config=None``).
+    Calling it again replaces the handlers it installed.
     """
     redactor = redactor if redactor is not None else Redactor()
     debug = settings.logging.debug
@@ -132,7 +163,7 @@ def configure_logging(settings: Settings, *, redactor: Redactor | None = None) -
     log_dir = Path(settings.paths.log_dir)
     log_dir.mkdir(mode=0o700, parents=True, exist_ok=True)
     formatter = JsonFormatter()
-    file_handler = logging.handlers.RotatingFileHandler(
+    file_handler = _OwnerOnlyFileHandler(
         log_dir / LOG_FILE, maxBytes=MAX_BYTES, backupCount=BACKUP_COUNT, encoding="utf-8"
     )
     stderr_handler = logging.StreamHandler()
@@ -141,7 +172,7 @@ def configure_logging(settings: Settings, *, redactor: Redactor | None = None) -
         handler.setFormatter(formatter)
         setattr(handler, _OWN, True)
         root.addHandler(handler)
-    for handler in root.handlers:
+    for handler in _all_handlers():
         _attach(handler, redactor, debug)
 
     logging.getLogger("research_mcp").setLevel(logging.DEBUG if debug else logging.INFO)
@@ -152,7 +183,10 @@ def configure_logging(settings: Settings, *, redactor: Redactor | None = None) -
 
 def _copy_owner_only(source: Path, target: Path) -> None:
     with source.open("rb") as reader:
-        fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, 0o600)
+        # A fresh file, never an existing one: a symlink planted at the target is removed,
+        # not followed.
+        target.unlink(missing_ok=True)
+        fd = os.open(target, os.O_WRONLY | os.O_CREAT | os.O_EXCL | os.O_NOFOLLOW, 0o600)
         with os.fdopen(fd, "wb") as writer:
             os.fchmod(writer.fileno(), 0o600)
             shutil.copyfileobj(reader, writer)

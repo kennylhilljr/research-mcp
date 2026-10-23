@@ -43,7 +43,11 @@ def isolated(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Iterator[None]:
     names = ("research_mcp", "httpx", "httpcore", "uvicorn.access", "mcp")
     saved_levels = {name: logging.getLogger(name).level for name in names}
     saved_root = root.level
+    last_resort = logging.lastResort
+    saved_last_resort = last_resort.filters[:] if last_resort else []
     yield
+    if last_resort:
+        last_resort.filters[:] = saved_last_resort
     for handler in root.handlers[:]:
         if handler not in saved_handlers:
             root.removeHandler(handler)
@@ -278,6 +282,56 @@ def test_filter_is_on_every_handler(tmp_path: Path) -> None:
     assert existing in handlers
     for handler in handlers:
         assert any(isinstance(f, RedactingFilter) for f in handler.filters)
+
+
+def test_filter_is_on_handlers_of_non_propagating_loggers(tmp_path: Path) -> None:
+    """@spec SEC-5: Handlers on non-propagating loggers, such as uvicorn's, are masked too."""
+    stream = io.StringIO()
+    own = logging.StreamHandler(stream)
+    uvicorn = logging.getLogger("uvicorn.error")
+    saved = (uvicorn.handlers[:], uvicorn.propagate)
+    uvicorn.addHandler(own)
+    uvicorn.propagate = False
+    try:
+        redactor = configure_logging(settings(tmp_path))
+        redactor.register(Secret(SecretRef.parse("keychain:research-mcp/CORE_API_KEY"), VALUE))
+        uvicorn.error("startup saw %s", VALUE)
+        assert stream.getvalue() == f"startup saw {MASK}\n"
+        assert any(isinstance(f, RedactingFilter) for f in logging.lastResort.filters)
+    finally:
+        uvicorn.handlers[:], uvicorn.propagate = saved
+
+
+def test_log_files_are_owner_only(tmp_path: Path) -> None:
+    """@spec PLAT-40: research-mcp.jsonl and its rotated files are created mode 0600."""
+    old = os.umask(0o022)
+    try:
+        configure_logging(settings(tmp_path))
+        handler = file_handler()
+        handler.maxBytes = 200
+        for n in range(20):
+            logging.getLogger("research_mcp.test").info("filler %d", n)
+    finally:
+        os.umask(old)
+    files = list((tmp_path / "logs").iterdir())
+    assert len(files) > 1
+    for path in files:
+        assert path.stat().st_mode & 0o777 == 0o600, path.name
+
+
+def test_rotate_stderr_log_does_not_follow_a_planted_symlink(tmp_path: Path) -> None:
+    """@spec PLAT-40: A symlink planted at daemon.err.log.1 is not written through."""
+    path = tmp_path / "daemon.err.log"
+    path.write_bytes(b"x" * 64)
+    victim = tmp_path / "victim"
+    victim.write_bytes(b"keep")
+    rotated = tmp_path / "daemon.err.log.1"
+    rotated.symlink_to(victim)
+    assert rotate_stderr_log(path, max_bytes=64, keep=2) is True
+    assert victim.read_bytes() == b"keep"
+    assert not rotated.is_symlink()
+    assert rotated.read_bytes() == b"x" * 64
+    assert rotated.stat().st_mode & 0o777 == 0o600
 
 
 def test_child_and_third_party_records_are_masked(tmp_path: Path) -> None:
