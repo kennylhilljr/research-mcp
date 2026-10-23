@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
+from collections.abc import AsyncIterator, Iterable
 from datetime import datetime
+from typing import cast
 
 import anyio
 import anyio.lowlevel
@@ -36,6 +38,23 @@ class _NoCredentials:
         return None
 
 
+class _Wire(httpx.AsyncByteStream):
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield self.body
+
+
+class _WireTransport(httpx.MockTransport):
+    """``httpx.MockTransport`` whose bodies arrive unread, as a network transport's do."""
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        response = await super().handle_async_request(request)
+        raw = b"".join(cast(Iterable[bytes], response.stream))
+        return httpx.Response(response.status_code, headers=response.headers, stream=_Wire(raw))
+
+
 class _Sink:
     def __init__(self) -> None:
         self.records: list[CallRecord] = []
@@ -61,7 +80,7 @@ async def test_shared_bucket_spaces_arxiv_calls() -> None:
         clock,
         sleeper,
         "owner@uni.edu",
-        transport=httpx.MockTransport(handler),
+        transport=_WireTransport(handler),
     )
     url = "https://export.arxiv.org/api/query"
     async with client, anyio.create_task_group() as group:

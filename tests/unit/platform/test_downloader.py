@@ -12,9 +12,9 @@ import hashlib
 import os
 import socket
 import zlib
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Iterable
 from pathlib import Path
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import pytest
@@ -59,7 +59,7 @@ class Upstream:
 
     def factory(self, host: str, ip: str) -> httpx.AsyncBaseTransport:
         self.pins.append((host, ip))
-        return httpx.MockTransport(self._handle)
+        return WireTransport(self._handle)
 
     def _handle(self, request: httpx.Request) -> httpx.Response:
         self.requests.append(request)
@@ -346,6 +346,22 @@ class Wire(httpx.AsyncByteStream):
 
     async def __aiter__(self) -> AsyncIterator[bytes]:
         yield self.body
+
+
+class WireTransport(httpx.MockTransport):
+    """``httpx.MockTransport`` whose bodies arrive unread, as a network transport's do."""
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        response = await super().handle_async_request(request)
+        if not response.is_stream_consumed:
+            return response
+        raw = b"".join(cast(Iterable[bytes], response.stream))
+        return httpx.Response(
+            response.status_code,
+            headers=response.headers,
+            stream=Wire(raw),
+            extensions=response.extensions,
+        )
 
 
 def encoded(raw: bytes, encoding: str) -> httpx.Response:

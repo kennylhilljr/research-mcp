@@ -17,11 +17,11 @@ import ipaddress
 import os
 import socket
 import ssl
-from collections.abc import Callable, Iterable
-from contextlib import aclosing
+from collections.abc import AsyncIterable, AsyncIterator, Callable, Iterable, Iterator
+from contextlib import aclosing, contextmanager
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Protocol
+from typing import Protocol, cast
 
 import anyio
 import httpcore
@@ -30,7 +30,7 @@ from ulid import ULID
 
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.models import DownloadedFile
-from research_mcp.platform.http import build_user_agent, capped_body
+from research_mcp.platform.http import build_user_agent, capped_body, status_code
 from research_mcp.version import __version__
 
 MAX_REDIRECTS = 5
@@ -134,22 +134,92 @@ class _PinnedBackend(httpcore.AsyncNetworkBackend):
         await self._inner.sleep(seconds)
 
 
-class PinnedTransport(httpx.AsyncHTTPTransport):
+# httpcore failures and the httpx errors they become, the most specific first.
+_TRANSPORT_ERRORS: tuple[tuple[type[Exception], type[httpx.TransportError]], ...] = (
+    (httpcore.ConnectTimeout, httpx.ConnectTimeout),
+    (httpcore.ReadTimeout, httpx.ReadTimeout),
+    (httpcore.WriteTimeout, httpx.WriteTimeout),
+    (httpcore.PoolTimeout, httpx.PoolTimeout),
+    (httpcore.TimeoutException, httpx.TimeoutException),
+    (httpcore.ConnectError, httpx.ConnectError),
+    (httpcore.ReadError, httpx.ReadError),
+    (httpcore.WriteError, httpx.WriteError),
+    (httpcore.NetworkError, httpx.NetworkError),
+    (httpcore.UnsupportedProtocol, httpx.UnsupportedProtocol),
+    (httpcore.LocalProtocolError, httpx.LocalProtocolError),
+    (httpcore.RemoteProtocolError, httpx.RemoteProtocolError),
+    (httpcore.ProtocolError, httpx.ProtocolError),
+)
+
+
+@contextmanager
+def _as_httpx_errors() -> Iterator[None]:
+    """Raise an httpcore failure as the matching httpx error, without its message."""
+    try:
+        yield
+    except Exception as exc:
+        for source, target in _TRANSPORT_ERRORS:
+            if isinstance(exc, source):
+                raise target(type(exc).__name__) from None
+        raise
+
+
+class _PinnedBody(httpx.AsyncByteStream):
+    def __init__(self, stream: AsyncIterable[bytes]) -> None:
+        self._stream = stream
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        with _as_httpx_errors():
+            async for chunk in self._stream:
+                yield chunk
+
+    async def aclose(self) -> None:
+        close = getattr(self._stream, "aclose", None)
+        if close is not None:
+            with _as_httpx_errors():
+                await close()
+
+
+class PinnedTransport(httpx.AsyncBaseTransport):
     """An httpx transport whose connections go to ``ip`` for requests to ``host``.
 
     The request URL keeps the hostname, so TLS verifies the certificate for it, SNI names
     it and the ``Host`` header carries it; only the TCP connect uses the checked address.
+    It owns its httpcore pool rather than replacing the one inside an httpx transport.
     """
 
     def __init__(self, host: str, ip: str, *, verify: ssl.SSLContext | bool = True) -> None:
-        super().__init__(verify=verify, trust_env=False)
-        # Replaces the pool built by the parent with one that dials the pinned address.
         self._pool = httpcore.AsyncConnectionPool(
             ssl_context=httpx.create_ssl_context(verify=verify, trust_env=False),
             http1=True,
             http2=False,
             network_backend=_PinnedBackend(host, ip, httpcore.AnyIOBackend()),
         )
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        core_request = httpcore.Request(
+            method=request.method,
+            url=httpcore.URL(
+                scheme=request.url.raw_scheme,
+                host=request.url.raw_host,
+                port=request.url.port,
+                target=request.url.raw_path,
+            ),
+            headers=request.headers.raw,
+            content=cast(AsyncIterable[bytes], request.stream),
+            extensions=request.extensions,
+        )
+        with _as_httpx_errors():
+            response = await self._pool.handle_async_request(core_request)
+        return httpx.Response(
+            status_code=response.status,
+            headers=response.headers,
+            stream=_PinnedBody(cast(AsyncIterable[bytes], response.stream)),
+            extensions=response.extensions,
+        )
+
+    async def aclose(self) -> None:
+        await self._pool.aclose()
 
 
 TransportFactory = Callable[[str, str], httpx.AsyncBaseTransport]
@@ -164,18 +234,6 @@ def _remaining(deadline: float) -> float:
     if left <= 0:
         raise HttpError(ErrorCode.UPSTREAM_TIMEOUT)
     return left
-
-
-def _status_error(status: int) -> HttpError | None:
-    if 200 <= status < 300:
-        return None
-    if status in (401, 403):
-        return HttpError(ErrorCode.AUTH_FAILED, status=status)
-    if status == 404:
-        return HttpError(ErrorCode.NOT_FOUND, status=status)
-    if status == 429:
-        return HttpError(ErrorCode.RATE_LIMITED, status=status)
-    return HttpError(ErrorCode.UPSTREAM_ERROR, status=status)
 
 
 def _magic_ok(media_type: str, head: bytes) -> bool:
@@ -283,9 +341,8 @@ class Downloader:
                 if not location:
                     raise HttpError(ErrorCode.UPSTREAM_ERROR, status=response.status_code)
                 return str(target.join(location))
-            error = _status_error(response.status_code)
-            if error is not None:
-                raise error
+            if not 200 <= response.status_code < 300:
+                raise HttpError(status_code(response.status_code), status=response.status_code)
             return await self._store(response, target, policy, deadline)
 
     async def _store(

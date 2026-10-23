@@ -9,8 +9,9 @@ from __future__ import annotations
 import logging
 import secrets
 import traceback
-from collections.abc import Callable
+from collections.abc import AsyncIterator, Callable, Iterable
 from pathlib import Path
+from typing import cast
 
 import httpx
 import pytest
@@ -77,6 +78,23 @@ class Resolver:
         return self._keys.get(source)
 
 
+class Wire(httpx.AsyncByteStream):
+    def __init__(self, body: bytes) -> None:
+        self.body = body
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield self.body
+
+
+class WireTransport(httpx.MockTransport):
+    """``httpx.MockTransport`` whose bodies arrive unread, as a network transport's do."""
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        response = await super().handle_async_request(request)
+        raw = b"".join(cast(Iterable[bytes], response.stream))
+        return httpx.Response(response.status_code, headers=response.headers, stream=Wire(raw))
+
+
 class Sink:
     def __init__(self) -> None:
         self.records: list[CallRecord] = []
@@ -100,7 +118,7 @@ def client_for(handler: Handler, resolver: Resolver) -> tuple[HttpClient, list[h
         clock,
         FakeSleeper(clock),
         "owner@uni.edu",
-        transport=httpx.MockTransport(recording),
+        transport=WireTransport(recording),
     )
     return client, sent
 
@@ -175,7 +193,7 @@ async def test_download_never_carries_a_credential(tmp_path: Path) -> None:
             media_types=frozenset({"application/pdf"}), max_bytes=10_000, public_any=True
         ),
         tmp_path,
-        transport_factory=lambda host, ip: httpx.MockTransport(handler),
+        transport_factory=lambda host, ip: WireTransport(handler),
     )
     await downloader.download("https://api.core.ac.uk/download/1.pdf")
     (request,) = sent

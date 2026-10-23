@@ -114,6 +114,22 @@ def _origin(url: httpx.URL) -> tuple[str, str, int | None]:
     return scheme, url.host.lower(), url.port or _DEFAULT_PORTS.get(scheme)
 
 
+def _is_ascii_number(value: str) -> bool:
+    # str.isdigit also accepts digits such as "²" that float and int reject.
+    return value.isascii() and value.isdigit()
+
+
+def status_code(status: int) -> ErrorCode:
+    """The code for a non-2xx status that no source classifier claimed (6.1)."""
+    if status == 429:
+        return ErrorCode.RATE_LIMITED
+    if status in (401, 403):
+        return ErrorCode.AUTH_FAILED
+    if status == 404:
+        return ErrorCode.NOT_FOUND
+    return ErrorCode.UPSTREAM_ERROR
+
+
 def _retry_after_s(value: str | None, now: datetime) -> float | None:
     """Seconds to wait from a ``Retry-After`` header (delta seconds or an HTTP date).
 
@@ -122,11 +138,11 @@ def _retry_after_s(value: str | None, now: datetime) -> float | None:
     if value is None:
         return None
     value = value.strip()
-    if value.isdigit():
+    if _is_ascii_number(value):
         return min(float(value), _MAX_WAIT_S)
     try:
         when = parsedate_to_datetime(value)
-    except (TypeError, ValueError, IndexError, OverflowError):
+    except (TypeError, ValueError, IndexError, OverflowError, AttributeError):
         return None
     if when.tzinfo is None:
         # A "-0000" zone parses to a naive datetime; RFC 5322 reads it as UTC.
@@ -195,15 +211,8 @@ async def capped_body(response: httpx.Response, cap: int) -> AsyncGenerator[byte
     """
     status = response.status_code
     declared = response.headers.get("content-length", "")
-    if declared.isdigit() and int(declared) > cap:
+    if _is_ascii_number(declared) and int(declared) > cap:
         raise HttpError(ErrorCode.TOO_LARGE, status=status)
-    if response.is_stream_consumed:
-        # A transport that hands over a body already in memory (httpx.MockTransport) has
-        # had it decoded by httpx; a network transport never does.
-        if len(response.content) > cap:
-            raise HttpError(ErrorCode.TOO_LARGE, status=status)
-        yield response.content
-        return
     inflater = _Inflater(response.headers.get("content-encoding", ""), cap, status)
     raw = 0
     async for chunk in response.aiter_raw():
@@ -495,19 +504,13 @@ class HttpClient:
         wait = _retry_after_s(result.headers.get("retry-after"), now)
         wait_ms = None if wait is None else math.ceil(wait * 1000)
         too_long = wait is not None and wait > MAX_RETRY_AFTER_S
-        if status == 429:
-            result.error = HttpError(ErrorCode.RATE_LIMITED, status=status, retry_after_ms=wait_ms)
-        elif status in RETRIED_5XX:
-            result.error = HttpError(ErrorCode.UPSTREAM_ERROR, status=status)
-        elif status in (401, 403):
-            result.error = HttpError(ErrorCode.AUTH_FAILED, status=status)
-            return
-        elif status == 404:
-            result.error = HttpError(ErrorCode.NOT_FOUND, status=status)
-            return
+        code = status_code(status)
+        if code is ErrorCode.RATE_LIMITED:
+            result.error = HttpError(code, status=status, retry_after_ms=wait_ms)
         else:
-            result.error = HttpError(ErrorCode.UPSTREAM_ERROR, status=status)
-            return
+            result.error = HttpError(code, status=status)
+            if status not in RETRIED_5XX:
+                return
         result.retry = not too_long
         result.delay_s = wait
 

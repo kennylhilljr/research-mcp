@@ -8,10 +8,10 @@ from __future__ import annotations
 
 import gzip
 import zlib
-from collections.abc import AsyncIterator, Callable
+from collections.abc import AsyncIterator, Callable, Iterable
 from datetime import timedelta
 from email.utils import format_datetime
-from typing import Any
+from typing import Any, cast
 
 import httpx
 import pytest
@@ -85,7 +85,23 @@ class Harness:
             self.clock,
             self.sleeper,
             contact,
-            transport=httpx.MockTransport(recording),
+            transport=WireTransport(recording),
+        )
+
+
+class WireTransport(httpx.MockTransport):
+    """``httpx.MockTransport`` whose bodies arrive unread, as a network transport's do."""
+
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        response = await super().handle_async_request(request)
+        if not response.is_stream_consumed:
+            return response
+        raw = b"".join(cast(Iterable[bytes], response.stream))
+        return httpx.Response(
+            response.status_code,
+            headers=response.headers,
+            stream=Wire(raw),
+            extensions=response.extensions,
         )
 
 
@@ -162,6 +178,31 @@ async def test_hostile_retry_after_still_gives_rate_limited(value: str) -> None:
     error = await fails(harness)
     assert error.code is ErrorCode.RATE_LIMITED
     assert len(harness.sink.records) == len(harness.requests)
+
+
+@pytest.mark.parametrize(("status", "code"), [(429, "rate_limited"), (503, "upstream_error")])
+@pytest.mark.parametrize("raw", [b"\xb2", b"1\xb2", "٣".encode()])
+async def test_non_ascii_digit_retry_after_still_gives_a_code(
+    status: int, code: str, raw: bytes
+) -> None:
+    """@spec PLAT-35: a Retry-After of digits float() rejects (``²``, ``٣``) still maps to a code.
+
+    Regression: ``str.isdigit`` accepted ``²`` and the client raised a bare ``ValueError``.
+    """
+    reply = httpx.Response(status, headers=[(b"Retry-After", raw)])
+    harness = Harness(replies(*[reply] * 3))
+    error = await fails(harness)
+    assert error.code.value == code
+    assert error.retry_after_ms is None
+    # The header is ignored, so the client backs off with jitter and tries all three times.
+    assert len(harness.requests) == 3
+
+
+async def test_non_ascii_digit_content_length_is_ignored() -> None:
+    """@spec PLAT-38: a Content-Length of a non-ASCII digit does not break the byte cap check."""
+    reply = httpx.Response(200, content=b'{"ok": true}', headers=[(b"Content-Length", b"\xb2")])
+    harness = Harness(replies(reply))
+    assert await harness.client.get_json(URL, source="crossref") == {"ok": True}
 
 
 async def test_long_retry_after_sets_rl_reset_on_the_record() -> None:
