@@ -2,7 +2,9 @@
 title: "Source adapter contract"
 type: contract
 version: 1
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 component: sources
 artifact_type: low-level-design
@@ -13,7 +15,7 @@ date: 2026-10-22
 
 # Contract: source adapter and registry (v1)
 
-> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-sources v2](../lld/LLD-sources-v2.md). This is a draft for the owner. It changes no behavior of an approved document; it writes down the shapes that [PRD-sources v5](../prd/components/PRD-sources-v5.md) (SRC-FR-1 to SRC-FR-10, SRC-FR-19 to SRC-FR-26) and [SPEC-v5](../spec/SPEC-v5.md) 4 already require. The implementation form is the Python in LLD-sources v2 2.1 and 3.1; if the two disagree, tell the owner.
+> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-sources v2](../lld/LLD-sources-v2.md). Approved at Gate 3 on 2026-10-23. It changes no behavior of an approved document; it writes down the shapes that [PRD-sources v5](../prd/components/PRD-sources-v5.md) (SRC-FR-1 to SRC-FR-10, SRC-FR-19 to SRC-FR-26) and [SPEC-v5](../spec/SPEC-v5.md) 4 already require. The implementation form is the Python in LLD-sources v2 2.1 and 3.1; if the two disagree, tell the owner.
 
 Every source is one module with a `SourceSpec` and an adapter. A work unit that adds a source, the conformance suite, the live check and the inventory generator all rely on what is written here. The envelope and error codes are in [envelope and error codes v1](envelope-and-errors-v1.md).
 

@@ -1,4 +1,4 @@
-"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v1.md).
+"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v2.md).
 
 `--check` exits 1 when the committed plan is stale (tools/ci.sh runs it)."""
 import json
@@ -7,7 +7,7 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-PLAN = "docs/build/M0-plan-v1.md"
+PLAN = "docs/build/M0-plan-v2.md"
 plan = (ROOT / PLAN).read_text()
 
 tasks = plan.split("## 2. Tasks", 1)[1].split("\n### ", 1)[0]

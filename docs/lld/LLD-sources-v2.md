@@ -2,7 +2,9 @@
 title: "Sources low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: SRC
 component: sources
@@ -778,4 +780,4 @@ All four questions are answered (owner decisions, 2026-10-22; section 10) and no
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (source-adapter-v1) | approved: none (adds no table, column or migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

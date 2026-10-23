@@ -3,7 +3,9 @@ title: "Health, Credentials and Notifications low level design"
 type: lld
 version: 2
 supersedes: docs/lld/LLD-health-v1.md
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: HLTH
 component: health
@@ -728,4 +730,4 @@ None open. Q1 (account email column) and Q2 (what is critical) were answered on 
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (health-status-and-webhook-v1) | approved: adds `credentials.account` and `disk_samples.model_cache_bytes` (inside the 0001_init schema) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

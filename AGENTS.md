@@ -9,19 +9,19 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 - [docs/README.md](docs/README.md) is the doc map: the scope map, the artifact index and each document's status. The latest approved documents are the source of truth. If code and docs disagree, raise it; do not silently diverge.
 - [docs/standards/spec-driven-development-v3.md](docs/standards/spec-driven-development-v3.md) defines scope, the delivery artifact chain, decision owners, gates, IDs and evidence. [docs/standards/agent-personas-v2.md](docs/standards/agent-personas-v2.md) defines the human and agent personas and the RASCI.
 - [docs/scope/scope-map.yaml](docs/scope/scope-map.yaml) names the scopes this repository serves (L3 `research-mcp`).
-- For a work unit: its task in [the M0 plan](docs/build/M0-plan-v1.md), the LLD sections it implements, the acceptance criteria it owns (section 2.4 of each component PRD), and any clarifications the plan lists for it.
+- For a work unit: its task in [the M0 plan](docs/build/M0-plan-v2.md), the LLD sections it implements, the acceptance criteria it owns (section 2.4 of each component PRD), and any clarifications the plan lists for it.
 
 ## Documents
 
 | Artifact | Where | Owns |
 | --- | --- | --- |
 | Vision | [docs/vision/vision-v2.md](docs/vision/vision-v2.md) | Why, for whom, the outcomes |
-| Parent PRD | [docs/prd/PRD-v7.md](docs/prd/PRD-v7.md) | Outcomes `OUT-n`, cross-cutting `NFR-n`, invariants `INV-n`, components, milestones |
+| Parent PRD | [docs/prd/PRD-v8.md](docs/prd/PRD-v8.md) | Outcomes `OUT-n`, cross-cutting `NFR-n`, invariants `INV-n`, components, milestones |
 | Component PRDs | [docs/prd/components/](docs/prd/components/) | Requirements `<PREFIX>-FR-n` and acceptance criteria `<PREFIX>-n` (PLAT, SEC, SRC, SRCH, CACHE, HLTH, UI, MIG) |
-| SPEC (system high level design) | [docs/spec/SPEC-v4.md](docs/spec/SPEC-v4.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
+| SPEC (system high level design) | [docs/spec/SPEC-v5.md](docs/spec/SPEC-v5.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
 | LLDs, one per component | [docs/lld/](docs/lld/) | Every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes, error codes), every interface and format |
-| Test plan | [docs/test/test-plan-v3.md](docs/test/test-plan-v3.md) | How each criterion is verified; owner checks; milestone exit gates |
-| Milestone plan | [docs/build/M0-plan-v1.md](docs/build/M0-plan-v1.md) | Work units, their criteria, scope and dependencies |
+| Test plan | [docs/test/test-plan-v4.md](docs/test/test-plan-v4.md) | How each criterion is verified; owner checks; milestone exit gates |
+| Milestone plan | [docs/build/M0-plan-v2.md](docs/build/M0-plan-v2.md) | Work units, their criteria, scope and dependencies |
 | Runbooks and contracts | [docs/runbooks/](docs/runbooks/), [docs/contracts/](docs/contracts/) | Operating steps; the MCP prompt texts |
 
 - **The LLDs own every name.** Code follows them. If an LLD is wrong or contradicts a PRD or the test plan, do not pick a side: record the conflict in your handoff and build everything it does not touch.
@@ -125,7 +125,7 @@ The team's practices evolve during a build (TEAM-DELIVERY v7). Every reviewer, t
 uv sync --frozen
 tools/ci.sh --python-only               # lint, types, tests, generator checks, SDD checks
 uv run pytest -q
-python3 tools/gen_m0_plan.py            # after changing the task table in docs/build/M0-plan-v1.md
+python3 tools/gen_m0_plan.py            # after changing the task table in docs/build/M0-plan-v2.md
 node tools/sdd/cli.mjs check            # spec-lint and trace-check
 node tools/sdd/cli.mjs docmap           # after adding or versioning a document
 node tools/sdd/cli.mjs new --next <path>  # the next version of a document

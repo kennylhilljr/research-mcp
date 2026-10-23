@@ -22,7 +22,7 @@
     "coverage": "docs/trace/coverage.md",
     "docMap": "docs/README.md",
     "scopeMap": "docs/scope/scope-map.yaml",
-    "testPlan": "docs/test/test-plan-v3.md"
+    "testPlan": "docs/test/test-plan-v4.md"
   },
   "approvals": {
     "requireApprover": false
@@ -80,7 +80,20 @@
         "src/research_mcp/services/chunking.py",
         "src/research_mcp/services/embeddings.py",
         "src/research_mcp/services/maintenance.py",
-        "src/research_mcp/services/backup.py"
+        "src/research_mcp/services/backup.py",
+        "src/research_mcp/mcp_app/tools_library.py",
+        "src/research_mcp/mcp_app/tools_review.py",
+        "tests/services/test_cache_fetch.py",
+        "tests/services/test_cache_jobs.py",
+        "tests/services/test_extract_worker.py",
+        "tests/services/test_cache_search.py",
+        "tests/services/test_embeddings.py",
+        "tests/services/test_review.py",
+        "tests/services/test_trash.py",
+        "tests/services/test_archive.py",
+        "tests/services/test_collections.py",
+        "tests/services/test_maintenance.py",
+        "tests/services/test_backup.py"
       ]
     },
     "health": {
@@ -89,7 +102,12 @@
         "src/research_mcp/services/health.py",
         "src/research_mcp/services/credentials.py",
         "src/research_mcp/services/notify.py",
-        "src/research_mcp/services/disk.py"
+        "src/research_mcp/services/disk.py",
+        "src/research_mcp/services/doctor.py",
+        "tests/services/test_health.py",
+        "tests/services/test_credentials.py",
+        "tests/services/test_notify.py",
+        "tests/services/test_disk.py"
       ]
     },
     "ui": {
@@ -102,7 +120,14 @@
     "migration": {
       "prefix": "MIG",
       "paths": [
-        "src/research_mcp/services/legacy_import.py"
+        "src/research_mcp/services/legacy_import.py",
+        "src/research_mcp/services/migration_guard.py",
+        "src/research_mcp/services/client_configs.py",
+        "src/research_mcp/services/tool_map.py",
+        "tests/migration",
+        "tests/unit/services/test_client_configs.py",
+        "tests/unit/services/test_secrets_import.py",
+        "tests/unit/services/test_tool_map.py"
       ]
     },
     "security": {

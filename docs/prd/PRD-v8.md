@@ -2,7 +2,9 @@
 title: "Research MCP v2: one tool, many sources"
 type: prd
 version: 8
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 artifact_type: product-specification
@@ -180,14 +182,14 @@ PRD-v4 section 5 had seven components, with platform and security in one. This v
 
 | Component | Prefix | Component PRD | LLD | Owner |
 | --- | --- | --- | --- | --- |
-| Platform | PLAT | [PRD-platform-v4](components/PRD-platform-v4.md) | [LLD-platform-v1](../lld/LLD-platform-v1.md) | Kenny Hill |
-| Sources | SRC | [PRD-sources-v5](components/PRD-sources-v5.md) | [LLD-sources-v1](../lld/LLD-sources-v1.md) | Kenny Hill |
-| Search and identity | SRCH | [PRD-search-v3](components/PRD-search-v3.md) | [LLD-search-v1](../lld/LLD-search-v1.md) | Kenny Hill |
-| Retrieval and cache | CACHE | [PRD-cache-v4](components/PRD-cache-v4.md) | [LLD-cache-v1](../lld/LLD-cache-v1.md) | Kenny Hill |
-| Health and credentials | HLTH | [PRD-health-v4](components/PRD-health-v4.md) | [LLD-health-v1](../lld/LLD-health-v1.md) | Kenny Hill |
-| Local UI | UI | [PRD-ui-v4](components/PRD-ui-v4.md) | [LLD-ui-v1](../lld/LLD-ui-v1.md) | Kenny Hill |
-| Migration and cutover | MIG | [PRD-migration-v6](components/PRD-migration-v6.md) | [LLD-migration-v1](../lld/LLD-migration-v1.md) | Kenny Hill |
-| Security | SEC | [PRD-security-v3](components/PRD-security-v3.md) | [LLD-security-v1](../lld/LLD-security-v1.md) | Kenny Hill |
+| Platform | PLAT | [PRD-platform-v4](components/PRD-platform-v4.md) | [LLD-platform-v2](../lld/LLD-platform-v2.md) | Kenny Hill |
+| Sources | SRC | [PRD-sources-v5](components/PRD-sources-v5.md) | [LLD-sources-v2](../lld/LLD-sources-v2.md) | Kenny Hill |
+| Search and identity | SRCH | [PRD-search-v3](components/PRD-search-v3.md) | [LLD-search-v2](../lld/LLD-search-v2.md) | Kenny Hill |
+| Retrieval and cache | CACHE | [PRD-cache-v4](components/PRD-cache-v4.md) | [LLD-cache-v2](../lld/LLD-cache-v2.md) | Kenny Hill |
+| Health and credentials | HLTH | [PRD-health-v4](components/PRD-health-v4.md) | [LLD-health-v2](../lld/LLD-health-v2.md) | Kenny Hill |
+| Local UI | UI | [PRD-ui-v4](components/PRD-ui-v4.md) | [LLD-ui-v2](../lld/LLD-ui-v2.md) | Kenny Hill |
+| Migration and cutover | MIG | [PRD-migration-v6](components/PRD-migration-v6.md) | [LLD-migration-v2](../lld/LLD-migration-v2.md) | Kenny Hill |
+| Security | SEC | [PRD-security-v3](components/PRD-security-v3.md) | [LLD-security-v2](../lld/LLD-security-v2.md) | Kenny Hill |
 
 ## 2.2 Functional requirement index
 
@@ -369,4 +371,4 @@ PRD-v4 IDs and the IDs that replace them. The wording and targets are unchanged.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| Pending | Pending | Version 8 is a draft; the owner approves it at the reopened Gate 1 |
+| Kenny Hill (Product) | 2026-10-23 | Approved in chat; recorded by Claude in the owner's name at his direction |

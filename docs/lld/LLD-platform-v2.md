@@ -2,7 +2,9 @@
 title: "Platform and Security low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: PLAT
 component: platform
@@ -102,7 +104,7 @@ All 46 criteria of PRD-platform v4 appear above: PLAT-1 to PLAT-6, PLAT-8 to PLA
 
 > **Owner:** C · **Persona:** `component-designer` drafts; the contract owner approves public and cross-team contracts
 
-Machine-readable contract: [envelope and error codes v1](../contracts/envelope-and-errors-v1.md), a draft written for the owner to approve at Gate 3 (decided in section 10: the envelope and the error codes get a contract; the CLI, the launchd templates and the endpoints do not). The CLI is a human-facing surface verified by PLAT-80 and tabulated in 2.4; the endpoint shapes belong to [LLD-health](LLD-health-v2.md) 2; the tool catalog and its schemas are emitted by the MCP SDK from the Pydantic models (PLAT-30), so a separate file would only duplicate them.
+Machine-readable contract: [envelope and error codes v1](../contracts/envelope-and-errors-v1.md), approved at Gate 3 (2026-10-23) (decided in section 10: the envelope and the error codes get a contract; the CLI, the launchd templates and the endpoints do not). The CLI is a human-facing surface verified by PLAT-80 and tabulated in 2.4; the endpoint shapes belong to [LLD-health](LLD-health-v2.md) 2; the tool catalog and its schemas are emitted by the MCP SDK from the Pydantic models (PLAT-30), so a separate file would only duplicate them.
 
 ### 2.1 Errors and the envelope (SPEC-v2 3.7; PLAT-FR-25, PLAT-FR-30, PLAT-FR-32)
 
@@ -973,4 +975,4 @@ No question is open. The owner answered all of them on 2026-10-22: the Drive cop
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (envelope-and-errors-v1) | approved: none (adds no table, column or migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

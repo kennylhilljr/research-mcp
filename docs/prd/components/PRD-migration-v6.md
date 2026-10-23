@@ -2,12 +2,14 @@
 title: "Migration and Cutover"
 type: prd-component
 version: 6
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: MIG
 component: migration
-parent: docs/prd/PRD-v7.md
+parent: docs/prd/PRD-v8.md
 artifact_type: product-specification
 scope_level: L3
 scope_name: "research-mcp"
@@ -17,7 +19,7 @@ date: 2026-10-22
 
 # Component PRD: Migration and Cutover (v6)
 
-Version 4 moved [PRD-migration v3](../../../docs-archive/prd/components/PRD-migration-v3.md) onto the SDD component template; its earlier IDs map to new ones in section 2.16. This version supersedes [PRD-migration v5](PRD-migration-v5.md). Version 6 reopens Gate 1 to add the file-read boundary of each migration command (MIG-FR-27, MIG-27 to MIG-34), which closes the SPEC-v4 section 20 item (owner decision, 2026-10-22). It also adds the `retire-v1` command (MIG-FR-26, MIG-35), the client config paths and the symbolic-link rule for them (owner decision, 2026-10-23). Parent: [PRD v7](../PRD-v7.md) (PRD v8 is the draft successor: [PRD v8](../PRD-v8.md)). Vision: [vision v2](../../vision/vision-v2.md). Design: [SPEC v5](../../spec/SPEC-v5.md) and [LLD-migration v2](../../lld/LLD-migration-v2.md). Cutover steps: [migration cutover runbook](../../runbooks/migration-cutover-v2.md).
+Version 4 moved [PRD-migration v3](../../../docs-archive/prd/components/PRD-migration-v3.md) onto the SDD component template; its earlier IDs map to new ones in section 2.16. This version supersedes [PRD-migration v5](PRD-migration-v5.md). Version 6 reopens Gate 1 to add the file-read boundary of each migration command (MIG-FR-27, MIG-27 to MIG-34), which closes the SPEC-v5 section 20 item (owner decision, 2026-10-22). It also adds the `retire-v1` command (MIG-FR-26, MIG-35), the client config paths and the symbolic-link rule for them (owner decision, 2026-10-23). Parent: [PRD v7](../PRD-v8.md) (PRD v8 is the draft successor: [PRD v8](../PRD-v8.md)). Vision: [vision v2](../../vision/vision-v2.md). Design: [SPEC v5](../../spec/SPEC-v5.md) and [LLD-migration v2](../../lld/LLD-migration-v2.md). Cutover steps: [migration cutover runbook](../../runbooks/migration-cutover-v2.md).
 
 ---
 
@@ -29,7 +31,7 @@ The owner must move from v1 to v2 without re-entering any credential, without to
 
 v1 is in daily use by three MCP clients, so v2 is built in a new repository and v1 keeps running under its existing client entries until cutover at milestone M4 (ADR 0001; PRD-v6 2.9). The parent problem, v1's 53 single-source tools and its silent breakage, is in the parent PRD (PRD-v6 1.1).
 
-**Why now.** v2 is a rebuild, and the upstream breakage it fixes is current: the live probes of 2026-10-19 found OpenAlex, Semantic Scholar and Crossref degraded and Google Programmable Search closed to new customers (PRD-v7 1.1; owner decision, 2026-10-22). Cutover at M4 is the step that moves daily use from v1 to v2 (PRD-v6 2.9).
+**Why now.** v2 is a rebuild, and the upstream breakage it fixes is current: the live probes of 2026-10-19 found OpenAlex, Semantic Scholar and Crossref degraded and Google Programmable Search closed to new customers (PRD-v8 1.1; owner decision, 2026-10-22). Cutover at M4 is the step that moves daily use from v1 to v2 (PRD-v6 2.9).
 
 ## 1.2 Customers and users
 
@@ -95,9 +97,9 @@ The owner confirmed MIG-INV-1 to MIG-INV-3 as component invariants (owner decisi
 | MIG-INV-2 | Print a credential value during the credential import | PRD-migration-v3 FR-MIG-01; parent NFR-4 | MIG-1 (normal output) and MIG-22 (dry run, conflict prompt, not-imported list and errors) |
 | MIG-INV-3 | Write an imported credential anywhere but the Keychain | ADR 0001; parent NFR-3 | MIG-23 |
 
-**Approved exception.** The scrub backups that `scrub-client-configs` writes are not an import, but they do hold plaintext v1 keys outside the Keychain. The owner approved them as an exception to NFR-3 and INV-6 that lasts until v1 is retired; they are written owner-only and deleted at retirement (PRD-v7 1.5; MIG-FR-26; MIG-25, MIG-26; owner decision, 2026-10-22). MIG-INV-3 itself is unchanged.
+**Approved exception.** The scrub backups that `scrub-client-configs` writes are not an import, but they do hold plaintext v1 keys outside the Keychain. The owner approved them as an exception to NFR-3 and INV-6 that lasts until v1 is retired; they are written owner-only and deleted at retirement (PRD-v8 1.5; MIG-FR-26; MIG-25, MIG-26; owner decision, 2026-10-22). MIG-INV-3 itself is unchanged.
 
-**Approved exception for owner-run commands.** INV-4 and SEC-INV-7 are excepted per command, until v1 retirement, for the owner-run migration commands only: each reads only the paths in its read set (2.4, MIG-FR-27). MCP tools and agent-triggered actions stay bound by INV-4 and SEC-INV-7 (SPEC-v4 9; owner decision, 2026-10-22).
+**Approved exception for owner-run commands.** INV-4 and SEC-INV-7 are excepted per command, until v1 retirement, for the owner-run migration commands only: each reads only the paths in its read set (2.4, MIG-FR-27). MCP tools and agent-triggered actions stay bound by INV-4 and SEC-INV-7 (SPEC-v5 9; owner decision, 2026-10-22).
 
 ## 1.7 Known constraints and decisions
 
@@ -105,13 +107,13 @@ The owner confirmed MIG-INV-1 to MIG-INV-3 as component invariants (owner decisi
 
 | Decision or constraint | Status (made or open) | Rationale or link |
 | --- | --- | --- |
-| v2 is a new repository; v1 stays read-only and running until cutover; at cutover v1's entries are disabled, not deleted | made; ADR 0001 is Proposed and is accepted when the owner approves this PRD at Gate 1 (owner decision, 2026-10-22; PRD-v6 1.6) | ADR 0001 |
+| v2 is a new repository; v1 stays read-only and running until cutover; at cutover v1's entries are disabled, not deleted | made; ADR 0001 is Accepted (2026-10-22, with Gate 1 approval of the parent PRD) | ADR 0001 |
 | The v1 web-search credentials are imported, and the Vertex project, location and engine id and the Programmable Search engine id carry over as settings | made | ADR 0012; it supersedes review decision D7 |
 | Imported cache items get a 120-day expiry | made | ADR 0011; it supersedes the 30 days of review decision D3 |
 | Tools that took caller-chosen local paths or ran SQL are removed, not mapped | made | ADR 0009 |
 | No SQL or dataset tool in the first release | made: O4 closed (PRD-v6 1.6) | PRD-v4 11, O4 |
 | New free OpenAlex and Semantic Scholar keys are added at cutover | made: O2 closed (PRD-v6 1.6) | PRD-v4 11, O2; MIGRATION-v2 3, step 4 |
-| Each owner-run migration command reads only its own read set; a read of any other path is refused and reported | made (owner decision, 2026-10-22) | SPEC-v4 9 and 20; MIG-FR-27 |
+| Each owner-run migration command reads only its own read set; a read of any other path is refused and reported | made (owner decision, 2026-10-22) | SPEC-v5 9 and 20; MIG-FR-27 |
 
 ### Intake checkpoint: Problem approved
 
@@ -193,15 +195,15 @@ The owner runs the cutover from the command line, following the [cutover runbook
 
 | ID | Requirement | Story | Parent | Priority |
 | --- | --- | --- | --- | --- |
-| MIG-FR-27 | Each owner-run migration command reads only the paths in its read set below. A read of any other path is refused and reported. MCP tools and agent-triggered actions are not covered: they stay bound by INV-4 and SEC-INV-7 (SPEC-v4 9; owner decision, 2026-10-22). | MIG-US-1 | INV-4 | P1 |
+| MIG-FR-27 | Each owner-run migration command reads only the paths in its read set below. A read of any other path is refused and reported. MCP tools and agent-triggered actions are not covered: they stay bound by INV-4 and SEC-INV-7 (SPEC-v5 9; owner decision, 2026-10-22). | MIG-US-1 | INV-4 | P1 |
 
-Read set of each command (paths from MIG-FR-1, MIG-FR-5, MIG-FR-10 and SPEC-v4 9; owner decision, 2026-10-22). A command's write targets (the Keychain, `config.toml`, the report folder, the scrub backups) are not reads and are governed by their own requirements.
+Read set of each command (paths from MIG-FR-1, MIG-FR-5, MIG-FR-10 and SPEC-v5 9; owner decision, 2026-10-22). A command's write targets (the Keychain, `config.toml`, the report folder, the scrub backups) are not reads and are governed by their own requirements.
 
 | Command | May read | Source |
 | --- | --- | --- |
-| `research-mcp secrets import` | The client config files that hold the v1 server entry, at exactly `~/Library/Application Support/Claude/claude_desktop_config.json` (Claude desktop), `~/.claude.json` (Claude Code) and `~/.openclaw/openclaw.json` (OpenClaw); a path whose final component is a symbolic link is refused (MIG-32); the v2 config file `~/.config/research-mcp/config.toml`, to keep the import idempotent (MIG-FR-4) | MIG-FR-1; MIG-FR-4; SPEC-v4 9 and 10 |
-| `research-mcp secrets scrub-client-configs` | The same three client config files, with the same symbolic-link refusal (MIG-32); no other path | MIG-FR-5; SPEC-v4 9; owner decision, 2026-10-23 |
-| `research-mcp import-legacy <path>` | The v1 data tree at `<path>` (`~/arxiv-papers`: `arxiv_index.db`, opened immutable, the PDFs and `embeddings.duckdb`), read only; a symbolic link that leaves that tree is refused (MIG-32); the v2 cache `~/Library/Application Support/research-mcp/cache/cache.db`, to merge with works already there (confirmed, owner decision, 2026-10-22) | MIG-FR-10; SPEC-v4 9 and 10; MIG-INV-1 |
+| `research-mcp secrets import` | The client config files that hold the v1 server entry, at exactly `~/Library/Application Support/Claude/claude_desktop_config.json` (Claude desktop), `~/.claude.json` (Claude Code) and `~/.openclaw/openclaw.json` (OpenClaw); a path whose final component is a symbolic link is refused (MIG-32); the v2 config file `~/.config/research-mcp/config.toml`, to keep the import idempotent (MIG-FR-4) | MIG-FR-1; MIG-FR-4; SPEC-v5 9 and 10 |
+| `research-mcp secrets scrub-client-configs` | The same three client config files, with the same symbolic-link refusal (MIG-32); no other path | MIG-FR-5; SPEC-v5 9; owner decision, 2026-10-23 |
+| `research-mcp import-legacy <path>` | The v1 data tree at `<path>` (`~/arxiv-papers`: `arxiv_index.db`, opened immutable, the PDFs and `embeddings.duckdb`), read only; a symbolic link that leaves that tree is refused (MIG-32); the v2 cache `~/Library/Application Support/research-mcp/cache/cache.db`, to merge with works already there (confirmed, owner decision, 2026-10-22) | MIG-FR-10; SPEC-v5 9 and 10; MIG-INV-1 |
 | `research-mcp install --print-client-config` | Nothing beyond the v2 install (owner decision, 2026-10-22) | MIG-FR-20 |
 | `research-mcp restore-client-configs` | The scrub backups only | MIG-FR-25 |
 | `research-mcp retire-v1 --confirm` | The scrub-backup set only, the same set as `restore-client-configs`; it deletes that set and touches nothing else (owner decision, 2026-10-23) | MIG-FR-26 |
@@ -242,7 +244,7 @@ The CLI's own `config.toml` read and the daemon's opens of its own `state.db` st
 
 MIG-FR-26 stays P2 while MIG-25, MIG-26 and MIG-35 are P1: scrubbing is optional, but if it ships, its backup controls must pass, the same pattern as CACHE-62 for CACHE-FR-51 (owner decision, 2026-10-22).
 
-MIG-27 to MIG-30 are one P1 criterion per command plus the refusal, as the owner decided in SPEC-v4 20; MIG-31 to MIG-34 add the restore command, the symbolic-link refusal, the print command and the v2 paths (owner decision, 2026-10-22). `restore-client-configs` is stated under MIG-FR-25, which already covers restoring on rollback, so no new requirement is added. MIG-FR-27 is new because the boundary is a requirement that the criteria verify; MIG-FR-5 stays P2 while MIG-28 is P1 for the same reason as MIG-25. MIG-35 verifies the `retire-v1 --confirm` command stated under MIG-FR-26 (owner decision, 2026-10-23). The symbolic-link refusal of MIG-32 also applies to a client config file whose final component is a symbolic link, for `secrets import` and `scrub-client-configs`; this is a note on the read sets, and the meaning of MIG-32 is unchanged (owner decision, 2026-10-23).
+MIG-27 to MIG-30 are one P1 criterion per command plus the refusal, as the owner decided in SPEC-v5 20; MIG-31 to MIG-34 add the restore command, the symbolic-link refusal, the print command and the v2 paths (owner decision, 2026-10-22). `restore-client-configs` is stated under MIG-FR-25, which already covers restoring on rollback, so no new requirement is added. MIG-FR-27 is new because the boundary is a requirement that the criteria verify; MIG-FR-5 stays P2 while MIG-28 is P1 for the same reason as MIG-25. MIG-35 verifies the `retire-v1 --confirm` command stated under MIG-FR-26 (owner decision, 2026-10-23). The symbolic-link refusal of MIG-32 also applies to a client config file whose final component is a symbolic link, for `secrets import` and `scrub-client-configs`; this is a note on the read sets, and the meaning of MIG-32 is unchanged (owner decision, 2026-10-23).
 
 Verified elsewhere (owner decision, 2026-10-22):
 
@@ -307,7 +309,7 @@ Kenny Hill owns every integration. No integration has an SLA; upstream services 
 | Question | Answer |
 | --- | --- |
 | Rollout appetite | v2 runs beside v1 for a parallel period of 3 to 7 days; v1 entries are then disabled, not deleted; v1 is retired only after 14 days with no fallback and the owner's go-ahead (MIGRATION-v2 3; MIG-FR-21; MIG-FR-24; PRD-v6 2.6). |
-| Business conditions that must halt the rollout | A blocking issue during parallel use (MIGRATION-v2 3, step 7); and the PRD-v7 2.6 conditions: any deletion without a recorded owner decision, any secret in an output, a fallback to v1 during the 14-day window, or a breach of any invariant, which includes MIG-INV-1 to MIG-INV-3 (PRD-v7 2.6; owner decision, 2026-10-22). Rollback is re-enabling the v1 entries (MIG-FR-25). |
+| Business conditions that must halt the rollout | A blocking issue during parallel use (MIGRATION-v2 3, step 7); and the PRD-v8 2.6 conditions: any deletion without a recorded owner decision, any secret in an output, a fallback to v1 during the 14-day window, or a breach of any invariant, which includes MIG-INV-1 to MIG-INV-3 (PRD-v8 2.6; owner decision, 2026-10-22). Rollback is re-enabling the v1 entries (MIG-FR-25). |
 | Support owner and escalation path | The owner is the only support; there is no escalation path (PRD-v6 2.6; owner decision, 2026-10-22). |
 | Response targets by severity (S0 to S4) | None (PRD-v6 2.6; owner decision, 2026-10-22). |
 
@@ -351,15 +353,15 @@ The component is done when every P1 criterion passes (MIG-1, MIG-2, MIG-3, MIG-4
 
 **Resolved on 2026-10-22 (version 5).** The owner answered every open question in PRD-migration-v4: the user stories, drafted for approval (2.2, with a story on every requirement in 2.4); the relative sizes (1.2); MIG-OUT-1 and its baseline (1.4); the leaps of faith, drafted for approval (1.5); MIG-INV-1 to MIG-INV-3, each with a P1 criterion, including the new MIG-22 and MIG-23 (1.6, 2.4); no component NFRs (2.5); classification and retention (2.6); owners and SLAs (2.7); the value and usability risks, drafted for approval (2.8); support and response targets (2.9); MIG-FR-25 and MIG-FR-24 verified by owner checks OC-06 and OC-07 (2.4, "Verified elsewhere"); a criterion of its own for MIG-FR-15 (MIG-24); rollback after scrubbing, now in MIG-FR-25 (2.4); and ADR 0001, accepted when the owner approves this PRD at Gate 1 (1.7).
 
-**Gate 1 follow-up (version 5, owner decision, 2026-10-22).** The scrub backups keep plaintext v1 keys on disk. The owner approved them as an exception to NFR-3 and INV-6 that lasts until v1 is retired: they are written owner-only and deleted at retirement (MIG-FR-26, MIG-25, MIG-26; PRD-v7 1.5; test plan section 4). MIG-INV-3 names that exception. MIG-FR-26 stays P2 with P1 criteria (2.4). A breach of any invariant halts the rollout (PRD-v7 2.6).
+**Gate 1 follow-up (version 5, owner decision, 2026-10-22).** The scrub backups keep plaintext v1 keys on disk. The owner approved them as an exception to NFR-3 and INV-6 that lasts until v1 is retired: they are written owner-only and deleted at retirement (MIG-FR-26, MIG-25, MIG-26; PRD-v8 1.5; test plan section 4). MIG-INV-3 names that exception. MIG-FR-26 stays P2 with P1 criteria (2.4). A breach of any invariant halts the rollout (PRD-v8 2.6).
 
-**Reopened Gate 1 answer (version 6, owner decision, 2026-10-22).** One P1 criterion per command for the INV-4 and SEC-INV-7 exception: `secrets import` and `scrub-client-configs` read only the client configs, and only the legacy import reads the v1 folder (SPEC-v4 20). Added as MIG-FR-27 and MIG-27 to MIG-30.
+**Reopened Gate 1 answer (version 6, owner decision, 2026-10-22).** One P1 criterion per command for the INV-4 and SEC-INV-7 exception: `secrets import` and `scrub-client-configs` read only the client configs, and only the legacy import reads the v1 folder (SPEC-v5 20). Added as MIG-FR-27 and MIG-27 to MIG-30.
 
 **Assumptions**
 
-- Assumption: the Parent column of 2.4 is left empty because the source PRD header names milestone M4 but no parent goal. MIG-FR-27 is the exception: it cites INV-4 (PRD-v7 1.5), which the exception in SPEC-v4 9 names.
+- Assumption: the Parent column of 2.4 is left empty because the source PRD header names milestone M4 but no parent goal. MIG-FR-27 is the exception: it cites INV-4 (PRD-v8 1.5), which the exception in SPEC-v5 9 names.
 - Assumption: the reopening note listed the commands `import-v1`, `scrub-client-configs`, `verify` and `cutover`. This PRD defines `secrets import`, `import-legacy` and `scrub-client-configs`; cutover is a milestone and a runbook, and there is no `verify` command. The read set therefore covers the commands this PRD names.
-- Assumption: the owner allowed v2 reads at the exact paths in the read set. The listed paths come from SPEC-v4 10: `~/.config/research-mcp/config.toml` for `secrets import`, and `~/Library/Application Support/research-mcp/cache/cache.db` for `import-legacy`. The `cache.db` read (merging with works already present) is confirmed (owner decision, 2026-10-22).
+- Assumption: the owner allowed v2 reads at the exact paths in the read set. The listed paths come from SPEC-v5 10: `~/.config/research-mcp/config.toml` for `secrets import`, and `~/Library/Application Support/research-mcp/cache/cache.db` for `import-legacy`. The `cache.db` read (merging with works already present) is confirmed (owner decision, 2026-10-22).
 - Assumption: the CLI's read of its own `config.toml` and the daemon's opens of its own `state.db` stay outside the per-command read sets (owner decision, 2026-10-23).
 - Assumption: the implementer reads two v1 facts from the v1 repository, read-only: how to recognise the v1 server entry in a client config, and which env variable names the preferred web provider. The owner confirms both at review (owner decision, 2026-10-23).
 - Assumption: the owner named the new command `restore-client-configs`. MIG-FR-25 already covers restoring on rollback, so no MIG-FR-28 is added.
@@ -421,7 +423,7 @@ New IDs and editorial changes in this version; these rows are not definitions.
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| Pending | Pending | Version 6 is a draft; the owner approves it at the reopened Gate 1 |
+| Kenny Hill (Product) | 2026-10-23 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

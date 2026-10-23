@@ -2,7 +2,9 @@
 title: "Local UI low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: UI
 component: ui
@@ -482,4 +484,4 @@ None open. Resolved (owner decision, 2026-10-23): a setting saved on the Setting
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (no contract) | approved: none (owns no table, no migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

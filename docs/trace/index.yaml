@@ -12,12 +12,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-platform-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-platform-v4.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 45
+    artifacts: [docs/lld/LLD-platform-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-platform-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 46
     linked: 16
     passing: 0
     failing: 0
-    planned: 29
+    planned: 30
     deferred: 0
     excepted: 0
     drifted: 0
@@ -33,12 +33,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-security-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-security-v2.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 18
+    artifacts: [docs/lld/LLD-security-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-security-v3.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 27
     linked: 5
     passing: 0
     failing: 0
-    planned: 13
+    planned: 22
     deferred: 0
     excepted: 0
     drifted: 0
@@ -54,7 +54,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-sources-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-sources-v5.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
+    artifacts: [docs/lld/LLD-sources-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-sources-v5.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
     criteria: 26
     linked: 0
     passing: 0
@@ -75,12 +75,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-search-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-search-v3.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 27
+    artifacts: [docs/lld/LLD-search-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-search-v3.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 29
     linked: 7
     passing: 0
     failing: 0
-    planned: 20
+    planned: 22
     deferred: 0
     excepted: 0
     drifted: 0
@@ -96,12 +96,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-cache-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-cache-v4.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 36
+    artifacts: [docs/lld/LLD-cache-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-cache-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 38
     linked: 0
     passing: 0
     failing: 0
-    planned: 36
+    planned: 38
     deferred: 0
     excepted: 0
     drifted: 0
@@ -117,12 +117,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-health-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-health-v4.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 23
+    artifacts: [docs/lld/LLD-health-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-health-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 25
     linked: 0
     passing: 0
     failing: 0
-    planned: 23
+    planned: 25
     deferred: 0
     excepted: 0
     drifted: 0
@@ -138,12 +138,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-ui-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-ui-v4.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 16
+    artifacts: [docs/lld/LLD-ui-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-ui-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 22
     linked: 0
     passing: 0
     failing: 0
-    planned: 16
+    planned: 22
     deferred: 0
     excepted: 0
     drifted: 0
@@ -159,12 +159,12 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-migration-v1.md@draft, docs/prd/PRD-v7.md@draft, docs/prd/components/PRD-migration-v5.md@draft, docs/spec/SPEC-v4.md@draft, docs/test/test-plan-v3.md@draft]
-    criteria: 13
+    artifacts: [docs/lld/LLD-migration-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-migration-v6.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    criteria: 27
     linked: 0
     passing: 0
     failing: 0
-    planned: 13
+    planned: 27
     deferred: 0
     excepted: 0
     drifted: 0

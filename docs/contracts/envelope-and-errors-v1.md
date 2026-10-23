@@ -2,7 +2,9 @@
 title: "Tool result envelope and error codes"
 type: contract
 version: 1
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 component: platform
 artifact_type: low-level-design
@@ -13,7 +15,7 @@ date: 2026-10-22
 
 # Contract: tool result envelope and error codes (v1)
 
-> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-platform-v2](../lld/LLD-platform-v2.md). This is a draft for the owner. It changes no behavior of an approved document; it writes down the shapes that [PRD-platform-v4](../prd/components/PRD-platform-v4.md) (PLAT-FR-14, PLAT-FR-25, PLAT-FR-30, PLAT-FR-32) and [SPEC-v5](../spec/SPEC-v5.md) 5 and 11.1 already require.
+> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-platform-v2](../lld/LLD-platform-v2.md). Approved at Gate 3 on 2026-10-23. It changes no behavior of an approved document; it writes down the shapes that [PRD-platform-v4](../prd/components/PRD-platform-v4.md) (PLAT-FR-14, PLAT-FR-25, PLAT-FR-30, PLAT-FR-32) and [SPEC-v5](../spec/SPEC-v5.md) 5 and 11.1 already require.
 
 Every MCP tool returns this envelope or the error result below. Implementations are the Pydantic models in `research_mcp/core/envelope.py` and `research_mcp/core/errors.py`; the MCP SDK emits the JSON Schema from them (PLAT-30), and `ToolResult.model_json_schema()` is the machine-readable form. The tool catalog (which tool returns which `data`) is not part of this contract; it belongs to [LLD-search](../lld/LLD-search-v2.md).
 

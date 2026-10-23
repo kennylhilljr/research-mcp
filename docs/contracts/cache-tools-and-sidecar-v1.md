@@ -2,7 +2,9 @@
 title: "Cache tools, archive sidecar and rebuild report"
 type: contract
 version: 1
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 component: cache
 artifact_type: low-level-design
@@ -13,7 +15,7 @@ date: 2026-10-22
 
 # Contract: cache tools, archive sidecar and rebuild report (v1)
 
-> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-cache-v2](../lld/LLD-cache-v2.md). This is a draft for the owner. It writes down the shapes that [PRD-cache-v4](../prd/components/PRD-cache-v4.md) and [SPEC-v5](../spec/SPEC-v5.md) 6 already require, and the one on-disk format (the sidecar) that outlives the code. The envelope and the error codes are in [envelope and errors v1](envelope-and-errors-v1.md); this file does not repeat them.
+> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-cache-v2](../lld/LLD-cache-v2.md). Approved at Gate 3 on 2026-10-23. It writes down the shapes that [PRD-cache-v4](../prd/components/PRD-cache-v4.md) and [SPEC-v5](../spec/SPEC-v5.md) 6 already require, and the one on-disk format (the sidecar) that outlives the code. The envelope and the error codes are in [envelope and errors v1](envelope-and-errors-v1.md); this file does not repeat them.
 
 The Pydantic models in `research_mcp/services/cache.py` and `research_mcp/services/lifecycle.py` are the code form; the MCP SDK emits the JSON Schema from them (PLAT-30). Every tool carries `@tool_boundary` (PLAT-FR-30). Every string in a successful result is redacted for registered secrets there (SEC-28, owner decision, 2026-10-22). Text taken from a document (text windows, snippets, summaries) is returned only inside `Untrusted` (PLAT-FR-25; SEC-22).
 

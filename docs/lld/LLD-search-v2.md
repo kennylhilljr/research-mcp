@@ -3,7 +3,9 @@ title: "Search and Identity low level design"
 type: lld
 version: 2
 supersedes: docs/lld/LLD-search-v1.md
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: SRCH
 component: search
@@ -525,7 +527,7 @@ Resolved from the approved PRDs, SPEC-v5 and the owner decisions of 2026-10-22, 
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (no contract) | approved: adds `searches.filters_json` (inside the 0001_init migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 12. Divergences from code and dependencies on other documents
 

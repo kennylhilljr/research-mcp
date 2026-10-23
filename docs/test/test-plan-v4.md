@@ -2,7 +2,9 @@
 title: "Research MCP v2 test plan"
 type: test-plan
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 supersedes: docs/test/test-plan-v3.md
 owner: "Kenny Hill"
 artifact_type: test-strategy
@@ -405,7 +407,7 @@ The owner approved two exceptions on 2026-10-22. Both are partial, so INV-6, NFR
 4. Five M0 criteria have no owning task in docs/build/M0-plan-v1.md, so their Unit is empty: SEC-24, SEC-26, SEC-30, SRCH-37 and SRCH-38. The M0 gate (1.4) counts only the criteria in that plan, so these would not gate M0 until the `planner` assigns them in the next M0 plan version; SRCH-38 fits M0-02, which is done, so it needs a new or reopened unit. Still open in v4; handed to the `planner`. SEC-24 now also sits in the 1.2 "No secret at rest" area, which every milestone keeps green once its test exists.
 5. SEC-24 is the one criterion for no registered secret at rest after install, start and reload; the duplicate platform criterion was removed because the Security component owns the shared invariants (owner decision, 2026-10-22). Resolved in v3: 1.2 has a "No secret at rest" area listing SEC-24, SEC-27, HLTH-43 and MIG-23 (owner decision, 2026-10-22).
 6. The owner-run migration commands have criteria for the INV-4 and SEC-INV-7 exception: MIG-27 to MIG-34 (PRD-migration v6, owner decision, 2026-10-22) and MIG-35 for `retire-v1 --confirm` (MIG-FR-26, owner decision, 2026-10-23). LLD-migration v2 9 now names every test, one file `tests/migration/test_read_boundary.py` with a file-open recorder. Resolved for naming. MIG-10 still covers only that the legacy import leaves v1 unmodified.
-7. SEC-28 to SEC-32 are new in PRD-security v3 (draft). SEC-28 to SEC-32 all have names in LLD-security v2 (and LLD-ui v2 for SEC-29 and SEC-32). Open: the levels of SEC-29 to SEC-32. The PRD sets integration (SEC-29, SEC-32) and unit (SEC-30, SEC-31); the owner asked for contract. Recommendation: keep the PRD levels. The contract level here is the in-memory MCP client against `build_mcp`, which does not serve `/ui` routes, so SEC-29 and SEC-32 need the ASGI app and a session (integration), and SEC-30 and SEC-31 need no app at all (unit). Needs the owner's confirmation. SEC-30 (M0) has no owning unit in docs/build/M0-plan-v1.md, so it does not gate M0 until the `planner` assigns one.
+7. SEC-28 to SEC-32 are new in PRD-security v3 (approved 2026-10-23). SEC-28 to SEC-32 all have names in LLD-security v2 (and LLD-ui v2 for SEC-29 and SEC-32). Open: the levels of SEC-29 to SEC-32. The PRD sets integration (SEC-29, SEC-32) and unit (SEC-30, SEC-31); the owner asked for contract. Recommendation: keep the PRD levels. The contract level here is the in-memory MCP client against `build_mcp`, which does not serve `/ui` routes, so SEC-29 and SEC-32 need the ASGI app and a session (integration), and SEC-30 and SEC-31 need no app at all (unit). Needs the owner's confirmation. SEC-30 (M0) has no owning unit in docs/build/M0-plan-v1.md, so it does not gate M0 until the `planner` assigns one.
 
 ## 6. Evidence
 

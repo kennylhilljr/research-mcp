@@ -2,7 +2,9 @@
 title: "M0 plan: foundations and three sources"
 type: plan
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 milestone: M0
 artifact_type: plan
@@ -15,7 +17,7 @@ date: 2026-10-23
 
 # M0 plan (v2)
 
-Milestone M0 is the ECC pilot: the platform, identifiers, three sources and the first MCP tools. This version replans [M0 plan v1](M0-plan-v1.md) against the Gate 3 drafts (the v2 LLDs of platform, security, sources, search, cache and health) and [SPEC-v5](../spec/SPEC-v5.md) (draft). M0's scope is the set of criteria that the component PRDs mark M0 (SPEC-v5 section 14). `tools/gen_m0_plan.py` builds `.orchestration/plan-m0.json` from the task table below; the columns are unchanged.
+Milestone M0 is the ECC pilot: the platform, identifiers, three sources and the first MCP tools. This version replans [M0 plan v1](M0-plan-v1.md) against the approved Gate 3 documents (the v2 LLDs of platform, security, sources, search, cache and health) and [SPEC-v5](../spec/SPEC-v5.md) (approved 2026-10-23). M0's scope is the set of criteria that the component PRDs mark M0 (SPEC-v5 section 14). `tools/gen_m0_plan.py` builds `.orchestration/plan-m0.json` from the task table below; the columns are unchanged.
 
 Changes from v1:
 
@@ -114,6 +116,6 @@ At the end of each slice the `verifier` checks that every merged unit's criteria
 
 > **Owner:** A · **Persona:** `planner`
 
-- [ ] Q: Should the next ECC run skip M0-01 to M0-05 (treat them as merged) or rebuild them? Options: (a) skip them and start at wave 4; (b) rebuild all. Recommendation: (a), because their unchanged criteria are `done` and the changed ones are in the follow-ups M0-17 to M0-20, which the run must still build. The generator emits every row, so a skip needs the run to be created with those units pre-merged; I could not verify how ECC does that.
-- [ ] Q: The v1 plan said M0-06 and M0-08 have unmerged branches from the first run that cite the old test ids. This pass could not verify that (no branch record in `.orchestration`). If they exist, reuse them or discard them? Options: (a) discard and rebuild from this plan; (b) reuse as a starting point. Recommendation: (a) for M0-06, because it now depends on M0-20 and the v2 redaction design; (b) only for M0-08 if its tests are renamed to the SDD criteria and its schema matches LLD-cache-v2 §3.1.
-- [ ] Q: PLAT-84 was expected to be an M0 criterion, but PRD-platform v4 and test plan v4 mark it M2. Options: (a) leave it in M2 (no M0 task); (b) pull it into M0 with a task on `pyproject.toml`, `uv.lock` and `tests/unit/test_version.py`, which M0-01 owns and says nobody else edits. Recommendation: (a); the owner decides, because (b) changes the PRD milestone and the M0 exit gate.
+- [x] Q: Should the next ECC run skip M0-01 to M0-05 (treat them as merged) or rebuild them? Options: (a) skip them and start at wave 4; (b) rebuild all. Recommendation: (a), because their unchanged criteria are `done` and the changed ones are in the follow-ups M0-17 to M0-20, which the run must still build. The generator emits every row, so a skip needs the run to be created with those units pre-merged; I could not verify how ECC does that. **Resolved (owner decision, 2026-10-23):** skip M0-01 to M0-03 in the next run (done and unchanged); rebuild the changed work through the follow-up tasks (M0-17 to M0-20).
+- [x] Q: The v1 plan said M0-06 and M0-08 have unmerged branches from the first run that cite the old test ids. This pass could not verify that (no branch record in `.orchestration`). If they exist, reuse them or discard them? Options: (a) discard and rebuild from this plan; (b) reuse as a starting point. Recommendation: (a) for M0-06, because it now depends on M0-20 and the v2 redaction design; (b) only for M0-08 if its tests are renamed to the SDD criteria and its schema matches LLD-cache-v2 §3.1. **Resolved (owner decision, 2026-10-23):** do not reuse old unmerged branches; rebuild M0-06 and M0-08 from this plan.
+- [x] Q: PLAT-84 was expected to be an M0 criterion, but PRD-platform v4 and test plan v4 mark it M2. Options: (a) leave it in M2 (no M0 task); (b) pull it into M0 with a task on `pyproject.toml`, `uv.lock` and `tests/unit/test_version.py`, which M0-01 owns and says nobody else edits. Recommendation: (a); the owner decides, because (b) changes the PRD milestone and the M0 exit gate. **Resolved (owner decision, 2026-10-23):** option (a): PLAT-84 stays in M2; there is no M0 task for it.

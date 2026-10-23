@@ -2,7 +2,9 @@
 title: "Research MCP v2 system design"
 type: spec
 version: 5
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 parent: docs/prd/PRD-v8.md
 artifact_type: high-level-design
@@ -15,9 +17,9 @@ date: 2026-10-22
 
 # SPEC: Research MCP v2 system design (v5)
 
-- **Requirements:** [PRD-v8](../prd/PRD-v8.md) (draft, the successor of [PRD-v7](../prd/PRD-v7.md)) and its component PRDs: [platform v4](../prd/components/PRD-platform-v4.md), [sources v5](../prd/components/PRD-sources-v5.md), [search v3](../prd/components/PRD-search-v3.md), [cache v4](../prd/components/PRD-cache-v4.md), [health v4](../prd/components/PRD-health-v4.md), [ui v4](../prd/components/PRD-ui-v4.md), [migration v6](../prd/components/PRD-migration-v6.md) (draft) and [security v3](../prd/components/PRD-security-v3.md) (draft). Migration v6 and security v3 reopen Gate 1; the others are the versions approved on 2026-10-22.
-- **Detail:** the component LLDs in [docs/lld/](../lld/): `LLD-platform-v2`, `LLD-sources-v2`, `LLD-search-v2`, `LLD-cache-v2`, `LLD-health-v2` and `LLD-security-v2` (Gate 3 drafts), `LLD-ui-v2` and `LLD-migration-v2` (Gate 3 drafts; section 19). Section 19 says which LLD carries which part of SPEC-v2.
-- **Contracts:** [envelope and errors v1](../contracts/envelope-and-errors-v1.md), [source adapter v1](../contracts/source-adapter-v1.md), [cache tools, archive sidecar and rebuild report v1](../contracts/cache-tools-and-sidecar-v1.md), [health status, doctor output and webhook payload v1](../contracts/health-status-and-webhook-v1.md), [prompts v3](../contracts/prompts-v3.md) (all drafts).
+- **Requirements:** [PRD-v8](../prd/PRD-v8.md) (approved 2026-10-23, the successor of [PRD-v7](../prd/PRD-v7.md)) and its component PRDs: [platform v4](../prd/components/PRD-platform-v4.md), [sources v5](../prd/components/PRD-sources-v5.md), [search v3](../prd/components/PRD-search-v3.md), [cache v4](../prd/components/PRD-cache-v4.md), [health v4](../prd/components/PRD-health-v4.md), [ui v4](../prd/components/PRD-ui-v4.md), [migration v6](../prd/components/PRD-migration-v6.md) and [security v3](../prd/components/PRD-security-v3.md). Migration v6 and security v3 reopened Gate 1 and were approved on 2026-10-23; the others are the versions approved on 2026-10-22.
+- **Detail:** the component LLDs in [docs/lld/](../lld/): `LLD-platform-v2`, `LLD-sources-v2`, `LLD-search-v2`, `LLD-cache-v2`, `LLD-health-v2` and `LLD-security-v2`, `LLD-ui-v2` and `LLD-migration-v2` (approved at Gate 3, 2026-10-23; section 19). Section 19 says which LLD carries which part of SPEC-v2.
+- **Contracts:** [envelope and errors v1](../contracts/envelope-and-errors-v1.md), [source adapter v1](../contracts/source-adapter-v1.md), [cache tools, archive sidecar and rebuild report v1](../contracts/cache-tools-and-sidecar-v1.md), [health status, doctor output and webhook payload v1](../contracts/health-status-and-webhook-v1.md), [prompts v3](../contracts/prompts-v3.md) (approved at Gate 3, 2026-10-23, except prompts v3, which keeps its own status).
 - **Tests:** [test plan v4](../test/test-plan-v4.md).
 - **Decisions:** [ADRs 0001 to 0013](../adr/) (section 16).
 
@@ -620,7 +622,7 @@ The Security component has no requirements of its own (PRD-security-v3 2.4); its
 | MIG-20, MIG-21, MIG-26 | Client configs, tool map, retirement | 12, 14 | LLD-migration-v2 §5.3 |
 | MIG-27 to MIG-35 | Read sets: per command, refusal, symbolic link, restore, print, v2 paths, `retire-v1 --confirm` (new) | 9, 10, 12, 17 | LLD-security-v2 §4.3 (E36), §5.5; LLD-migration-v2 §5.1 to §5.3 |
 
-**Parent requirements.** The parent requirement IDs below were checked against [PRD-v8](../prd/PRD-v8.md) (draft): OUT-1 to OUT-8 and NFR-1 to NFR-12 exist there with these names, and its NFR-7 carries the new wording.
+**Parent requirements.** The parent requirement IDs below were checked against [PRD-v8](../prd/PRD-v8.md) (approved): OUT-1 to OUT-8 and NFR-1 to NFR-12 exist there with these names, and its NFR-7 carries the new wording.
 
 | Parent requirement | Component requirements | SPEC section | LLD |
 | --- | --- | --- | --- |
@@ -694,3 +696,9 @@ The Security component has no requirements of its own (PRD-security-v3 2.4); its
 Resolved in v5, with the owner answers recorded in the sections named: `AuthGate` and the unauthenticated surfaces (section 2); in-tree-only adapters and `docs_site` milestones (sections 4, 14); the Drive backup copy (section 10); the two meanings of critical (section 7); the migration read sets and the `restore-client-configs` rollback (sections 9, 12); the schema additions (section 10); the `cite` and `pdf` extras (section 12). The v4 questions were all resolved and are in SPEC-v4 section 20.
 
 There are no open questions. The four that stood at the start of this round are closed: PRD-v8 exists and its OUT and NFR IDs and NFR-7 wording match section 19 and cite the same component versions (section 19); the scrub backup folder is `~/.research-mcp-migration/scrub-backups/` (section 9); the `import-legacy` read of the v2 `cache.db` is confirmed (owner decision, 2026-10-22; section 9); and there are no ADRs for `AuthGate`, in-tree adapters or the Drive backup copy (owner decision, 2026-10-23; section 16).
+
+### Gate 2: Design approved
+
+| Approver | Date | ADRs chosen | Notes |
+| --- | --- | --- | --- |
+| Kenny Hill (Engineering) | 2026-10-23 | 0001 to 0013, all accepted (section 16); no new ADRs (owner decision, 2026-10-23) | Approved in chat; recorded by Claude in the owner's name at his direction |

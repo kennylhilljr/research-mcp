@@ -2,12 +2,14 @@
 title: "Security"
 type: prd-component
 version: 3
-status: draft
+status: approved
+approved_by: "Kenny Hill (Product)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 decision_makers: "Kenny Hill"
 prefix: SEC
 component: security
-parent: docs/prd/PRD-v7.md
+parent: docs/prd/PRD-v8.md
 supersedes: docs/prd/components/PRD-security-v2.md
 artifact_type: product-specification
 scope_level: L3
@@ -17,7 +19,7 @@ date: 2026-10-22
 
 # Component PRD: Security (v3)
 
-This component holds the cross-cutting security controls of research-mcp: the invariants, the security acceptance criteria (the former `AT-SEC-*` suite) and their mapping to the requirements of other components. Before version 1, these tests lived under the Platform and Security PRD (PRD-platform-v2 3). The controls are implemented in other components' modules; the [LLD](../../lld/LLD-security-v1.md) names each enforcement point. Parent: [PRD-v7](../PRD-v7.md). Vision: [vision-v2](../../vision/vision-v2.md). Design: [SPEC-v4](../../spec/SPEC-v4.md). Supersedes [PRD-security-v2](PRD-security-v2.md). Version 3 reopens Gate 1 and records the owner's answers of 2026-10-22 on tool-result redaction (SEC-28), the unauthenticated surfaces, and the authorization point.
+This component holds the cross-cutting security controls of research-mcp: the invariants, the security acceptance criteria (the former `AT-SEC-*` suite) and their mapping to the requirements of other components. Before version 1, these tests lived under the Platform and Security PRD (PRD-platform-v2 3). The controls are implemented in other components' modules; the [LLD](../../lld/LLD-security-v2.md) names each enforcement point. Parent: [PRD-v8](../PRD-v8.md). Vision: [vision-v2](../../vision/vision-v2.md). Design: [SPEC-v5](../../spec/SPEC-v5.md). Supersedes [PRD-security-v2](PRD-security-v2.md). Version 3 reopens Gate 1 and records the owner's answers of 2026-10-22 on tool-result redaction (SEC-28), the unauthenticated surfaces, and the authorization point.
 
 ---
 
@@ -30,7 +32,7 @@ The parent PRD states the problem (PRD-v6 1.1). The security parts, as the sourc
 - **Credentials are invisible.** Keys sit in plaintext in three MCP client configs, can leak into chat through error messages, and nobody is told when one expires or stops working (PRD-v4 2.3).
 - **v1 is unsafe in ways that matter on a personal Mac:** arbitrary local file reads through SQL, keys sent to third-party hosts, downloads that go anywhere (PRD-v4 2.5).
 - The review verified these holes: SQL tools can read arbitrary local files, including the MCP client configs that hold every API key in plaintext; the CORE key is sent to third-party PDF hosts; Google and SerpAPI keys travel in URLs and can be echoed into chat (REVIEW-v1 2.4; OPS-01 to OPS-04, ARCH-08).
-- Why now: v2 is a rebuild in a new repository, because v1 is not a sound base for the next year of use, and the upstream breakage is current (PRD-v7 1.1). The rebuild is the moment to design these controls in rather than add them to v1.
+- Why now: v2 is a rebuild in a new repository, because v1 is not a sound base for the next year of use, and the upstream breakage is current (PRD-v8 1.1). The rebuild is the moment to design these controls in rather than add them to v1.
 
 ## 1.2 Customers and users
 
@@ -76,7 +78,7 @@ Drafted from the sources by the product writer (owner decision, 2026-10-22, to d
 
 | Leap of faith | How we will validate it | By when |
 | --- | --- | --- |
-| Keychain items written by `/usr/bin/security` trust that binary, so the daemon reads every item without a prompt, even after Python upgrades (SPEC-v2 3.1; LLD-security-v1 4.1). | Owner check OC-02 (the daemon reads every Keychain item with no prompt) and SEC-2 | M0 exit |
+| Keychain items written by `/usr/bin/security` trust that binary, so the daemon reads every item without a prompt, even after Python upgrades (SPEC-v2 3.1; LLD-security-v2 4.1). | Owner check OC-02 (the daemon reads every Keychain item with no prompt) and SEC-2 | M0 exit |
 | The masking of registered secret values plus the credential patterns of PLAT-FR-13 cover every credential format in use, closing the v1 leaks through URLs and exception text (PLAT-FR-13; REVIEW-v1 2.4, finding 7). | SEC-6 and the SEC-7 property test at M0; the OUT-7 measure (secret-leak tests cover every error path) | M0 exit for SEC-6 and SEC-7; M2 exit for OUT-7 |
 | Taking SQL, hard delete and caller-chosen paths off the tool surface, and labeling fetched text untrusted, is enough to stop a prompt-injected model from reading local files or deleting data (HLD-v3 9 threat model; ADR 0009). | SEC-20, SEC-21, SEC-22, SEC-25 and CACHE-11 | M2 exit |
 
@@ -84,7 +86,7 @@ Drafted from the sources by the product writer (owner decision, 2026-10-22, to d
 
 > **Owner:** H · **Persona:** none · **Seed question:** 5
 
-Each row restates a "never" or "no" statement a source already makes. The owner confirmed them as component invariants (owner decision, 2026-10-22). Each one has at least one P1 criterion, here or in another component. The LLD maps each one to its enforcement points (LLD-security-v1 4).
+Each row restates a "never" or "no" statement a source already makes. The owner confirmed them as component invariants (owner decision, 2026-10-22). Each one has at least one P1 criterion, here or in another component. The LLD maps each one to its enforcement points (LLD-security-v2 4).
 
 | ID | The system must never | Source (regulation, policy, contract) | P1 criteria |
 | --- | --- | --- | --- |
@@ -100,9 +102,9 @@ Each row restates a "never" or "no" statement a source already makes. The owner 
 | SEC-INV-10 | Give an MCP client the daemon token: clients launch the stdio shim, which reads it from the Keychain. | ADR 0003 ("MCP clients never hold the daemon token") | SEC-26; PLAT-82 |
 | SEC-INV-11 | Copy the owner's Google sign-in. | PRD-v4 NFR-03 ("v2 never copies"); HLD-v3 9 | SEC-27; SRC-32 |
 
-**Approved exception.** The scrub backups of the v1 client configs hold plaintext v1 keys outside the Keychain. The owner approved them as an exception that lasts until v1 is retired; they are written owner-only and deleted at retirement (PRD-v7 1.5; MIG-FR-26; MIG-25, MIG-26; owner decision, 2026-10-22). The invariant itself is unchanged.
+**Approved exception.** The scrub backups of the v1 client configs hold plaintext v1 keys outside the Keychain. The owner approved them as an exception that lasts until v1 is retired; they are written owner-only and deleted at retirement (PRD-v8 1.5; MIG-FR-26; MIG-25, MIG-26; owner decision, 2026-10-22). The invariant itself is unchanged.
 
-**Approved exception for owner-run migration commands.** SEC-INV-7 is excepted per command, until v1 retirement, for the owner-run migration commands only; MCP tools and agent-triggered actions stay bound by it, so SEC-25 and CACHE-11 are unchanged. The read set of each command is in PRD-migration-v6 2.4 (SPEC-v4 9; owner decision, 2026-10-22).
+**Approved exception for owner-run migration commands.** SEC-INV-7 is excepted per command, until v1 retirement, for the owner-run migration commands only; MCP tools and agent-triggered actions stay bound by it, so SEC-25 and CACHE-11 are unchanged. The read set of each command is in PRD-migration-v6 2.4 (SPEC-v5 9; owner decision, 2026-10-22).
 
 ## 1.7 Known constraints and decisions
 
@@ -110,8 +112,8 @@ Each row restates a "never" or "no" statement a source already makes. The owner 
 
 | Decision or constraint | Status (made or open) | Rationale or link |
 | --- | --- | --- |
-| Secrets live in the macOS Keychain; configuration holds references; Keychain access goes through `/usr/bin/security` | Made (ADR status: Proposed; accepted when the owner approves the PRD at Gate 1, PRD-v6 1.6) | [ADR 0003](../../adr/0003-secrets-in-keychain.md) |
-| No free-form SQL; fetched content is labeled untrusted | Made (ADR status: Proposed; accepted when the owner approves the PRD at Gate 1, PRD-v6 1.6) | [ADR 0009](../../adr/0009-no-sql-untrusted-content.md) |
+| Secrets live in the macOS Keychain; configuration holds references; Keychain access goes through `/usr/bin/security` | Made (ADR status: Accepted, 2026-10-22, with Gate 1 approval of the parent PRD) | [ADR 0003](../../adr/0003-secrets-in-keychain.md) |
+| No free-form SQL; fetched content is labeled untrusted | Made (ADR status: Accepted, 2026-10-22, with Gate 1 approval of the parent PRD) | [ADR 0009](../../adr/0009-no-sql-untrusted-content.md) |
 | No SQL or dataset tool in the first release | Made (owner decision O4) | PRD-v4 11; REVIEW-v1 7 |
 | The Google sign-in for Vertex AI Search is the one secret outside the Keychain; `gcloud` stores it | Made | PRD-v4 NFR-03; [ADR 0012](../../adr/0012-domain-neutral-scope-keep-v1-endpoints-web-search-sources.md) |
 | Untrusted content is labeled: fetched text is returned inside an envelope marked untrusted | Made | PRD-v4 NFR-06; ADR 0009 |
@@ -120,7 +122,7 @@ Each row restates a "never" or "no" statement a source already makes. The owner 
 | A locked Keychain is one `keychain_locked` state and one notification, not a notice per key | Made | PRD-v4 12 |
 | PyMuPDF parsing runs in a worker process with CPU, memory, page and time limits | Made (owner decision O3) | PRD-v4 11 O3, 12 |
 | The security controls stay requirements of the platform, cache and health components; this component defines no `SEC-FR-n`, and its criteria cite those requirements | Made (owner decision, 2026-10-22) | 2.4 |
-| Kenny Hill is the control owner who approves the authorization enforcement points at Gate 3 | Made (owner decision, 2026-10-22) | [LLD-security-v1](../../lld/LLD-security-v1.md) 4 |
+| Kenny Hill is the control owner who approves the authorization enforcement points at Gate 3 | Made (owner decision, 2026-10-22) | [LLD-security-v2](../../lld/LLD-security-v2.md) 4 |
 
 ### Intake checkpoint: Problem approved
 
@@ -214,7 +216,7 @@ The parent outcomes OUT-1 to OUT-8 and NFR-1 to NFR-12 suffice, and no component
 
 | Parent NFR | Requirement (PRD-v6 2.3) | Criteria here |
 | --- | --- | --- |
-| NFR-3 | No secrets at rest outside the Keychain; config files hold references only, including the daemon token and any webhook token; the one exception is the owner's Google sign-in, which `gcloud` stores and v2 never copies. The scrub backups of the v1 client configs are an approved exception until v1 is retired (PRD-v7 1.5; MIG-FR-26). | SEC-2, SEC-24, SEC-27 |
+| NFR-3 | No secrets at rest outside the Keychain; config files hold references only, including the daemon token and any webhook token; the one exception is the owner's Google sign-in, which `gcloud` stores and v2 never copies. The scrub backups of the v1 client configs are an approved exception until v1 is retired (PRD-v8 1.5; MIG-FR-26). | SEC-2, SEC-24, SEC-27 |
 | NFR-4 | No secret in any output: tool results, errors, logs, UI pages, notifications and test snapshots never contain a secret value. | SEC-1, SEC-5, SEC-7, SEC-10, SEC-28 |
 | NFR-6 | Untrusted content is labeled: text fetched from the internet is returned inside an envelope marked untrusted. | SEC-22 |
 | NFR-7 | Loopback only: nothing listens on a non-loopback address; every HTTP request except `/healthz`, `/readyz` and `/ui/login` needs a bearer token or a UI session. `/ui/login` takes a one-time token and sets a UI session; `/ui/static/*` needs a UI session (owner decision, 2026-10-22). PRD-v7 NFR-7 names only `/healthz` and `/readyz` (see 2.13). | SEC-11 |
@@ -264,7 +266,7 @@ Kenny Hill owns every integration. None has an SLA; upstream services are best e
 | Question | Answer |
 | --- | --- |
 | Rollout appetite | As in PRD-v6 2.6: v1 stays read-only and running until cutover; cutover (M4) switches client configs; v1 is archived after 14 days of daily use on v2 with no fallback to v1 (owner decision, 2026-10-22). |
-| Business conditions that must halt the rollout | The PRD-v7 2.6 conditions: any deletion without a recorded owner decision, any secret in an output, a fallback to v1 during the 14-day window, or a breach of any invariant, which includes SEC-INV-1 to SEC-INV-11 (PRD-v7 2.6; owner decision, 2026-10-22). |
+| Business conditions that must halt the rollout | The PRD-v8 2.6 conditions: any deletion without a recorded owner decision, any secret in an output, a fallback to v1 during the 14-day window, or a breach of any invariant, which includes SEC-INV-1 to SEC-INV-11 (PRD-v8 2.6; owner decision, 2026-10-22). |
 | Support owner and escalation path | The owner is the only support; there is no escalation path (PRD-v6 2.6; owner decision, 2026-10-22). |
 | Response targets by severity (S0 to S4) | None (PRD-v6 2.6; owner decision, 2026-10-22). |
 
@@ -307,7 +309,7 @@ The component is done when every P1 criterion in 2.4 passes and the exit of the 
 
 **Resolved on 2026-10-22 (version 2).** The owner answered every open question of version 1: component outcomes (none beyond OUT-7; 1.4); leaps of faith (drafted for approval; 1.5); user stories (none, since the component has no requirements of its own; 2.2); no `SEC-FR-n`, with the controls staying in the platform, cache and health components (1.7, 2.4); a P1 criterion here for SEC-INV-3, SEC-INV-7, SEC-INV-10 and SEC-INV-11 (SEC-24 to SEC-27; 1.6, 2.4); `AT-SEC-15` to `AT-SEC-19` were never defined (2.16); Kenny Hill is the control owner at Gate 3 (1.7); data classification and retention (2.6); integration owners and SLAs (2.7); product risks (drafted for approval; 2.8); rollout and support (2.9); and the definition of done (2.11).
 
-**Gate 1 follow-up (owner decision, 2026-10-22).** MCP clients connect only through the stdio shim; loopback streamable HTTP is the shim's and the UI's transport, so no client holds the daemon token (PRD-v7 1.2 and NFR-1, corrected; SEC-INV-10). Security owns the shared invariants: Platform 1.6 cites SEC-INV-1, SEC-INV-3, SEC-INV-4, SEC-INV-5, SEC-INV-7 and SEC-INV-9 instead of repeating them, and SEC-24 is the one criterion for no secret at rest after install, start and reload. The scrub backups are an approved exception to SEC-INV-3 until v1 is retired (PRD-v7 1.5; MIG-FR-26). A breach of any SEC-INV halts the rollout (PRD-v7 2.6) (owner decision, 2026-10-22).
+**Gate 1 follow-up (owner decision, 2026-10-22).** MCP clients connect only through the stdio shim; loopback streamable HTTP is the shim's and the UI's transport, so no client holds the daemon token (PRD-v8 1.2 and NFR-1, corrected; SEC-INV-10). Security owns the shared invariants: Platform 1.6 cites SEC-INV-1, SEC-INV-3, SEC-INV-4, SEC-INV-5, SEC-INV-7 and SEC-INV-9 instead of repeating them, and SEC-24 is the one criterion for no secret at rest after install, start and reload. The scrub backups are an approved exception to SEC-INV-3 until v1 is retired (PRD-v8 1.5; MIG-FR-26). A breach of any SEC-INV halts the rollout (PRD-v8 2.6) (owner decision, 2026-10-22).
 
 **Reopened Gate 1 answers (version 3, owner decision, 2026-10-22).**
 
@@ -369,7 +371,7 @@ The IDs added in version 3, and editorial changes that keep their ID; these rows
 
 | Approver | Date | Notes |
 | --- | --- | --- |
-| Pending | Pending | Version 3 is a draft; the owner approves it at the reopened Gate 1 |
+| Kenny Hill (Product) | 2026-10-23 | Approved in chat; recorded by Claude in the owner's name at his direction |
 
 ## 2.16 Earlier IDs
 

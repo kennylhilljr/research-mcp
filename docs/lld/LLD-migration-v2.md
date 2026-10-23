@@ -2,7 +2,9 @@
 title: "Migration and Cutover low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: MIG
 component: migration
@@ -17,7 +19,7 @@ date: 2026-10-22
 
 # LLD: Migration and Cutover (v2)
 
-Requirements: [PRD-migration v6](../prd/components/PRD-migration-v6.md) (draft; it supersedes v5 and adds MIG-FR-27 and MIG-27 to MIG-35). Security context: [PRD-security v3](../prd/components/PRD-security-v3.md), [LLD-security v2](LLD-security-v2.md) (E37, scrub backups) and [LLD-platform v2](LLD-platform-v2.md) (settings, secrets, redaction, jobs). System design: [SPEC v5](../spec/SPEC-v5.md) sections 6, 9, 10, 12 and 14. Design sources kept from v1: SPEC-v2 section 9.6 (legacy import) and [MIGRATION v2](../../docs-archive/migration/MIGRATION-v2.md) sections 1, 2 and 4. The cutover steps are the [migration cutover runbook](../runbooks/migration-cutover-v1.md); another agent writes its next version, and section 11 lists what it must carry.
+Requirements: [PRD-migration v6](../prd/components/PRD-migration-v6.md) (approved 2026-10-23; it supersedes v5 and adds MIG-FR-27 and MIG-27 to MIG-35). Security context: [PRD-security v3](../prd/components/PRD-security-v3.md), [LLD-security v2](LLD-security-v2.md) (E37, scrub backups) and [LLD-platform v2](LLD-platform-v2.md) (settings, secrets, redaction, jobs). System design: [SPEC v5](../spec/SPEC-v5.md) sections 6, 9, 10, 12 and 14. Design sources kept from v1: SPEC-v2 section 9.6 (legacy import) and [MIGRATION v2](../../docs-archive/migration/MIGRATION-v2.md) sections 1, 2 and 4. The cutover steps are the [migration cutover runbook](../runbooks/migration-cutover-v1.md); another agent writes its next version, and section 11 lists what it must carry.
 
 Changes from v1: the file-read boundary of every owner-run migration command (a path guard, section 5.4); the scrub backup location, modes and deletion (5.5); the `restore-client-configs` command (5.6); the halt rule (5.7); the install printer reads nothing (5.3); new contracts, schema files and tests; all ten v1 questions resolved; the five v2 questions are answered by owner decisions of 2026-10-23 (section 11); the retire command `retire-v1 --confirm` and MIG-35 are added.
 
@@ -616,4 +618,4 @@ For other personas and agents (not owner decisions):
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (no contract) | approved: none (owns no table, adds no migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

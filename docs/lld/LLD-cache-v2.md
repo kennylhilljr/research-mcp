@@ -2,7 +2,9 @@
 title: "Retrieval and Cache low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: CACHE
 component: cache
@@ -108,7 +110,7 @@ Out of this component: the legacy import (SPEC-v2 9.6), which belongs to the mig
 
 > **Owner:** C · **Persona:** `component-designer` drafts; the contract owner approves public and cross-team contracts
 
-Machine-readable contract: [cache tools, archive sidecar and rebuild report v1](../contracts/cache-tools-and-sidecar-v1.md) (draft, for the owner at Gate 3). It holds the tool arguments and result shapes, the error use per situation, the sidecar format and the rebuild report. This section lists what each part is for and the cross-component interfaces.
+Machine-readable contract: [cache tools, archive sidecar and rebuild report v1](../contracts/cache-tools-and-sidecar-v1.md) (approved at Gate 3, 2026-10-23). It holds the tool arguments and result shapes, the error use per situation, the sidecar format and the rebuild report. This section lists what each part is for and the cross-component interfaces.
 
 ### 2.1 MCP tools (SPEC-v2 7.2, the cache rows)
 
@@ -819,4 +821,4 @@ None open. The four owner questions (title in full-text search, other schema add
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (cache-tools-and-sidecar-v1) | approved: adds `chunks.title` (and `title` in `chunks_fts`), `documents.pin_direct`, `documents.integrity_at_fetch`, `disk_samples.model_cache_bytes` (inside the 0001 migration) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

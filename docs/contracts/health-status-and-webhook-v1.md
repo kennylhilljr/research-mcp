@@ -2,7 +2,9 @@
 title: "Health status, doctor output and webhook payload"
 type: contract
 version: 1
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 component: health
 artifact_type: low-level-design
@@ -13,7 +15,7 @@ date: 2026-10-22
 
 # Contract: health status, doctor output and webhook payload (v1)
 
-> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-health-v2](../lld/LLD-health-v2.md). This is a draft for the owner. It writes down the shapes that [PRD-health v4](../prd/components/PRD-health-v4.md) (HLTH-FR-11, HLTH-FR-32, HLTH-FR-40, HLTH-FR-42, HLTH-FR-43) and [SPEC-v5](../spec/SPEC-v5.md) section 7 imply; it adds no behavior. Shapes marked "assumption" are the designer's choice and need the owner's confirmation.
+> **Owner:** C · **Persona:** `component-designer` drafts; the owner approves at Gate 3 with [LLD-health-v2](../lld/LLD-health-v2.md). Approved at Gate 3 on 2026-10-23. It writes down the shapes that [PRD-health v4](../prd/components/PRD-health-v4.md) (HLTH-FR-11, HLTH-FR-32, HLTH-FR-40, HLTH-FR-42, HLTH-FR-43) and [SPEC-v5](../spec/SPEC-v5.md) section 7 imply; it adds no behavior. Shapes marked "assumption" are the designer's choice and need the owner's confirmation.
 
 Implementations are Pydantic models in `research_mcp/services/health.py` (status shapes), `research_mcp/services/notify.py` (the webhook payload) and `research_mcp/services/doctor.py` (the doctor report). No shape here contains a credential value, a Keychain value, a login token or a URL with a query (HLTH-INV-1 to HLTH-INV-3; HLTH-42).
 

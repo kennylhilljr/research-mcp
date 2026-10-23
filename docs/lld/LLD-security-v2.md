@@ -2,7 +2,9 @@
 title: "Security low level design"
 type: lld
 version: 2
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 prefix: SEC
 component: security
@@ -19,7 +21,7 @@ date: 2026-10-22
 
 This LLD is cross-cutting. The controls it lists are implemented in modules that other LLDs own, chiefly [LLD-platform-v2](LLD-platform-v2.md) (settings, secrets, redaction, logging, HTTP client, `platform/auth.py`, downloader, workers, stores, the MCP app and the daemon), [LLD-ui-v2](LLD-ui-v2.md) (UI routes, `ui/auth.py`, `ui/csrf.py`), [LLD-health-v2](LLD-health-v2.md) (notifications and the webhook) and [LLD-migration-v2](LLD-migration-v2.md) (secrets import, scrub, legacy import). Those LLDs own the names; this one owns the trust boundaries, the enforcement points, the checks and the security test plan. Names below are quoted unchanged from the owning LLDs, which took them from SPEC-v2. Product requirements are in [PRD-security-v3](../prd/components/PRD-security-v3.md); the system design is [SPEC-v5](../spec/SPEC-v5.md) (draft) section 9; the parent product document is PRD-v8 (draft).
 
-**Changes in v2** (Gate 3 draft, 2026-10-22). This version follows the approved PRD-security-v2, PRD-v7, SPEC-v4 and test plan v3 (history note: those were the versions current when this draft began; the citations in the body now point to PRD-security-v3, PRD-v8 and SPEC-v5, all draft). It adds the scrub backup row, the migration-reads exception, the shim sentence and the halt rule; gives SEC-24 to SEC-27 their control, enforcement point and planned test; fixes the cursor and token rotation design; and resolves the version 1 open questions from the approved documents (section 10 records each answer with its source). History note: the version 1 criteria table cited earlier requirement IDs; PLAT-FR-16 is now PLAT-FR-59 (the token rotates from the CLI only), `skipped_budget` is now `budget_exhausted`, and the removed IDs are not used. Authentication and authorization enforcement (section 4) is drafted for the control owner, Kenny Hill (PRD-security-v3 1.7); the control owner answered the five open questions of this draft on 2026-10-22 and each answer is recorded in the text as "owner decision, 2026-10-22" (section 11 holds no open question). SEC-28 is proposed in PRD-security v3, which is drafted separately; until that PRD is approved the ID is a proposal. **Review update (2026-10-23, still draft).** Adds SEC-29, SEC-30 and SEC-32 (PRD-security-v3, draft) with enforcement points E44 (`safe_next`), E45 (token minting) and E46 (`/ui/static/*`), their planned tests and coverage rows; adds E47 (`retire-v1 --confirm`, MIG-35); records the owner decisions of 2026-10-23 (halt marker cleared by hand; client config symlinks refused). Section numbers of SPEC-v5, PRD-v8 and PRD-security-v3 are assumed equal to those of the versions cited before (assumption; checked for PRD-security-v3 and SPEC-v5 headings).
+**Changes in v2** (Gate 3 draft, 2026-10-22). This version follows the approved PRD-security-v2, PRD-v7, SPEC-v4 and test plan v3 (history note: those were the versions current when this draft began; the citations in the body now point to PRD-security-v3, PRD-v8 and SPEC-v5, all draft). It adds the scrub backup row, the migration-reads exception, the shim sentence and the halt rule; gives SEC-24 to SEC-27 their control, enforcement point and planned test; fixes the cursor and token rotation design; and resolves the version 1 open questions from the approved documents (section 10 records each answer with its source). History note: the version 1 criteria table cited earlier requirement IDs; PLAT-FR-16 is now PLAT-FR-59 (the token rotates from the CLI only), `skipped_budget` is now `budget_exhausted`, and the removed IDs are not used. Authentication and authorization enforcement (section 4) is drafted for the control owner, Kenny Hill (PRD-security-v3 1.7); the control owner answered the five open questions of this draft on 2026-10-22 and each answer is recorded in the text as "owner decision, 2026-10-22" (section 11 holds no open question). SEC-28 is proposed in PRD-security v3, which is drafted separately; until that PRD is approved the ID is a proposal. **Review update (2026-10-23, still draft).** Adds SEC-29, SEC-30 and SEC-32 (PRD-security-v3) with enforcement points E44 (`safe_next`), E45 (token minting) and E46 (`/ui/static/*`), their planned tests and coverage rows; adds E47 (`retire-v1 --confirm`, MIG-35); records the owner decisions of 2026-10-23 (halt marker cleared by hand; client config symlinks refused). Section numbers of SPEC-v5, PRD-v8 and PRD-security-v3 are assumed equal to those of the versions cited before (assumption; checked for PRD-security-v3 and SPEC-v5 headings).
 
 ## 1. Scope and requirements
 
@@ -44,8 +46,8 @@ This component defines no functional requirement of its own and no `SEC-FR-n` (P
 | PLAT-FR-22 | SEC-21 | SPEC 9 |
 | PLAT-FR-25 | SEC-22 | SPEC 9 |
 | PLAT-FR-27 | SEC-20 | SPEC 9 |
-| PLAT-FR-59 | SEC-13, SEC-30 (PRD-security-v3, draft) | SPEC 9, 12 |
-| UI-FR-2 | SEC-29, SEC-32 (PRD-security-v3, draft) | SPEC 8, 9 |
+| PLAT-FR-59 | SEC-13, SEC-30 (PRD-security-v3) | SPEC 9, 12 |
+| UI-FR-2 | SEC-29, SEC-32 (PRD-security-v3) | SPEC 8, 9 |
 | CACHE-FR-3 | SEC-8 | SPEC 9 |
 | CACHE-FR-10 | SEC-23 | SPEC 6, 9 |
 | HLTH-FR-20 | SEC-3, SEC-24 | SPEC 7, 9 |
@@ -56,7 +58,7 @@ This component defines no functional requirement of its own and no `SEC-FR-n` (P
 | NFR-6 | SEC-22 | SPEC 9 |
 | NFR-7 | SEC-11 | SPEC 2, 9 |
 
-Criteria of this component: SEC-1 to SEC-14, SEC-20 to SEC-27, and SEC-28 to SEC-32 (PRD-security-v3, draft; P1; SEC-28 by owner decision, 2026-10-22) (SEC-15 to SEC-19 were never defined and are unused, PRD-security-v3 2.16). Invariants: SEC-INV-1 to SEC-INV-11. The scrub backup controls are verified by MIG-25 and MIG-26, and the migration read boundary by the migration criteria named in section 4.3 (E36, E37); they belong to the migration component and are mapped here because they are exceptions to SEC-INV-3 and SEC-INV-7.
+Criteria of this component: SEC-1 to SEC-14, SEC-20 to SEC-27, and SEC-28 to SEC-32 (PRD-security-v3; P1; SEC-28 by owner decision, 2026-10-22) (SEC-15 to SEC-19 were never defined and are unused, PRD-security-v3 2.16). Invariants: SEC-INV-1 to SEC-INV-11. The scrub backup controls are verified by MIG-25 and MIG-26, and the migration read boundary by the migration criteria named in section 4.3 (E36, E37); they belong to the migration component and are mapped here because they are exceptions to SEC-INV-3 and SEC-INV-7.
 
 ## 2. Contracts
 
@@ -518,4 +520,4 @@ The control owner (Kenny Hill) answered the five open questions of this draft on
 
 | Reviewer | Date | Contracts | Schema | AuthZ | Notes |
 | --- | --- | --- | --- | --- | --- |
-| | | | | | |
+| Kenny Hill (Engineering) | 2026-10-23 | approved (no contract) | approved: none (adds no table) | approved (security-reviewer persona drafted/reviewed; control owner Kenny Hill) | Approved in chat; recorded by Claude in the owner's name at his direction |

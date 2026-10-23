@@ -8,78 +8,96 @@ Evidence states: `test linked` (a test cites the criterion), `passing` or `faili
 
 | ID | Priority | Evidence | Tests | Code entry points |
 | --- | --- | --- | --- | --- |
-| CACHE-1 | P1 | planned (draft) |  |  |
-| CACHE-2 | P1 | planned (draft) |  |  |
-| CACHE-10 | P1 | planned (draft) |  |  |
-| CACHE-11 | P1 | planned (draft) |  |  |
-| CACHE-12 | P1 | planned (draft) |  |  |
-| CACHE-13 | P1 | planned (draft) |  |  |
-| CACHE-14 | P1 | planned (draft) |  |  |
-| CACHE-15 | P1 | planned (draft) |  |  |
-| CACHE-16 | P1 | planned (draft) |  |  |
-| CACHE-17 | P2 | planned (draft) |  |  |
-| CACHE-18 | P1 | planned (draft) |  |  |
-| CACHE-19 | P1 | planned (draft) |  |  |
-| CACHE-20 | P1 | planned (draft) |  |  |
-| CACHE-21 | P1 | planned (draft) |  |  |
-| CACHE-22 | P1 | planned (draft) |  |  |
-| CACHE-23 | P1 | planned (draft) |  |  |
-| CACHE-24 | P2 | planned (draft) |  |  |
-| CACHE-30 | P1 | planned (draft) |  |  |
-| CACHE-31 | P1 | planned (draft) |  |  |
-| CACHE-32 | P1 | planned (draft) |  |  |
-| CACHE-33 | P1 | planned (draft) |  |  |
-| CACHE-34 | P1 | planned (draft) |  |  |
-| CACHE-35 | P1 | planned (draft) |  |  |
-| CACHE-36 | P1 | planned (draft) |  |  |
-| CACHE-40 | P1 | planned (draft) |  |  |
-| CACHE-41 | P1 | planned (draft) |  |  |
-| CACHE-42 | P1 | planned (draft) |  |  |
-| CACHE-43 | P1 | planned (draft) |  |  |
-| CACHE-44 | P1 | planned (draft) |  |  |
-| CACHE-45 | P2 | planned (draft) |  |  |
-| CACHE-46 | P1 | planned (draft) |  |  |
-| CACHE-47 | P1 | planned (draft) |  |  |
-| CACHE-48 | P1 | planned (draft) |  |  |
-| CACHE-49 | P1 | planned (draft) |  |  |
-| CACHE-60 | P2 | planned (draft) |  |  |
-| CACHE-61 | P1 | planned (draft) |  |  |
-| HLTH-1 | P1 | planned (draft) |  |  |
-| HLTH-2 | P1 | planned (draft) |  |  |
-| HLTH-3 | P1 | planned (draft) |  |  |
-| HLTH-4 | P1 | planned (draft) |  |  |
-| HLTH-10 | P1 | planned (draft) |  |  |
-| HLTH-11 | P1 | planned (draft) |  |  |
-| HLTH-12 | P1 | planned (draft) |  |  |
-| HLTH-13 | P1 | planned (draft) |  |  |
-| HLTH-20 | P1 | planned (draft) |  |  |
-| HLTH-21 | P1 | planned (draft) |  |  |
-| HLTH-22 | P2 | planned (draft) |  |  |
-| HLTH-23 | P1 | planned (draft) |  |  |
-| HLTH-24 | P1 | planned (draft) |  |  |
-| HLTH-25 | P1 | planned (draft) |  |  |
-| HLTH-30 | P1 | planned (draft) |  |  |
-| HLTH-31 | P1 | planned (draft) |  |  |
-| HLTH-32 | P1 | planned (draft) |  |  |
-| HLTH-33 | P2 | planned (draft) |  |  |
-| HLTH-34 | P1 | planned (draft) |  |  |
-| HLTH-35 | P2 | planned (draft) |  |  |
-| HLTH-40 | P1 | planned (draft) |  |  |
-| HLTH-41 | P1 | planned (draft) |  |  |
-| HLTH-42 | P1 | planned (draft) |  |  |
-| MIG-1 | P1 | planned (draft) |  |  |
-| MIG-2 | P1 | planned (draft) |  |  |
-| MIG-3 | P1 | planned (draft) |  |  |
-| MIG-4 | P1 | planned (draft) |  |  |
-| MIG-5 | P2 | planned (draft) |  |  |
-| MIG-6 | P1 | planned (draft) |  |  |
-| MIG-10 | P1 | planned (draft) |  |  |
-| MIG-11 | P2 | planned (draft) |  |  |
-| MIG-12 | P2 | planned (draft) |  |  |
-| MIG-13 | P2 | planned (draft) |  |  |
-| MIG-14 | P2 | planned (draft) |  |  |
-| MIG-20 | P1 | planned (draft) |  |  |
-| MIG-21 | P1 | planned (draft) |  |  |
+| CACHE-1 | P1 | planned |  |  |
+| CACHE-2 | P1 | planned |  |  |
+| CACHE-10 | P1 | planned |  |  |
+| CACHE-11 | P1 | planned |  |  |
+| CACHE-12 | P1 | planned |  |  |
+| CACHE-13 | P1 | planned |  |  |
+| CACHE-14 | P1 | planned |  |  |
+| CACHE-15 | P1 | planned |  |  |
+| CACHE-16 | P1 | planned |  |  |
+| CACHE-17 | P2 | planned |  |  |
+| CACHE-18 | P1 | planned |  |  |
+| CACHE-19 | P1 | planned |  |  |
+| CACHE-20 | P1 | planned |  |  |
+| CACHE-21 | P1 | planned |  |  |
+| CACHE-22 | P1 | planned |  |  |
+| CACHE-23 | P1 | planned |  |  |
+| CACHE-24 | P2 | planned |  |  |
+| CACHE-30 | P1 | planned |  |  |
+| CACHE-31 | P1 | planned |  |  |
+| CACHE-32 | P1 | planned |  |  |
+| CACHE-33 | P1 | planned |  |  |
+| CACHE-34 | P1 | planned |  |  |
+| CACHE-35 | P1 | planned |  |  |
+| CACHE-36 | P1 | planned |  |  |
+| CACHE-40 | P1 | planned |  |  |
+| CACHE-41 | P1 | planned |  |  |
+| CACHE-42 | P1 | planned |  |  |
+| CACHE-43 | P1 | planned |  |  |
+| CACHE-44 | P1 | planned |  |  |
+| CACHE-45 | P2 | planned |  |  |
+| CACHE-46 | P1 | planned |  |  |
+| CACHE-47 | P1 | planned |  |  |
+| CACHE-48 | P1 | planned |  |  |
+| CACHE-49 | P1 | planned |  |  |
+| CACHE-60 | P2 | planned |  |  |
+| CACHE-61 | P1 | planned |  |  |
+| CACHE-62 | P1 | planned |  |  |
+| CACHE-63 | P2 | planned |  |  |
+| HLTH-1 | P1 | planned |  |  |
+| HLTH-2 | P1 | planned |  |  |
+| HLTH-3 | P1 | planned |  |  |
+| HLTH-4 | P1 | planned |  |  |
+| HLTH-10 | P1 | planned |  |  |
+| HLTH-11 | P1 | planned |  |  |
+| HLTH-12 | P1 | planned |  |  |
+| HLTH-13 | P1 | planned |  |  |
+| HLTH-20 | P1 | planned |  |  |
+| HLTH-21 | P1 | planned |  |  |
+| HLTH-22 | P2 | planned |  |  |
+| HLTH-23 | P1 | planned |  |  |
+| HLTH-24 | P1 | planned |  |  |
+| HLTH-25 | P1 | planned |  |  |
+| HLTH-30 | P1 | planned |  |  |
+| HLTH-31 | P1 | planned |  |  |
+| HLTH-32 | P1 | planned |  |  |
+| HLTH-33 | P2 | planned |  |  |
+| HLTH-34 | P1 | planned |  |  |
+| HLTH-35 | P2 | planned |  |  |
+| HLTH-40 | P1 | planned |  |  |
+| HLTH-41 | P1 | planned |  |  |
+| HLTH-42 | P1 | planned |  |  |
+| HLTH-43 | P1 | planned |  |  |
+| HLTH-44 | P1 | planned |  |  |
+| MIG-1 | P1 | planned |  |  |
+| MIG-2 | P1 | planned |  |  |
+| MIG-3 | P1 | planned |  |  |
+| MIG-4 | P1 | planned |  |  |
+| MIG-5 | P2 | planned |  |  |
+| MIG-6 | P1 | planned |  |  |
+| MIG-10 | P1 | planned |  |  |
+| MIG-11 | P2 | planned |  |  |
+| MIG-12 | P2 | planned |  |  |
+| MIG-13 | P2 | planned |  |  |
+| MIG-14 | P2 | planned |  |  |
+| MIG-20 | P1 | planned |  |  |
+| MIG-21 | P1 | planned |  |  |
+| MIG-22 | P1 | planned |  |  |
+| MIG-23 | P1 | planned |  |  |
+| MIG-24 | P1 | planned |  |  |
+| MIG-25 | P1 | planned |  |  |
+| MIG-26 | P1 | planned |  |  |
+| MIG-27 | P1 | planned |  |  |
+| MIG-28 | P1 | planned |  |  |
+| MIG-29 | P1 | planned |  |  |
+| MIG-30 | P1 | planned |  |  |
+| MIG-31 | P1 | planned |  |  |
+| MIG-32 | P1 | planned |  |  |
+| MIG-33 | P1 | planned |  |  |
+| MIG-34 | P1 | planned |  |  |
+| MIG-35 | P1 | planned |  |  |
 | PLAT-1 | P1 | test linked | tests/unit/test_version.py:31 | src/research_mcp/version.py:6 |
 | PLAT-2 | P1 | test linked | tests/unit/test_version.py:39 |  |
 | PLAT-3 | P1 | test linked | tests/unit/test_import_side_effects.py:232<br>tests/unit/test_import_side_effects.py:239<br>tests/unit/test_import_side_effects.py:252<br>tests/unit/test_import_side_effects.py:271 | src/research_mcp/__init__.py:3 |
@@ -91,127 +109,145 @@ Evidence states: `test linked` (a test cites the criterion), `passing` or `faili
 | PLAT-10 | P1 | test linked | tests/unit/test_settings.py:212<br>tests/unit/test_settings.py:220 | src/research_mcp/settings.py:54 |
 | PLAT-11 | P1 | test linked | tests/unit/test_settings.py:239<br>tests/unit/test_settings.py:246 | src/research_mcp/settings.py:96 |
 | PLAT-12 | P1 | test linked | tests/unit/platform/test_secrets.py:73<br>tests/unit/platform/test_secrets.py:109<br>tests/unit/platform/test_secrets.py:127<br>tests/unit/platform/test_secrets.py:133 | src/research_mcp/platform/secrets.py:39 |
-| PLAT-13 | P1 | planned (draft) |  |  |
+| PLAT-13 | P1 | planned |  |  |
 | PLAT-30 | P1 | test linked | tests/unit/core/test_envelope.py:12 | src/research_mcp/core/envelope.py:40 |
 | PLAT-31 | P1 | test linked | tests/unit/core/test_budget.py:13<br>tests/unit/core/test_budget.py:30<br>tests/unit/core/test_budget.py:57 | src/research_mcp/core/budget.py:38 |
 | PLAT-32 | P1 | test linked | tests/unit/core/test_envelope.py:26 | src/research_mcp/core/errors.py:6 |
 | PLAT-33 | P1 | test linked | tests/unit/core/test_envelope.py:61 | src/research_mcp/core/envelope.py:31 |
 | PLAT-34 | P1 | test linked | tests/unit/core/test_budget.py:67 | src/research_mcp/core/budget.py:83 |
-| PLAT-35 | P1 | planned (draft) |  |  |
-| PLAT-36 | P1 | planned (draft) |  |  |
-| PLAT-37 | P1 | planned (draft) |  |  |
-| PLAT-38 | P1 | planned (draft) |  |  |
-| PLAT-39 | P1 | planned (draft) |  |  |
-| PLAT-40 | P1 | planned (draft) |  |  |
-| PLAT-41 | P1 | planned (draft) |  |  |
-| PLAT-42 | P2 | planned (draft) |  |  |
-| PLAT-50 | P1 | planned (draft) |  |  |
-| PLAT-51 | P1 | planned (draft) |  |  |
-| PLAT-52 | P1 | planned (draft) |  |  |
-| PLAT-53 | P1 | planned (draft) |  |  |
-| PLAT-60 | P1 | planned (draft) |  |  |
-| PLAT-61 | P1 | planned (draft) |  |  |
-| PLAT-62 | P1 | planned (draft) |  |  |
-| PLAT-63 | P1 | planned (draft) |  |  |
-| PLAT-70 | P1 | planned (draft) |  |  |
-| PLAT-71 | P1 | planned (draft) |  |  |
-| PLAT-72 | P1 | planned (draft) |  |  |
-| PLAT-73 | P1 | planned (draft) |  |  |
-| PLAT-74 | P1 | planned (draft) |  |  |
-| PLAT-75 | P1 | planned (draft) |  |  |
-| PLAT-76 | P1 | planned (draft) |  |  |
-| PLAT-77 | P1 | planned (draft) |  |  |
-| PLAT-80 | P1 | planned (draft) |  |  |
-| PLAT-81 | P1 | planned (draft) |  |  |
-| PLAT-82 | P1 | planned (draft) |  |  |
-| PLAT-83 | P1 | planned (draft) |  |  |
+| PLAT-35 | P1 | planned |  |  |
+| PLAT-36 | P1 | planned |  |  |
+| PLAT-37 | P1 | planned |  |  |
+| PLAT-38 | P1 | planned |  |  |
+| PLAT-39 | P1 | planned |  |  |
+| PLAT-40 | P1 | planned |  |  |
+| PLAT-41 | P1 | planned |  |  |
+| PLAT-42 | P2 | planned |  |  |
+| PLAT-50 | P1 | planned |  |  |
+| PLAT-51 | P1 | planned |  |  |
+| PLAT-52 | P1 | planned |  |  |
+| PLAT-53 | P1 | planned |  |  |
+| PLAT-60 | P1 | planned |  |  |
+| PLAT-61 | P1 | planned |  |  |
+| PLAT-62 | P1 | planned |  |  |
+| PLAT-63 | P1 | planned |  |  |
+| PLAT-70 | P1 | planned |  |  |
+| PLAT-71 | P1 | planned |  |  |
+| PLAT-72 | P1 | planned |  |  |
+| PLAT-73 | P1 | planned |  |  |
+| PLAT-74 | P1 | planned |  |  |
+| PLAT-75 | P1 | planned |  |  |
+| PLAT-76 | P1 | planned |  |  |
+| PLAT-77 | P1 | planned |  |  |
+| PLAT-80 | P1 | planned |  |  |
+| PLAT-81 | P1 | planned |  |  |
+| PLAT-82 | P1 | planned |  |  |
+| PLAT-83 | P1 | planned |  |  |
+| PLAT-84 | P1 | planned |  |  |
 | SEC-1 | P1 | test linked | tests/unit/platform/test_secrets.py:145<br>tests/unit/platform/test_secrets.py:174 | src/research_mcp/platform/secrets.py:85 |
-| SEC-2 | P1 | test linked | tests/unit/platform/test_secrets.py:189<br>tests/unit/platform/test_secrets.py:231<br>tests/unit/platform/test_secrets.py:250<br>tests/unit/platform/test_secrets.py:256<br>tests/unit/platform/test_secrets.py:262<br>tests/unit/platform/test_secrets.py:278 | src/research_mcp/platform/secrets.py:175 |
-| SEC-3 | P1 | test linked | tests/unit/platform/test_secrets.py:371<br>tests/unit/platform/test_secrets.py:390<br>tests/unit/platform/test_secrets.py:403<br>tests/unit/platform/test_secrets.py:414 | src/research_mcp/platform/secrets.py:175 |
-| SEC-4 | P1 | test linked | tests/unit/platform/test_secrets.py:438 | src/research_mcp/platform/secrets.py:311 |
-| SEC-5 | P1 | planned (draft) |  |  |
-| SEC-6 | P1 | planned (draft) |  |  |
-| SEC-7 | P1 | planned (draft) |  |  |
-| SEC-8 | P1 | planned (draft) |  |  |
-| SEC-9 | P1 | planned (draft) |  |  |
-| SEC-10 | P1 | planned (draft) |  |  |
-| SEC-11 | P1 | planned (draft) |  |  |
-| SEC-12 | P1 | planned (draft) |  |  |
-| SEC-13 | P1 | test linked | tests/unit/platform/test_secrets.py:287<br>tests/unit/platform/test_secrets.py:302<br>tests/unit/platform/test_secrets.py:314<br>tests/unit/platform/test_secrets.py:324<br>tests/unit/platform/test_secrets.py:333<br>tests/unit/platform/test_secrets.py:343<br>tests/unit/platform/test_secrets.py:354 | src/research_mcp/platform/secrets.py:175 |
-| SEC-14 | P1 | planned (draft) |  |  |
-| SEC-20 | P1 | planned (draft) |  |  |
-| SEC-21 | P1 | planned (draft) |  |  |
-| SEC-22 | P1 | planned (draft) |  |  |
-| SEC-23 | P1 | planned (draft) |  |  |
-| SRC-1 | P1 | planned (draft) |  |  |
-| SRC-2 | P1 | planned (draft) |  |  |
-| SRC-3 | P1 | planned (draft) |  |  |
-| SRC-4 | P1 | planned (draft) |  |  |
-| SRC-5 | P2 | planned (draft) |  |  |
-| SRC-6 | P1 | planned (draft) |  |  |
-| SRC-7 | P1 | planned (draft) |  |  |
-| SRC-8 | P1 | planned (draft) |  |  |
-| SRC-10 | P1 | planned (draft) |  |  |
-| SRC-11 | P1 | planned (draft) |  |  |
-| SRC-12 | P1 | planned (draft) |  |  |
-| SRC-13 | P1 | planned (draft) |  |  |
-| SRC-20 | P1 | planned (draft) |  |  |
-| SRC-21 | P1 | planned (draft) |  |  |
-| SRC-22 | P2 | planned (draft) |  |  |
-| SRC-23 | P1 | planned (draft) |  |  |
-| SRC-24 | P2 | planned (draft) |  |  |
-| SRC-25 | P2 | planned (draft) |  |  |
-| SRC-26 | P1 | planned (draft) |  |  |
-| SRC-27 | P1 | planned (draft) |  |  |
-| SRC-28 | P1 | planned (draft) |  |  |
-| SRC-29 | P1 | planned (draft) |  |  |
-| SRC-30 | P1 | planned (draft) |  |  |
-| SRC-31 | P1 | planned (draft) |  |  |
-| SRC-32 | P1 | planned (draft) |  |  |
-| SRC-33 | P1 | planned (draft) |  |  |
-| SRCH-1 | P1 | planned (draft) |  |  |
-| SRCH-2 | P1 | planned (draft) |  |  |
-| SRCH-3 | P1 | planned (draft) |  |  |
-| SRCH-4 | P1 | planned (draft) |  |  |
-| SRCH-5 | P2 | planned (draft) |  |  |
-| SRCH-6 | P1 | planned (draft) |  |  |
-| SRCH-7 | P1 | planned (draft) |  |  |
-| SRCH-8 | P1 | planned (draft) |  |  |
-| SRCH-9 | P2 | planned (draft) |  |  |
+| SEC-2 | P1 | test linked | tests/unit/platform/test_secrets.py:189<br>tests/unit/platform/test_secrets.py:231<br>tests/unit/platform/test_secrets.py:253<br>tests/unit/platform/test_secrets.py:259<br>tests/unit/platform/test_secrets.py:265<br>tests/unit/platform/test_secrets.py:281 | src/research_mcp/platform/secrets.py:175 |
+| SEC-3 | P1 | test linked | tests/unit/platform/test_secrets.py:374<br>tests/unit/platform/test_secrets.py:393<br>tests/unit/platform/test_secrets.py:406<br>tests/unit/platform/test_secrets.py:417 | src/research_mcp/platform/secrets.py:175 |
+| SEC-4 | P1 | test linked | tests/unit/platform/test_secrets.py:441 | src/research_mcp/platform/secrets.py:311 |
+| SEC-5 | P1 | planned |  |  |
+| SEC-6 | P1 | planned |  |  |
+| SEC-7 | P1 | planned |  |  |
+| SEC-8 | P1 | planned |  |  |
+| SEC-9 | P1 | planned |  |  |
+| SEC-10 | P1 | planned |  |  |
+| SEC-11 | P1 | planned |  |  |
+| SEC-12 | P1 | planned |  |  |
+| SEC-13 | P1 | test linked | tests/unit/platform/test_secrets.py:290<br>tests/unit/platform/test_secrets.py:305<br>tests/unit/platform/test_secrets.py:317<br>tests/unit/platform/test_secrets.py:327<br>tests/unit/platform/test_secrets.py:336<br>tests/unit/platform/test_secrets.py:346<br>tests/unit/platform/test_secrets.py:357 | src/research_mcp/platform/secrets.py:175 |
+| SEC-14 | P1 | planned |  |  |
+| SEC-20 | P1 | planned |  |  |
+| SEC-21 | P1 | planned |  |  |
+| SEC-22 | P1 | planned |  |  |
+| SEC-23 | P1 | planned |  |  |
+| SEC-24 | P1 | planned |  |  |
+| SEC-25 | P1 | planned |  |  |
+| SEC-26 | P1 | planned |  |  |
+| SEC-27 | P1 | planned |  |  |
+| SEC-28 | P1 | planned |  |  |
+| SEC-29 | P1 | planned |  |  |
+| SEC-30 | P1 | planned |  |  |
+| SEC-31 | P1 | planned |  |  |
+| SEC-32 | P1 | planned |  |  |
+| SRC-1 | P1 | planned |  |  |
+| SRC-2 | P1 | planned |  |  |
+| SRC-3 | P1 | planned |  |  |
+| SRC-4 | P1 | planned |  |  |
+| SRC-5 | P2 | planned |  |  |
+| SRC-6 | P1 | planned |  |  |
+| SRC-7 | P1 | planned |  |  |
+| SRC-8 | P1 | planned |  |  |
+| SRC-10 | P1 | planned |  |  |
+| SRC-11 | P1 | planned |  |  |
+| SRC-12 | P1 | planned |  |  |
+| SRC-13 | P1 | planned |  |  |
+| SRC-20 | P1 | planned |  |  |
+| SRC-21 | P1 | planned |  |  |
+| SRC-22 | P2 | planned |  |  |
+| SRC-23 | P1 | planned |  |  |
+| SRC-24 | P2 | planned |  |  |
+| SRC-25 | P2 | planned |  |  |
+| SRC-26 | P1 | planned |  |  |
+| SRC-27 | P1 | planned |  |  |
+| SRC-28 | P1 | planned |  |  |
+| SRC-29 | P1 | planned |  |  |
+| SRC-30 | P1 | planned |  |  |
+| SRC-31 | P1 | planned |  |  |
+| SRC-32 | P1 | planned |  |  |
+| SRC-33 | P1 | planned |  |  |
+| SRCH-1 | P1 | planned |  |  |
+| SRCH-2 | P1 | planned |  |  |
+| SRCH-3 | P1 | planned |  |  |
+| SRCH-4 | P1 | planned |  |  |
+| SRCH-5 | P2 | planned |  |  |
+| SRCH-6 | P1 | planned |  |  |
+| SRCH-7 | P1 | planned |  |  |
+| SRCH-8 | P1 | planned |  |  |
+| SRCH-9 | P2 | planned |  |  |
 | SRCH-10 | P1 | test linked | tests/unit/core/test_ids.py:33<br>tests/unit/core/test_ids.py:52<br>tests/unit/core/test_ids.py:64 | src/research_mcp/core/ids.py:70 |
-| SRCH-11 | P1 | test linked | tests/unit/core/test_ids.py:82 | src/research_mcp/core/ids.py:79 |
-| SRCH-12 | P1 | test linked | tests/unit/core/test_ids.py:110<br>tests/unit/core/test_ids.py:293 | src/research_mcp/core/ids.py:93<br>src/research_mcp/core/ids.py:99<br>src/research_mcp/core/ids.py:108<br>src/research_mcp/core/ids.py:115<br>src/research_mcp/core/ids.py:123<br>src/research_mcp/core/ids.py:130<br>src/research_mcp/core/ids.py:137<br>src/research_mcp/core/ids.py:146<br>src/research_mcp/core/ids.py:152 |
-| SRCH-13 | P1 | test linked | tests/unit/core/test_ids.py:133<br>tests/unit/core/test_ids.py:149 | src/research_mcp/core/ids.py:168 |
-| SRCH-14 | P1 | test linked | tests/unit/core/test_ids.py:186<br>tests/unit/core/test_ids.py:206<br>tests/unit/core/test_ids.py:269 | src/research_mcp/core/ids.py:241 |
-| SRCH-15 | P1 | test linked | tests/unit/core/test_ids.py:217<br>tests/unit/core/test_ids.py:318<br>tests/unit/core/test_ids.py:334 | src/research_mcp/core/ids.py:241 |
-| SRCH-16 | P2 | test linked | tests/unit/core/test_ids.py:264 | src/research_mcp/core/ids.py:296 |
-| SRCH-17 | P1 | planned (draft) |  |  |
-| SRCH-20 | P1 | planned (draft) |  |  |
-| SRCH-21 | P1 | planned (draft) |  |  |
-| SRCH-22 | P1 | planned (draft) |  |  |
-| SRCH-23 | P1 | planned (draft) |  |  |
-| SRCH-30 | P1 | planned (draft) |  |  |
-| SRCH-31 | P2 | planned (draft) |  |  |
-| SRCH-32 | P1 | planned (draft) |  |  |
-| SRCH-33 | P1 | planned (draft) |  |  |
-| SRCH-34 | P2 | planned (draft) |  |  |
-| SRCH-36 | P1 | planned (draft) |  |  |
-| UI-1 | P1 | planned (draft) |  |  |
-| UI-2 | P1 | planned (draft) |  |  |
-| UI-3 | P1 | planned (draft) |  |  |
-| UI-4 | P1 | planned (draft) |  |  |
-| UI-5 | P2 | planned (draft) |  |  |
-| UI-6 | P1 | planned (draft) |  |  |
-| UI-10 | P1 | planned (draft) |  |  |
-| UI-11 | P1 | planned (draft) |  |  |
-| UI-12 | P1 | planned (draft) |  |  |
-| UI-13 | P1 | planned (draft) |  |  |
-| UI-14 | P1 | planned (draft) |  |  |
-| UI-15 | P1 | planned (draft) |  |  |
-| UI-16 | P1 | planned (draft) |  |  |
-| UI-17 | P1 | planned (draft) |  |  |
-| UI-18 | P1 | planned (draft) |  |  |
-| UI-19 | P1 | planned (draft) |  |  |
+| SRCH-11 | P1 | test linked | tests/unit/core/test_ids.py:85 | src/research_mcp/core/ids.py:79 |
+| SRCH-12 | P1 | test linked | tests/unit/core/test_ids.py:113<br>tests/unit/core/test_ids.py:299 | src/research_mcp/core/ids.py:93<br>src/research_mcp/core/ids.py:99<br>src/research_mcp/core/ids.py:108<br>src/research_mcp/core/ids.py:115<br>src/research_mcp/core/ids.py:123<br>src/research_mcp/core/ids.py:130<br>src/research_mcp/core/ids.py:137<br>src/research_mcp/core/ids.py:146<br>src/research_mcp/core/ids.py:152 |
+| SRCH-13 | P1 | test linked | tests/unit/core/test_ids.py:136<br>tests/unit/core/test_ids.py:152 | src/research_mcp/core/ids.py:168 |
+| SRCH-14 | P1 | test linked | tests/unit/core/test_ids.py:189<br>tests/unit/core/test_ids.py:209<br>tests/unit/core/test_ids.py:275 | src/research_mcp/core/ids.py:241 |
+| SRCH-15 | P1 | test linked | tests/unit/core/test_ids.py:220<br>tests/unit/core/test_ids.py:324<br>tests/unit/core/test_ids.py:340 | src/research_mcp/core/ids.py:241 |
+| SRCH-16 | P2 | test linked | tests/unit/core/test_ids.py:270 | src/research_mcp/core/ids.py:296 |
+| SRCH-17 | P1 | planned |  |  |
+| SRCH-20 | P1 | planned |  |  |
+| SRCH-21 | P1 | planned |  |  |
+| SRCH-22 | P1 | planned |  |  |
+| SRCH-23 | P1 | planned |  |  |
+| SRCH-30 | P1 | planned |  |  |
+| SRCH-31 | P2 | planned |  |  |
+| SRCH-32 | P1 | planned |  |  |
+| SRCH-33 | P1 | planned |  |  |
+| SRCH-34 | P2 | planned |  |  |
+| SRCH-36 | P1 | planned |  |  |
+| SRCH-37 | P1 | planned |  |  |
+| SRCH-38 | P1 | planned |  |  |
+| UI-1 | P1 | planned |  |  |
+| UI-2 | P1 | planned |  |  |
+| UI-3 | P1 | planned |  |  |
+| UI-4 | P1 | planned |  |  |
+| UI-5 | P2 | planned |  |  |
+| UI-6 | P1 | planned |  |  |
+| UI-10 | P1 | planned |  |  |
+| UI-11 | P1 | planned |  |  |
+| UI-12 | P1 | planned |  |  |
+| UI-13 | P1 | planned |  |  |
+| UI-14 | P1 | planned |  |  |
+| UI-15 | P1 | planned |  |  |
+| UI-16 | P1 | planned |  |  |
+| UI-17 | P1 | planned |  |  |
+| UI-18 | P1 | planned |  |  |
+| UI-19 | P1 | planned |  |  |
+| UI-20 | P1 | planned |  |  |
+| UI-21 | P1 | planned |  |  |
+| UI-22 | P1 | planned |  |  |
+| UI-23 | P1 | planned |  |  |
+| UI-24 | P1 | planned |  |  |
+| UI-25 | P1 | planned |  |  |
 
 Generated by trace-check. Do not edit by hand.
 

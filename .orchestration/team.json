@@ -72,21 +72,21 @@
     "name": "M0",
     "docs": [
       {
-        "path": "docs/build/M0-plan-v1.md",
+        "path": "docs/build/M0-plan-v2.md",
         "sections": [
           "1",
           "2"
         ]
       },
       {
-        "path": "docs/prd/PRD-v7.md",
+        "path": "docs/prd/PRD-v8.md",
         "sections": [
           "1.4",
           "2.9"
         ]
       },
       {
-        "path": "docs/test/test-plan-v3.md",
+        "path": "docs/test/test-plan-v4.md",
         "sections": [
           "1.4",
           "3"
