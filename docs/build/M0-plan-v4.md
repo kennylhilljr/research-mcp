@@ -2,7 +2,9 @@
 title: "M0 plan: foundations and three sources"
 type: plan
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-23
 owner: "Kenny Hill"
 milestone: M0
 artifact_type: plan
