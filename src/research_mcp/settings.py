@@ -19,6 +19,8 @@ from pydantic_settings import (
     TomlConfigSettingsSource,
 )
 
+from research_mcp.platform.secrets import SecretRef
+
 
 def _hide_inputs(exc: ValidationError) -> ValidationError:
     # hide_input_in_errors only covers str(); errors() and json() still carry the
@@ -61,6 +63,20 @@ class ServerSettings(_Config):
             raise ValueError("server.host must be a loopback IP address") from exc
         if not address.is_loopback or "%" in value:
             raise ValueError("server.host must be a loopback IP address")
+        return value
+
+    # @spec PLAT-12
+    @field_validator("token")
+    @classmethod
+    def keychain_reference(cls, value: str) -> str:
+        try:
+            ref = SecretRef.parse(value)
+        except ValueError as exc:
+            raise ValueError(
+                "server.token must be a keychain:research-mcp/<NAME> reference"
+            ) from exc
+        if ref.backend != "keychain":
+            raise ValueError("server.token must be a keychain:research-mcp/<NAME> reference")
         return value
 
 
@@ -120,6 +136,12 @@ class LimitSettings(_Config):
 class FederationSettings(_Config):
     deadline_s: float = Field(default=8.0, gt=0)
     default_groups: list[str] = Field(default_factory=lambda: ["scholarly", "preprints"])
+    fuzzy_merge: bool = True
+    record_searches: bool = True
+
+
+class LoggingSettings(_Config):
+    debug: bool = False
 
 
 class CacheSettings(_Config):
@@ -184,6 +206,7 @@ class DiskSettings(_Config):
 
 class BackupSettings(_Config):
     keep: int = Field(default=7, gt=0)
+    drive_copy: bool = False
 
 
 class SourceSettings(_Config):
@@ -278,6 +301,7 @@ class Settings(BaseSettings):
     contact: ContactSettings = Field(default_factory=ContactSettings)
     limits: LimitSettings = Field(default_factory=LimitSettings)
     federation: FederationSettings = Field(default_factory=FederationSettings)
+    logging: LoggingSettings = Field(default_factory=LoggingSettings)
     cache: CacheSettings = Field(default_factory=CacheSettings)
     archive: ArchiveSettings = Field(default_factory=ArchiveSettings)
     notify: NotifySettings = Field(default_factory=NotifySettings)

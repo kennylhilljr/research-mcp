@@ -41,7 +41,13 @@ def test_defaults(tmp_path: Path) -> None:
             "pdf_pages": 500,
             "chunk_hard_cap_chars": 4000,
         },
-        "federation": {"deadline_s": 8.0, "default_groups": ["scholarly", "preprints"]},
+        "federation": {
+            "deadline_s": 8.0,
+            "default_groups": ["scholarly", "preprints"],
+            "fuzzy_merge": True,
+            "record_searches": True,
+        },
+        "logging": {"debug": False},
         "cache": {
             "retention_days": 120,
             "review_lead_days": 3,
@@ -62,7 +68,7 @@ def test_defaults(tmp_path: Path) -> None:
             "free_warn_bytes": 16106127360,
             "free_crit_bytes": 5368709120,
         },
-        "backup": {"keep": 7},
+        "backup": {"keep": 7, "drive_copy": False},
         "sources": {},
         "web": {
             "strategy": "fallback",
@@ -248,6 +254,44 @@ def test_optional_email() -> None:
     assert Settings(contact={"email": "researcher@university.edu"}).contact.email == (
         "researcher@university.edu"
     )
+
+
+@pytest.mark.parametrize(
+    "token",
+    [
+        "not-a-reference",
+        "keychain:wrong-service/DAEMON_TOKEN",
+        "keychain:research-mcp/lowercase",
+    ],
+)
+def test_token_must_be_keychain_reference(token: str, monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec PLAT-8: server.token must parse as a keychain:research-mcp/<NAME> reference."""
+    monkeypatch.setenv("RESEARCH_MCP_SERVER__TOKEN", token)
+    with pytest.raises(ValidationError, match="server.token"):
+        Settings()
+
+
+def test_env_references_rejected_in_config(monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec PLAT-12: server.token rejects an env: reference even though it parses."""
+    with pytest.raises(ValidationError, match="server.token"):
+        Settings(server={"token": "env:DAEMON_TOKEN"})
+    monkeypatch.setenv("RESEARCH_MCP_SERVER__TOKEN", "env:DAEMON_TOKEN")
+    with pytest.raises(ValidationError, match="server.token"):
+        Settings()
+
+
+def test_logging_debug_default_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec PLAT-8: logging.debug defaults to false and takes an environment override."""
+    assert Settings().logging.debug is False
+    monkeypatch.setenv("RESEARCH_MCP_LOGGING__DEBUG", "true")
+    assert Settings().logging.debug is True
+
+
+def test_backup_drive_copy_default_off(monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec PLAT-8: backup.drive_copy defaults to false and takes an environment override."""
+    assert Settings().backup.drive_copy is False
+    monkeypatch.setenv("RESEARCH_MCP_BACKUP__DRIVE_COPY", "true")
+    assert Settings().backup.drive_copy is True
 
 
 @pytest.mark.parametrize(
