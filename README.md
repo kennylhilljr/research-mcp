@@ -9,10 +9,10 @@ The documents follow the owner's spec-driven development framework ([ADR 0013](d
 | Document | Role |
 |---|---|
 | [Vision](docs/vision/vision-v2.md) | Why, for whom, the outcomes |
-| [PRD v6](docs/prd/PRD-v6.md) and [component PRDs](docs/prd/components/) | Requirements and acceptance criteria: what and why |
+| [PRD v7](docs/prd/PRD-v7.md) and [component PRDs](docs/prd/components/) | Requirements and acceptance criteria: what and why |
 | [SPEC v3](docs/spec/SPEC-v3.md) | The system high level design |
 | [LLDs](docs/lld/) | The build contract per component: names, interfaces, formats, behavior |
-| [Test plan](docs/test/test-plan-v1.md) | How each criterion is verified, owner checks, exit gates |
+| [Test plan](docs/test/test-plan-v2.md) | How each criterion is verified, owner checks, exit gates |
 | [M0 plan](docs/build/M0-plan-v1.md) | Work units of the first milestone |
 | [ADRs](docs/adr/) | Decisions |
 | [Migration cutover runbook](docs/runbooks/migration-cutover-v1.md) | v1 to v2 cutover |

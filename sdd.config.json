@@ -22,7 +22,7 @@
     "coverage": "docs/trace/coverage.md",
     "docMap": "docs/README.md",
     "scopeMap": "docs/scope/scope-map.yaml",
-    "testPlan": "docs/test/test-plan-v1.md"
+    "testPlan": "docs/test/test-plan-v2.md"
   },
   "approvals": {
     "requireApprover": false
