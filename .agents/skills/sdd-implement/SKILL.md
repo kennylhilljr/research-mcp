@@ -3,7 +3,7 @@ name: sdd-implement
 description: "Build one planned task tests first, with @spec annotations that cite the acceptance criteria, then write the handoff. Use when a milestone plan exists and a task is next in the queue."
 argument-hint: "<milestone and task, for example M1 task 4>"
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # sdd-implement
@@ -33,7 +33,7 @@ Turn one task into working, traced code. Tests come first and must fail for the 
    - "annotate the test that exercises each criterion with `// @spec <ID>` (or the comment syntax of the language), and the entry point of the behavior in code, not every helper";
    - "a criterion that admits two readings comes back as a question, never as a silently chosen reading";
    - the commands from `AGENTS.md` to run tests and type checks.
-3. When the implementer returns, run the tests and `node tools/sdd/cli.mjs check` yourself. Fix or send back until both pass.
+3. When the implementer returns, set the task's Status to `done` in the plan's task table (a draft plan in place; an approved plan in its next version, `node tools/sdd/cli.mjs new --next <path>`). From then on trace-check requires a test for each criterion the task names. Then run the tests and `node tools/sdd/cli.mjs check` yourself. Fix or send back until both pass.
 4. Run `node tools/trace-check/trace-check.mjs --write` to regenerate `docs/trace/coverage.md`. To record passing and failing evidence, produce a JUnit XML report with the project's test runner and add `--results <file>` (do not commit a report from a local run as release evidence).
 5. Write or update the handoff: `node tools/sdd/cli.mjs new handoff --milestone M<n>` (first task of the milestone) recording what was built, the criterion IDs, the commands run and their results (which criteria passed, failed, were deferred or excepted), the code review, and anything left open.
 6. Hand over to `sdd-verify`. The implementer never verifies its own work.
@@ -41,6 +41,7 @@ Turn one task into working, traced code. Tests come first and must fail for the 
 ## Outputs
 
 - Code and tests with `@spec` annotations.
+- The task's Status set to `done` in the plan.
 - Regenerated `docs/trace/coverage.md` (the test plan is not edited).
 - `docs/build/M<n>-handoff-vN.md`.
 
@@ -60,5 +61,6 @@ Code review by a person. Verification by the `verifier` persona through `sdd-ver
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 1.1.1 | 2026-10-22 | Marks the task done in the plan's Status column, which makes its criteria due in trace-check |
 | 1.1.0 | 2026-10-22 | Gate checks the named plan and the approved LLD of each component it covers; handoff records test results and review |
 | 1.0.0 | 2026-10-22 | First release |

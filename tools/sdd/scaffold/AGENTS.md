@@ -7,7 +7,7 @@ Framework: spec-driven development (SDD) {{FRAMEWORK_VERSION}}. Owner: {{OWNER}}
 ## Read first
 
 - [docs/README.md](docs/README.md) is the doc map: the organizational scope map, the delivery artifact index and the approval workflow. The latest approved documents are the source of truth. If code and docs disagree, raise it; do not silently diverge.
-- [docs/standards/spec-driven-development-v2.md](docs/standards/spec-driven-development-v2.md) defines organizational scope, the delivery artifact chain, decision owners, gates, IDs and evidence. Once its owner approves it, it applies to this repository only; the organization's controlled standard is an open decision recorded there.
+- [docs/standards/spec-driven-development-v3.md](docs/standards/spec-driven-development-v3.md) defines organizational scope, the delivery artifact chain, decision owners, gates, IDs and evidence. Once its owner approves it, it applies to this repository only; the organization's controlled standard is an open decision recorded there.
 - [docs/standards/agent-personas-v1.md](docs/standards/agent-personas-v1.md) defines the agent personas and their limits.
 - [docs/scope/scope-map.yaml](docs/scope/scope-map.yaml) names the L0 to L3 organizational scopes this repository serves.
 

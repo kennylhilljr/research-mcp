@@ -1,6 +1,6 @@
 # Using the framework day to day
 
-This guide follows one feature from idea to verified code, then covers changes, support work and the checks. The rules behind each step are in the [standard](../standards/spec-driven-development-v2.md). Product owns the steps up to Gate 1; Engineering owns the design gates and the build; agents prepare the material in between.
+This guide follows one feature from idea to verified code, then covers changes, support work and the checks. The rules behind each step are in the [standard](../standards/spec-driven-development-v3.md). Product owns the steps up to Gate 1; Engineering owns the design gates and the build; agents prepare the material in between.
 
 ## The chain
 

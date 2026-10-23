@@ -4,7 +4,7 @@ Spec-driven development (SDD) is a controlled bridge from Product intent to Engi
 
 Two things tend to go wrong on that bridge, and AI coding agents make both worse. Intent leaks away between the request and the code, because nothing says which decisions a person must make. And agents produce more text than people can review, so approvals turn into skims. SDD answers both: every section names its decision owner, people approve at fixed checkpoints, and scripts check that tests and code still link to what was approved. Agents prepare bounded, traceable material from approved inputs. They do not replace accountable decisions.
 
-The rules are in the [standard](../standards/spec-driven-development-v2.md). This page explains them.
+The rules are in the [standard](../standards/spec-driven-development-v3.md). This page explains them.
 
 ## Reusable toolkit, reference profile
 
@@ -91,4 +91,4 @@ Product priority (P1 to P3) ranks new capability. Operational severity (S0 to S4
 
 ## Open decisions
 
-The standard lists the decisions the toolkit does not settle: the controlled standard and its owner, the pilot's L2 capability and L3 Business Application, gate approvers and exception authority, whether the local experiments stay, and the license. See [open decisions](../standards/spec-driven-development-v2.md#18-open-decisions).
+The standard lists the decisions the toolkit does not settle: the controlled standard and its owner, the pilot's L2 capability and L3 Business Application, gate approvers and exception authority, whether the local experiments stay, and the license. See [open decisions](../standards/spec-driven-development-v3.md#18-open-decisions).

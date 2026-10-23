@@ -21,7 +21,7 @@ An agent that cannot load skills or spawn subagents follows the same chain by ha
 3. For each section the skill writes, read the persona named in the template's owner line and stay inside its limits.
 4. Never write an H section; add a `- [ ] Q:` line instead.
 5. Never approve a document or verify your own work.
-6. Before each gated step, check the approval yourself: the component's PRD, the SPEC, the component's LLD or the plan, as the [standard](../standards/spec-driven-development-v2.md#8-the-intake-checkpoint-and-the-gates) describes. Never edit a document whose status is `approved`.
+6. Before each gated step, check the approval yourself: the component's PRD, the SPEC, the component's LLD or the plan, as the [standard](../standards/spec-driven-development-v3.md#8-the-intake-checkpoint-and-the-gates) describes. Never edit a document whose status is `approved`.
 7. Run `node tools/sdd/cli.mjs check` before finishing.
 
 | Control | Claude Code | Other agents |

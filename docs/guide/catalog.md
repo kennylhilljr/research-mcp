@@ -18,8 +18,8 @@ Every skill, agent persona and command in `.claude/` carries its own version, so
 | [`sdd-adopt`](../../.claude/skills/sdd-adopt/SKILL.md) | 1.1.0 | Bring the SDD framework into an existing, running application without breaking it: analyze the repository, add the framework files, list the information people still need to supply, and draft specs for existing behavior. |
 | [`sdd-clarify`](../../.claude/skills/sdd-clarify/SKILL.md) | 1.1.0 | Find gaps, conflicts and ambiguous criteria in the PRDs and ask the owner only what is missing, then prepare Gate 1. |
 | [`sdd-hld`](../../.claude/skills/sdd-hld/SKILL.md) | 1.1.0 | Draft the system high-level design (the SPEC) and ADR options with tradeoffs from approved PRDs. |
-| [`sdd-implement`](../../.claude/skills/sdd-implement/SKILL.md) | 1.1.0 | Build one planned task tests first, with @spec annotations that cite the acceptance criteria, then write the handoff. |
-| [`sdd-intake`](../../.claude/skills/sdd-intake/SKILL.md) | 1.1.0 | Interview the owner with the twelve seed questions and turn the answers into Section 1 of the parent PRD. |
+| [`sdd-implement`](../../.claude/skills/sdd-implement/SKILL.md) | 1.1.1 | Build one planned task tests first, with @spec annotations that cite the acceptance criteria, then write the handoff. |
+| [`sdd-intake`](../../.claude/skills/sdd-intake/SKILL.md) | 1.1.1 | Interview the owner with the twelve seed questions and turn the answers into Section 1 of the parent PRD. |
 | [`sdd-lld`](../../.claude/skills/sdd-lld/SKILL.md) | 1.1.0 | Write one low-level design per component from the approved SPEC: contracts, schema, algorithms, errors, configuration, observability and the test plan. |
 | [`sdd-spec`](../../.claude/skills/sdd-spec/SKILL.md) | 1.1.0 | Turn an approved problem framing into requirements: user stories with priority, functional requirements and EARS acceptance criteria with stable IDs, in the parent and component PRDs. |
 | [`sdd-tasks`](../../.claude/skills/sdd-tasks/SKILL.md) | 1.1.0 | Break an approved LLD into a milestone plan of small, dependency-ordered tasks, each traced to criterion IDs. |

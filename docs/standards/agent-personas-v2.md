@@ -28,7 +28,7 @@ A human persona is a role, not a named person. The adopting organization assigns
 
 When verification reports drift, the owner of the disputed artifact decides which artifact first lost intent: Product for requirements, Engineering for the design, the component owner for the low level design and code.
 
-Who holds each human persona, the exception authority and the fast path criteria are local choices; see the open decisions in the [SDD standard](spec-driven-development-v2.md#18-open-decisions).
+Who holds each human persona, the exception authority and the fast path criteria are local choices; see the open decisions in the [SDD standard](spec-driven-development-v3.md#18-open-decisions).
 
 ## 2. Agent personas
 

@@ -1,6 +1,6 @@
 {
   "$schema": "./tools/sdd/sdd.config.schema.json",
-  "frameworkVersion": "1.1.0",
+  "frameworkVersion": "1.1.1",
   "project": {
     "name": "research-mcp",
     "description": "Research MCP v2: one local MCP server that federates scholarly and technical sources, with a cache, health checks and a small local UI",

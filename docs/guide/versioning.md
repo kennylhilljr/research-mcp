@@ -53,7 +53,7 @@ CI fails when the catalog is out of date.
 
 ## Documents
 
-Documents are versioned by file name (`PRD-tech-v2.md`). An approved version is frozen; `node tools/sdd/cli.mjs new --next <path>` creates the next one. ADRs are numbered once and superseded, never versioned. See the [standard](../standards/spec-driven-development-v2.md).
+Documents are versioned by file name (`PRD-tech-v2.md`). An approved version is frozen; `node tools/sdd/cli.mjs new --next <path>` creates the next one. ADRs are numbered once and superseded, never versioned. See the [standard](../standards/spec-driven-development-v3.md).
 
 ## Upgrading a repository to a new framework release
 
@@ -72,6 +72,12 @@ node <path-to-new-framework>/tools/sdd/cli.mjs upgrade . --apply --overwrite  # 
 - `--apply` refuses to run with uncommitted changes; `--allow-dirty` overrides that.
 
 Afterwards, set `frameworkVersion` in `sdd.config.json` to the new release, delete `.sdd-proposed/`, then run `node tools/sdd/cli.mjs catalog` and `node tools/sdd/cli.mjs check`. The release notes are in the framework repository's `CHANGELOG.md`.
+
+### From 1.1.0 to 1.1.1
+
+`upgrade` brings the fixed trace-check, standard v3 and the plan template with a Status column. Nothing else is yours to do, except one choice: to keep CI green while a milestone is being built, add a Status column to the task table of your milestone plans (in their next version) and mark each task `done` when it is. Without it, every criterion a plan names is due at once.
+
+Behavior change to expect: a milestone plan puts in build only the criteria it names, not every criterion of the components it lists.
 
 ### From 1.0.0 to 1.1.0
 

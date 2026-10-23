@@ -7,7 +7,7 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 ## Read first
 
 - [docs/README.md](docs/README.md) is the doc map: the scope map, the artifact index and each document's status. The latest approved documents are the source of truth. If code and docs disagree, raise it; do not silently diverge.
-- [docs/standards/spec-driven-development-v2.md](docs/standards/spec-driven-development-v2.md) defines scope, the delivery artifact chain, decision owners, gates, IDs and evidence. [docs/standards/agent-personas-v2.md](docs/standards/agent-personas-v2.md) defines the human and agent personas and the RASCI.
+- [docs/standards/spec-driven-development-v3.md](docs/standards/spec-driven-development-v3.md) defines scope, the delivery artifact chain, decision owners, gates, IDs and evidence. [docs/standards/agent-personas-v2.md](docs/standards/agent-personas-v2.md) defines the human and agent personas and the RASCI.
 - [docs/scope/scope-map.yaml](docs/scope/scope-map.yaml) names the scopes this repository serves (L3 `research-mcp`).
 - For a work unit: its task in [the M0 plan](docs/build/M0-plan-v1.md), the LLD sections it implements, the acceptance criteria it owns (section 2.4 of each component PRD), and any clarifications the plan lists for it.
 

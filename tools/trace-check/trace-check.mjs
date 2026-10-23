@@ -22,7 +22,7 @@ import { fileURLToPath } from "node:url";
 import {
   findRoot, loadConfig, loadDocs, collectDefinitions, scanAnnotations, listSourceFiles, parseFrontMatter,
   parseYaml, toYaml, git, isGitRepo, parseArgs, report, readText, findTestPlan, isMain,
-  componentOfPrefix, docIsForComponent, planComponents, docStatus } from "../lib/sdd-lib.mjs";
+  componentOfPrefix, docIsForComponent, planComponents, docStatus, classifyId, parseTables } from "../lib/sdd-lib.mjs";
 
 export const COVERAGE_START = "<!-- trace-check:coverage:start -->";
 export const COVERAGE_END = "<!-- trace-check:coverage:end -->";
@@ -43,6 +43,21 @@ export function readJUnit(text) {
     results.push({ name: unescape(`${cls} ${name}`), passed: !/<(failure|error)\b/.test(inner) });
   }
   return results;
+}
+
+// Criterion IDs a text names, with "TECH-1 to TECH-4" (or "through") expanded to every ID in between.
+const DONE_STATUS = /^(done|merged|complete|completed)\b/i;
+// Task table cells that describe the task rather than name what it delivers.
+const NOT_DELIVERED = new Set(["#", "task", "depends on", "status"]);
+function criteriaIn(text) {
+  const out = new Set();
+  // The two ends share everything but their last number; zero padding is kept when both ends have the same width.
+  for (const m of String(text).matchAll(/\b([A-Z][A-Z0-9]*-(?:[A-Z0-9]+-)*[A-Z]*)(\d+)\s+(?:to|through)\s+\1(\d+)\b/g)) {
+    const width = m[2].length === m[3].length ? m[2].length : 0;
+    for (let n = Number(m[2]); n <= Number(m[3]) && n - Number(m[2]) < 1000; n++) out.add(m[1] + String(n).padStart(width, "0"));
+  }
+  for (const [token] of String(text).matchAll(/[A-Z][A-Z0-9]*(?:-[A-Z0-9]+)+/g)) out.add(token);
+  return new Set([...out].filter((id) => { const c = classifyId(id); return c && c.kind === "criterion"; }));
 }
 
 export function analyze(root, cfg = loadConfig(root), { base = null, results = null } = {}) {
@@ -66,9 +81,33 @@ export function analyze(root, cfg = loadConfig(root), { base = null, results = n
     if (!planApproved && ids.size) warnings.push({ file: planRel, msg: `${k}: ${[...ids].join(", ")} is not counted until the owner approves the test plan` });
   const index = loadIndex(root, cfg);
 
-  // Components in build: a milestone plan exists for them, so their approved criteria need tests now.
-  const plans = docs.filter((d) => String(d.data.type || "") === "plan");
-  const inBuild = new Set(plans.flatMap((d) => planComponents(d, cfg)));
+  // Criteria due in build. Each current plan (latest version, not superseded) is read on its own and the results
+  // are combined. A plan that names no criteria of a component it covers makes all of them due. Otherwise, when
+  // its task table has a Status column, the criteria of done tasks are due; without one, every criterion it names.
+  const plans = docs.filter((d) => String(d.data.type || "") === "plan" && d.isLatest !== false && docStatus(d) !== "superseded");
+  const compOf = (id) => { const c = classifyId(id); return c && c.kind === "criterion" ? componentOfPrefix(cfg, c.prefix) : undefined; };
+  const due = new Map(); // component -> "all" or a Set of criterion IDs
+  const addDue = (comp, ids) => {
+    if (due.get(comp) === "all") return;
+    if (ids === "all") return void due.set(comp, "all");
+    if (!due.has(comp)) due.set(comp, new Set());
+    for (const id of ids) due.get(comp).add(id);
+  };
+  for (const d of plans) {
+    const comps = planComponents(d, cfg);
+    const ofPlan = (text) => [...criteriaIn(text)].filter((id) => comps.includes(compOf(id)));
+    const named = ofPlan(d.body);
+    const delivered = (t, r) => t.headers.filter((h) => !NOT_DELIVERED.has(h)).map((h) => r[h]).join(" | ");
+    const taskRows = parseTables(d.body).filter((t) => t.headers.includes("status"))
+      .flatMap((t) => t.rows.map((r) => ({ status: r.status, ids: ofPlan(delivered(t, r)) }))).filter((r) => r.ids.length);
+    for (const comp of comps) {
+      if (!named.some((id) => compOf(id) === comp)) { addDue(comp, "all"); continue; }
+      if (!taskRows.length) { addDue(comp, named.filter((id) => compOf(id) === comp)); continue; }
+      addDue(comp, taskRows.filter((r) => DONE_STATUS.test(String(r.status).replace(/[`*_]/g, "").trim()))
+        .flatMap((r) => r.ids).filter((id) => compOf(id) === comp));
+    }
+  }
+  const inBuildCriterion = (comp, id) => { const v = due.get(comp); return v === "all" || (v instanceof Set && v.has(id)); };
   // Planned evidence: the test plan or the component's latest LLD names the criterion.
   const lldsFor = (comp) => docs.filter((d) => d.isLatest && String(d.data.type || "") === "lld" && docIsForComponent(d, cfg, comp));
   const mentions = (text, id) => new RegExp(`(^|[^A-Za-z0-9-])${id.replace(/[-]/g, "\\-")}(?![A-Za-z0-9-])`, "m").test(text || "");
@@ -104,7 +143,7 @@ export function analyze(root, cfg = loadConfig(root), { base = null, results = n
     const tests = testsFor.get(def.id) || [];
     const code = codeFor.get(def.id) || [];
     const comp = componentOfPrefix(cfg, def.prefix);
-    const building = inBuild.has(comp);
+    const building = inBuildCriterion(comp, def.id);
     const isApproved = def.docStatus === "approved";
     const planned = mentions(plan.body, def.id) || lldsFor(comp).some((d) => mentions(d.body, def.id));
     const ran = cases ? cases.filter((c) => mentions(c.name, def.id)) : [];

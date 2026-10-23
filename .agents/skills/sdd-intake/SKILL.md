@@ -3,7 +3,7 @@ name: sdd-intake
 description: "Interview the owner with the twelve seed questions and turn the answers into Section 1 of the parent PRD. Use when starting a new product, feature or initiative, or when someone asks for a new spec, a new PRD or to capture requirements."
 argument-hint: "<one-line idea or problem>"
 metadata:
-  version: 1.1.0
+  version: 1.1.1
 ---
 
 # sdd-intake
@@ -24,7 +24,7 @@ Do not use it for bugs or small changes; those take the short path through `sdd-
 
 1. `AGENTS.md` (repository instructions: standing rules, approved stack, owners).
 2. `docs/README.md` (doc map) to see whether a parent PRD already exists.
-3. `docs/standards/spec-driven-development-v2.md` (artifact chain, scope, decision owners, ID scheme).
+3. `docs/standards/spec-driven-development-v3.md` (artifact chain, scope, decision owners, ID scheme).
 4. `docs/scope/scope-map.yaml`: the organizational scope (L0 to L3) the work serves. Ask the owner which scope it is if the map does not say.
 5. `docs/templates/PRD-template.md`.
 6. The idea passed as the argument, if any.
@@ -74,5 +74,6 @@ Stop after Section 1. The owner approves the problem framing at the intake check
 
 | Version | Date | Change |
 | --- | --- | --- |
+| 1.1.1 | 2026-10-22 | Links to standard v3 |
 | 1.1.0 | 2026-10-22 | Intake checkpoint replaces Gate 0; reads the v2 standard and the scope map; records the scope; AGENTS.md is called repository instructions |
 | 1.0.0 | 2026-10-22 | First release |

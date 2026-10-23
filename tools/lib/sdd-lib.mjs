@@ -6,7 +6,7 @@ import { join, relative, dirname, resolve, sep } from "node:path";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
 
-export const FRAMEWORK_VERSION = "1.1.0";
+export const FRAMEWORK_VERSION = "1.1.1";
 
 // ---------------------------------------------------------------------------
 // Requirement IDs

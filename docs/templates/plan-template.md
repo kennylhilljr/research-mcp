@@ -28,9 +28,11 @@ date: {{DATE}}
 
 > **Owner:** A · **Persona:** `planner`
 
-| # | Task | Criteria | Depends on | Persona |
-| --- | --- | --- | --- | --- |
-| 1 | | | | `implementer` |
+| # | Task | Criteria | Depends on | Persona | Status |
+| --- | --- | --- | --- | --- | --- |
+| 1 | | | | `implementer` | planned |
+
+*Status is `planned`, `in progress` or `done`. trace-check requires a test for a criterion once a task that names it is `done`.*
 
 ## Verification
 

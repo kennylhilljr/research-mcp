@@ -54,7 +54,7 @@ Flags that are switches (`--apply`, `--git`, `--json`, `--force`, `--dry-run`, `
 | Check | Level |
 | --- | --- |
 | Annotation cites an ID no PRD defines (reverse orphan) | error |
-| Approved criterion has no test, is not deferred or excepted, and a milestone plan exists for its component | error |
+| Approved criterion has no test, is not deferred or excepted, and is due under a current milestone plan: named by a `done` task when the plan has a Status column, named anywhere when it has none, or in a component the plan covers without naming any of its criteria | error |
 | Approved criterion has no test and no planned evidence, before build | warning |
 | A linked test failed in the test report | error |
 | `docs/trace/coverage.md` marks a criterion test linked, passing or failing, but no test cites it (hollow status) | error |
