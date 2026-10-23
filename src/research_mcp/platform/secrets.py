@@ -131,6 +131,10 @@ class SecretState(StrEnum):
     MISSING = "missing"
     LOCKED = "keychain_locked"
     ERROR = "error"
+    INVALID = "invalid"  # returned only by GoogleAdcProvider (M1); never by the providers here
+
+
+_KEEP_ON_REREAD = (SecretState.LOCKED, SecretState.ERROR)
 
 
 class SecretProvider(Protocol):
@@ -310,8 +314,18 @@ class SecretCache:
 
     # @spec SEC-4
     def reload(self) -> list[str]:
+        """Re-read every secret; return the names whose fingerprint changed.
+
+        A ``keychain_locked`` or ``error`` re-read keeps the previous secret and reports the
+        new state, so a locked Keychain does not strip working credentials; ``missing`` clears.
+        """
         before = {name: self._fingerprint(name) for name in self._refs}
-        self._entries = self._read()
+        entries = self._read()
+        for name, (state, secret) in entries.items():
+            previous = self.get(name)
+            if secret is None and state in _KEEP_ON_REREAD and previous is not None:
+                entries[name] = (state, previous)
+        self._entries = entries
         return [name for name in self._refs if self._fingerprint(name) != before[name]]
 
     def _fingerprint(self, name: str) -> str | None:

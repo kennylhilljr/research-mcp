@@ -478,7 +478,81 @@ def test_secret_cache_reload_returns_changed_names() -> None:
     assert cache.state("CORE_API_KEY") is SecretState.MISSING
     assert cache.secret_for("core_ac") is None
 
+    # Redesigned in LLD-platform-v2 4.1: a locked re-read keeps the previous value, so the
+    # fingerprint does not change and the name is not returned; only the state changes.
     fake.states["NVD_API_KEY"] = SecretState.LOCKED
-    assert cache.reload() == ["NVD_API_KEY"]
-    assert cache.state("NVD_API_KEY") is SecretState.LOCKED
     assert cache.reload() == []
+    assert cache.state("NVD_API_KEY") is SecretState.LOCKED
+    assert cache.get("NVD_API_KEY") is nvd_secret
+    assert cache.reload() == []
+
+
+@pytest.mark.parametrize("failure", [SecretState.LOCKED, SecretState.ERROR])
+def test_reload_keeps_previous_secret_on_locked_or_error(failure: SecretState) -> None:
+    """@spec SEC-4: a locked or failed re-read keeps the last good secret and reports the state.
+
+    LLD-platform-v2 4.1 and 6.2: the name is not returned as changed, the new state is
+    reported, a later good read with a new value is returned, and a missing read clears it.
+    """
+    fake = FakeProvider({"CORE_API_KEY": VALUE})
+    cache = SecretCache(fake, {"CORE_API_KEY": CORE}, sources={"core_ac": "CORE_API_KEY"})
+    cache.load()
+    before = cache.get("CORE_API_KEY")
+    assert before is not None
+
+    fake.states["CORE_API_KEY"] = failure
+    assert cache.reload() == []
+    assert cache.state("CORE_API_KEY") is failure
+    assert cache.get("CORE_API_KEY") is before
+    assert cache.secret_for("core_ac") is before
+
+    fake.items["CORE_API_KEY"] = "rotated-value-2"
+    assert cache.reload() == []
+    assert cache.get("CORE_API_KEY") is before
+
+    del fake.states["CORE_API_KEY"]
+    assert cache.reload() == ["CORE_API_KEY"]
+    after = cache.get("CORE_API_KEY")
+    assert after is not None
+    assert after.reveal() == "rotated-value-2"
+    assert cache.state("CORE_API_KEY") is SecretState.OK
+
+    fake.states["CORE_API_KEY"] = failure
+    cache.reload()
+    del fake.states["CORE_API_KEY"]
+    del fake.items["CORE_API_KEY"]
+    assert cache.reload() == ["CORE_API_KEY"]
+    assert cache.get("CORE_API_KEY") is None
+    assert cache.state("CORE_API_KEY") is SecretState.MISSING
+
+
+@pytest.mark.parametrize("failure", [SecretState.LOCKED, SecretState.ERROR])
+def test_reload_without_previous_secret_reports_state_only(failure: SecretState) -> None:
+    """@spec SEC-4: a name that never held a value gets the new state and no secret."""
+    fake = FakeProvider()
+    cache = SecretCache(fake, {"CORE_API_KEY": CORE})
+    cache.load()
+    assert cache.state("CORE_API_KEY") is SecretState.MISSING
+    fake.states["CORE_API_KEY"] = failure
+    assert cache.reload() == []
+    assert cache.state("CORE_API_KEY") is failure
+    assert cache.get("CORE_API_KEY") is None
+
+
+def test_secret_state_values() -> None:
+    """@spec SEC-2: the five credential states; providers here never report invalid.
+
+    LLD-platform-v2 4.1 decision 1: `invalid` is returned only by GoogleAdcProvider (M1).
+    """
+    assert [state.value for state in SecretState] == [
+        "ok",
+        "missing",
+        "keychain_locked",
+        "error",
+        "invalid",
+    ]
+    assert SecretState.INVALID == "invalid"
+    for code in (0, 1, 36, 44, 51, 128):
+        runner = Recorder(returncode=code, stdout=VALUE if code == 0 else "", stderr=STDERR)
+        state, _secret = KeychainProvider("tester", runner=runner).get(CORE)
+        assert state is not SecretState.INVALID
