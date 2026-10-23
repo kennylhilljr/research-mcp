@@ -43,6 +43,7 @@
         "src/research_mcp/testing",
         "src/research_mcp/packaging",
         "tests/unit",
+        "tests/integration",
         "tools/ci.sh"
       ]
     },
