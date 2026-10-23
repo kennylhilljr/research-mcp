@@ -62,7 +62,7 @@ markers = ["live: real upstream calls"]
 [tool.ruff]
 line-length = 100
 target-version = "py312"
-extend-exclude = ["tools/gen_test_plan.py", "tools/gen_m0_plan.py"]
+extend-exclude = ["tools/gen_m0_plan.py"]
 
 # Ruff also formats Python code blocks in Markdown; the design docs hold sketches, not code.
 [tool.ruff.format]

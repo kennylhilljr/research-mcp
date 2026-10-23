@@ -1,0 +1,15 @@
+# Who must review changes to the governed documents. Approval authority for the gates comes
+# from this file plus branch protection that requires code owner review, not from front matter.
+# Every line is commented out: replace the placeholder teams, uncomment, then turn on
+# "Require review from Code Owners" in the repository's branch protection.
+#
+# docs/prd/            @your-org/product-owners
+# docs/spec/           @your-org/engineering-owners
+# docs/adr/            @your-org/engineering-owners
+# docs/lld/            @your-org/engineering-owners @your-org/security-owners
+# docs/contracts/      @your-org/engineering-owners
+# docs/test/           @your-org/engineering-owners
+# docs/scope/          @your-org/product-owners
+# docs/standards/      @your-org/framework-owners
+# AGENTS.md            @your-org/framework-owners
+# sdd.config.json      @your-org/framework-owners

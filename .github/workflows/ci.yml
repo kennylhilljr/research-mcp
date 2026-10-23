@@ -1,6 +1,6 @@
 name: ci
 
-# SPEC 12.1 and FR-PLAT-53: tools/ci.sh on macOS and Linux with Python 3.12 and 3.13,
+# docs/lld/LLD-platform-v1.md and PLAT-FR-53: tools/ci.sh on macOS and Linux with Python 3.12 and 3.13,
 # actions pinned by commit SHA, a read-only token, a secret scan and a weekly
 # dependency audit.
 

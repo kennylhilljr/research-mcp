@@ -28,7 +28,7 @@ def _names(requirements: list[str]) -> set[str]:
 
 
 def test_version_is_3x_and_matches_metadata() -> None:
-    """AT-PLAT-01: package version is 3.x and matches pyproject and installed metadata."""
+    """@spec PLAT-1: package version is 3.x and matches pyproject and installed metadata."""
     assert __version__.split(".")[0] == "3"
     assert research_mcp.__version__ == __version__
     assert _pyproject()["project"]["version"] == __version__
@@ -36,7 +36,7 @@ def test_version_is_3x_and_matches_metadata() -> None:
 
 
 def test_ci_script_is_executable_bash() -> None:
-    """AT-PLAT-02: tools/ci.sh exists, is executable and starts with #!/usr/bin/env bash."""
+    """@spec PLAT-2: tools/ci.sh exists, is executable and starts with #!/usr/bin/env bash."""
     script = REPO / "tools" / "ci.sh"
     assert script.is_file()
     assert script.stat().st_mode & stat.S_IXUSR
@@ -45,7 +45,7 @@ def test_ci_script_is_executable_bash() -> None:
 
 
 def test_heavy_dependencies_are_extras() -> None:
-    """AT-PLAT-04: pyproject declares extras pdf and embeddings; base excludes heavy deps."""
+    """@spec PLAT-4: pyproject declares extras pdf and embeddings; base excludes heavy deps."""
     project = _pyproject()["project"]
     extras = project["optional-dependencies"]
     assert "pymupdf" in _names(extras["pdf"])

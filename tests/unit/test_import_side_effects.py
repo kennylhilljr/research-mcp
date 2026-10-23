@@ -229,14 +229,14 @@ def _probe(target: str, pythonpath: Path | None = None) -> dict[str, list[object
 
 
 def test_third_party_modules_cover_base_dependencies() -> None:
-    """AT-PLAT-03: the probe pre-imports the base dependencies, not the heavy extras."""
+    """@spec PLAT-3: the probe pre-imports the base dependencies, not the heavy extras."""
     modules = _third_party_modules()
     assert {"httpx", "mcp", "pydantic", "pydantic_settings", "ulid", "tomli_w"} <= set(modules)
     assert {"fitz", "pymupdf", "fastembed", "numpy"}.isdisjoint(modules)
 
 
 def test_probe_detects_import_side_effects(tmp_path: Path) -> None:
-    """AT-PLAT-03: the recorder catches each kind of import-time work it checks for."""
+    """@spec PLAT-3: the recorder catches each kind of import-time work it checks for."""
     package = tmp_path / "probe_dirty"
     package.mkdir()
     (package / "__init__.py").write_text(textwrap.dedent(DIRTY_PACKAGE), encoding="utf-8")
@@ -249,7 +249,7 @@ def test_probe_detects_import_side_effects(tmp_path: Path) -> None:
 
 
 def test_probe_detects_work_done_through_a_dependency(tmp_path: Path) -> None:
-    """AT-PLAT-03: work a dependency does when the package calls it at import is counted.
+    """@spec PLAT-3: work a dependency does when the package calls it at import is counted.
 
     Regression test for SPEC 0.6: the first M0 attempt only looked at the innermost frame,
     so settings construction at import time (environment reads inside pydantic_settings)
@@ -268,7 +268,7 @@ def test_probe_detects_work_done_through_a_dependency(tmp_path: Path) -> None:
 
 
 def test_importing_research_mcp_does_no_work() -> None:
-    """AT-PLAT-03: importing research_mcp and every submodule does no I/O at import.
+    """@spec PLAT-3: importing research_mcp and every submodule does no I/O at import.
 
     No environment read, no non-module file opened, no socket, no subprocess, no
     directory made and no logging handler added.

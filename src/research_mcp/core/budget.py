@@ -35,6 +35,7 @@ def _targets(value: Any) -> Iterator[tuple[Any, str | int]]:
                 yield value, index
 
 
+# @spec PLAT-31
 def fit[T](result: ToolResult[T], limit_bytes: int) -> ToolResult[T]:
     """Return a validated copy; metadata that cannot fit raises TOO_LARGE."""
     if len(result.model_dump_json().encode("utf-8")) <= limit_bytes:
@@ -79,6 +80,7 @@ def encode_cursor(payload: dict[str, JsonValue], key: bytes) -> str:
     return base64.urlsafe_b64encode(body + tag).rstrip(b"=").decode("ascii")
 
 
+# @spec PLAT-34
 def decode_cursor(cursor: str, key: bytes) -> dict[str, JsonValue]:
     try:
         raw = base64.b64decode(cursor + "=" * (-len(cursor) % 4), altchars=b"-_", validate=True)

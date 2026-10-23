@@ -1,0 +1,25 @@
+# Added by `sdd adopt`. Runs the spec-driven development checks in advisory mode: it reports
+# problems but never fails, so it cannot block existing pipelines. Remove --advisory once the
+# first components reach AUDITED in docs/trace/index.yaml.
+name: sdd
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  sdd-checks:
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: spec-lint (advisory)
+        run: node tools/spec-lint/spec-lint.mjs --advisory
+      - name: trace-check (advisory)
+        run: node tools/trace-check/trace-check.mjs --advisory --base origin/${{ github.base_ref || 'main' }}

@@ -69,6 +69,7 @@ class WorkRecord(BaseModel):
     provenance: Provenance
 
 
+# @spec PLAT-6
 class SearchFilters(BaseModel):
     model_config = ConfigDict(defer_build=True)
 
@@ -140,6 +141,7 @@ class Conflict(BaseModel):
     values: dict[str, JsonValue]  # source -> value
 
 
+# @spec PLAT-6
 class Work(BaseModel):
     model_config = ConfigDict(defer_build=True)
 
@@ -189,6 +191,7 @@ class DownloadedFile(BaseModel):
     last_modified: str | None
 
 
+# @spec PLAT-6
 class CallRecord(BaseModel):
     model_config = ConfigDict(defer_build=True)
 

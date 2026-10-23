@@ -1,0 +1,34 @@
+# Organizational scope map. L0 to L3 name organizational scope only; they are not document
+# stages and not gates. Replace the placeholders with your own scopes and owners.
+#   L0  Enterprise strategy, declarations and imperatives (or your organization's equivalent)
+#   L1  Domain
+#   L2  Solution or capability
+#   L3  Business Application
+# Each scope's parent is exactly one level up. Set project.scope in sdd.config.json to the
+# scope this repository serves, and scope on each component if they differ.
+schema_version: 1
+scopes:
+  strategy:
+    level: L0
+    name: "Strategy, declarations and imperatives (to be named)"
+    parent: null
+    owner: "[Name]"
+    status: placeholder
+  domain:
+    level: L1
+    name: "Domain (to be named)"
+    parent: strategy
+    owner: "[Name]"
+    status: placeholder
+  capability:
+    level: L2
+    name: "Capability (to be named)"
+    parent: domain
+    owner: "[Name]"
+    status: placeholder
+  application:
+    level: L3
+    name: "{{PROJECT}}"
+    parent: capability
+    owner: "[Name]"
+    status: placeholder

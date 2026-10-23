@@ -25,7 +25,7 @@ def write_config(home: Path, text: str) -> None:
 
 
 def test_defaults(tmp_path: Path) -> None:
-    """AT-PLAT-08: Defaults match the settings contract without creating directories."""
+    """@spec PLAT-8: Defaults match the settings contract without creating directories."""
     settings = Settings()
     actual = settings.model_dump(exclude={"paths", "site_sets"})
     assert actual == {
@@ -78,7 +78,7 @@ def test_defaults(tmp_path: Path) -> None:
 
 
 def test_toml_and_environment(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-PLAT-08: Nested environment overrides merge with TOML using canonical names."""
+    """@spec PLAT-8: Nested environment overrides merge with TOML using canonical names."""
     write_config(
         tmp_path,
         """
@@ -128,7 +128,7 @@ base_url = "https://repository.invalid"
 
 
 def test_typed_web_source_defaults() -> None:
-    """AT-PLAT-08: Typed SourceSettings input gets the same web defaults as a table."""
+    """@spec PLAT-8: Typed SourceSettings input gets the same web defaults as a table."""
     typed = Settings(
         sources={
             "brave_search": SourceSettings(),
@@ -160,14 +160,14 @@ def test_typed_web_source_defaults() -> None:
 def test_invalid_values(
     key: str, value: str, message: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
-    """AT-PLAT-08: Invalid configuration reports the field that failed validation."""
+    """@spec PLAT-8: Invalid configuration reports the field that failed validation."""
     monkeypatch.setenv("RESEARCH_MCP_" + key, value)
     with pytest.raises(ValidationError, match=message):
         Settings()
 
 
 def test_paths_and_creation(tmp_path: Path) -> None:
-    """AT-PLAT-09: Durable data, model cache and logs use private directories."""
+    """@spec PLAT-9: Durable data, model cache and logs use private directories."""
     paths = Settings().paths
     assert paths.state_dir == tmp_path / "Library/Application Support/research-mcp"
     assert paths.data_dir == paths.state_dir / "cache"
@@ -187,13 +187,13 @@ def test_paths_and_creation(tmp_path: Path) -> None:
     ["Library/Caches", "Library/Caches/data", "Library/Application Support/../Caches/data"],
 )
 def test_reject_purgeable_paths(field: str, suffix: str, tmp_path: Path) -> None:
-    """AT-PLAT-09: Normalize traversal before enforcing durable locations."""
+    """@spec PLAT-9: Normalize traversal before enforcing durable locations."""
     with pytest.raises(ValidationError, match="durable state and data"):
         Settings(paths={field: tmp_path / suffix})
 
 
 def test_normalization_and_symlinks(tmp_path: Path) -> None:
-    """AT-PLAT-09: Resolve aliases and accept normalized durable paths."""
+    """@spec PLAT-9: Resolve aliases and accept normalized durable paths."""
     cache = tmp_path / "Library/Caches"
     cache.mkdir(parents=True)
     alias = tmp_path / "alias"
@@ -209,7 +209,7 @@ def test_normalization_and_symlinks(tmp_path: Path) -> None:
     ["0.0.0.0", "::", "192.168.1.1", "8.8.8.8", "example.org"],  # noqa: S104 - refusal cases
 )
 def test_non_loopback(host: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-PLAT-10: Refuse any non-loopback listener before it can bind."""
+    """@spec PLAT-10: Refuse any non-loopback listener before it can bind."""
     monkeypatch.setenv("RESEARCH_MCP_SERVER__HOST", host)
     with pytest.raises(ValidationError, match="loopback"):
         Settings()
@@ -217,7 +217,7 @@ def test_non_loopback(host: str, monkeypatch: pytest.MonkeyPatch) -> None:
 
 @pytest.mark.parametrize("host", ["127.0.0.1", "127.0.0.2", "::1"])
 def test_loopback(host: str) -> None:
-    """AT-PLAT-10: Numeric loopback addresses remain usable without DNS."""
+    """@spec PLAT-10: Numeric loopback addresses remain usable without DNS."""
     assert Settings(server={"host": host}).server.host == host
 
 
@@ -236,14 +236,14 @@ def test_loopback(host: str) -> None:
     ],
 )
 def test_placeholder_email(email: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-PLAT-11: Reject placeholder or malformed contact email values."""
+    """@spec PLAT-11: Reject placeholder or malformed contact email values."""
     monkeypatch.setenv("RESEARCH_MCP_CONTACT__EMAIL", email)
     with pytest.raises(ValidationError, match="contact.email"):
         Settings()
 
 
 def test_optional_email() -> None:
-    """AT-PLAT-11: Contact is optional, and an ordinary address is accepted."""
+    """@spec PLAT-11: Contact is optional, and an ordinary address is accepted."""
     assert Settings().contact.email is None
     assert Settings(contact={"email": "researcher@university.edu"}).contact.email == (
         "researcher@university.edu"
@@ -266,7 +266,7 @@ def test_optional_email() -> None:
     ],
 )
 def test_webhook_rejects_tokens(url: str, monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-PLAT-08: A webhook token is refused in the URL and never echoed in the error."""
+    """@spec PLAT-8: A webhook token is refused in the URL and never echoed in the error."""
 
     def assert_hidden(error: ValidationError) -> None:
         for output in (str(error), repr(error), error.json(), repr(error.errors())):
@@ -285,13 +285,13 @@ def test_webhook_rejects_tokens(url: str, monkeypatch: pytest.MonkeyPatch) -> No
 
 
 def test_webhook_accepts_plain_url() -> None:
-    """AT-PLAT-08: A webhook URL without credentials is accepted."""
+    """@spec PLAT-8: A webhook URL without credentials is accepted."""
     url = "https://notify.invalid/inbox"
     assert Settings(notify={"webhook_url": url}).notify.webhook_url == url
 
 
 def test_rotate_by_is_utc(monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-PLAT-08: Credential rotate_by is normalized to UTC and needs a timezone."""
+    """@spec PLAT-8: Credential rotate_by is normalized to UTC and needs a timezone."""
     settings = Settings(credentials={"CORE_API_KEY": {"rotate_by": "2027-01-01T05:00:00+05:00"}})
     rotate_by = settings.credentials["CORE_API_KEY"].rotate_by
     assert rotate_by == datetime(2027, 1, 1, tzinfo=UTC)

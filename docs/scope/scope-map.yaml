@@ -1,0 +1,34 @@
+# Organizational scope map. L0 to L3 name organizational scope only; they are not document
+# stages and not gates. This is a personal project, so the upper levels are placeholders
+# for the owner to name (see the open questions in docs/prd/PRD-v5.md).
+#   L0  Strategy, declarations and imperatives
+#   L1  Domain
+#   L2  Solution or capability
+#   L3  Business Application: research-mcp
+# Each scope's parent is exactly one level up. project.scope in sdd.config.json is research-mcp.
+schema_version: 1
+scopes:
+  owner-direction:
+    level: L0
+    name: "Owner's direction for personal tooling (to be named)"
+    parent: null
+    owner: "Kenny Hill"
+    status: placeholder
+  personal-tools:
+    level: L1
+    name: "Personal agent and research tooling (to be named)"
+    parent: owner-direction
+    owner: "Kenny Hill"
+    status: placeholder
+  research:
+    level: L2
+    name: "Research and source discovery (to be named)"
+    parent: personal-tools
+    owner: "Kenny Hill"
+    status: placeholder
+  research-mcp:
+    level: L3
+    name: "Research MCP v2"
+    parent: research
+    owner: "Kenny Hill"
+    status: active

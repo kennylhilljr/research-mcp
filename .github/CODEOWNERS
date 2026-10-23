@@ -1,0 +1,18 @@
+# Who must review changes to the governed documents (SDD gates). Approval authority comes from
+# this file plus branch protection that requires code owner review, not from front matter.
+# Research MCP has one owner, who holds every human persona (Product, Engineering, the
+# Business Application, component and control owner, and the exception authority).
+# Branch protection with "Require review from Code Owners" is an open decision until the
+# repository has a remote with pull requests (PRD v5, open questions).
+docs/prd/            @kennylhilljr
+docs/spec/           @kennylhilljr
+docs/adr/            @kennylhilljr
+docs/lld/            @kennylhilljr
+docs/contracts/      @kennylhilljr
+docs/test/           @kennylhilljr
+docs/build/          @kennylhilljr
+docs/scope/          @kennylhilljr
+docs/standards/      @kennylhilljr
+AGENTS.md            @kennylhilljr
+sdd.config.json      @kennylhilljr
+.orchestration/      @kennylhilljr

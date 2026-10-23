@@ -3,4 +3,5 @@
 The value is a literal rather than a package metadata lookup, so importing it opens no file.
 """
 
+# @spec PLAT-1
 __version__ = "3.0.0"

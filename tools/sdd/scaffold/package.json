@@ -1,0 +1,14 @@
+{
+  "name": "{{PROJECT}}",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=20" },
+  "scripts": {
+    "sdd": "node tools/sdd/cli.mjs",
+    "sdd:check": "node tools/sdd/cli.mjs check",
+    "sdd:doctor": "node tools/sdd/cli.mjs doctor",
+    "spec-lint": "node tools/spec-lint/spec-lint.mjs",
+    "trace-check": "node tools/trace-check/trace-check.mjs"
+  }
+}

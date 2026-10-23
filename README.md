@@ -4,20 +4,24 @@ A local research server for MCP clients: federated scholarly and web search, ide
 
 ## Documents
 
+The documents follow the owner's spec-driven development framework ([ADR 0013](docs/adr/0013-adopt-spec-driven-development.md)); the [doc map](docs/README.md) lists every one with its status.
+
 | Document | Role |
 |---|---|
-| [PRD v4](docs/prd/PRD-v4.md) and [component PRDs](docs/prd/components/) | Requirements: what and why |
-| [SPEC v2](docs/spec/SPEC-v2.md) | The build contract: names, interfaces, formats, behavior, work breakdown |
-| [HLD v3](docs/design/HLD-v3.md) | Shape and rationale |
-| [TEST-PLAN v3](docs/test-plan/TEST-PLAN-v3.md) | Acceptance tests and owner checks, mapped to requirements and units |
+| [Vision](docs/vision/vision-v1.md) | Why, for whom, the outcomes |
+| [PRD v5](docs/prd/PRD-v5.md) and [component PRDs](docs/prd/components/) | Requirements and acceptance criteria: what and why |
+| [SPEC v3](docs/spec/SPEC-v3.md) | The system high level design |
+| [LLDs](docs/lld/) | The build contract per component: names, interfaces, formats, behavior |
+| [Test plan](docs/test/test-plan-v1.md) | How each criterion is verified, owner checks, exit gates |
+| [M0 plan](docs/build/M0-plan-v1.md) | Work units of the first milestone |
 | [ADRs](docs/adr/) | Decisions |
-| [MIGRATION v2](docs/migration/MIGRATION-v2.md) | v1 to v2 migration and cutover |
-| [Design review](docs/review/REVIEW-v1.md) | The review that shaped the documents |
+| [Migration cutover runbook](docs/runbooks/migration-cutover-v1.md) | v1 to v2 cutover |
+| [docs-archive/](docs-archive/) | Superseded originals: PRD v4, HLD v3, SPEC v1 and v2, TEST-PLAN v3, MIGRATION v2 and the design review |
 
 ## How it is built
 
-By an agent team under the ECC orchestrator, one milestone at a time, from `.orchestration/plan-m0.json` (generated from SPEC 12.3 and TEST-PLAN Appendix A). Agents follow [AGENTS.md](AGENTS.md). The run itself is described in [.orchestration/PILOT-M0.md](.orchestration/PILOT-M0.md).
+By an agent team of Claude roles under the ECC orchestrator, one milestone at a time, from `.orchestration/plan-m0.json` (generated from the M0 plan). Each role plays an SDD persona from `.claude/agents/`. Agents follow [AGENTS.md](AGENTS.md); the run is described in [.orchestration/PILOT-M0.md](.orchestration/PILOT-M0.md). Before a run, the owner approves the documents at the SDD gates.
 
 ## History
 
-This repository starts fresh on 2026-10-20. Its documents carry over from `my-research-mcp` at `23b3d72`, where their earlier versions and the first M0 attempt remain for reference. The low-level design became SPEC v1 here.
+This repository started on 2026-10-20 with documents carried over from `my-research-mcp` at `23b3d72`. On 2026-10-22 they moved onto the SDD templates; the originals are in `docs-archive/`.

@@ -67,6 +67,7 @@ def _payload(s: str, prefixes: tuple[str, ...], hosts: tuple[str, ...] = ()) -> 
     return _decode(s)
 
 
+# @spec SRCH-10
 def normalize_doi(s: str) -> str:
     s = _payload(s, ("doi",), ("doi.org", "dx.doi.org")).lower()
     # Any Unicode punctuation trails off, except the slash some DOI suffixes end with.
@@ -75,6 +76,7 @@ def normalize_doi(s: str) -> str:
     return _match(s, r"10\.[0-9]{4,9}/\S+")
 
 
+# @spec SRCH-11
 def normalize_arxiv(s: str) -> tuple[str, int | None]:
     s = _payload(s, ("arxiv",), ("arxiv.org", "www.arxiv.org"))
     s = re.sub(r"^(abs|pdf)/", "", s, flags=re.I)
@@ -88,11 +90,13 @@ def normalize_arxiv(s: str) -> tuple[str, int | None]:
     return _match(s, r"(?:[0-9]{4}\.[0-9]{4,5}|[a-z\-]+(?:\.[A-Z]{2})?/[0-9]{7})"), version
 
 
+# @spec SRCH-12
 def normalize_pmid(s: str) -> str:
     s = _payload(s, ("pmid",), ("pubmed.ncbi.nlm.nih.gov",))
     return _match(s.rstrip("/"), r"[0-9]+")
 
 
+# @spec SRCH-12
 def normalize_pmcid(s: str) -> str:
     s = _payload(
         s, ("pmcid",), ("pmc.ncbi.nlm.nih.gov", "www.ncbi.nlm.nih.gov", "ncbi.nlm.nih.gov")
@@ -101,12 +105,14 @@ def normalize_pmcid(s: str) -> str:
     return "PMC" + _match(s.removeprefix("PMC"), r"[0-9]+")
 
 
+# @spec SRCH-12
 def normalize_openalex(s: str) -> str:
     s = _payload(s, ("openalex",), ("openalex.org", "www.openalex.org", "api.openalex.org"))
     s = re.sub(r"^works/", "", s, flags=re.I).rstrip("/")
     return _match(s.upper(), r"W[0-9]+")
 
 
+# @spec SRCH-12
 def normalize_s2(s: str) -> str:
     s = _payload(s, ("s2", "semantic_scholar"), ("semanticscholar.org", "www.semanticscholar.org"))
     if s.lower().startswith("paper/"):
@@ -114,18 +120,21 @@ def normalize_s2(s: str) -> str:
     return _match(s.lower(), r"[0-9a-f]{40}")
 
 
+# @spec SRCH-12
 def normalize_core(s: str) -> str:
     s = _payload(s, ("core",), ("core.ac.uk",))
     s = re.sub(r"^(?:works|outputs)/", "", s, flags=re.I).rstrip("/")
     return _match(s, r"[0-9]+")
 
 
+# @spec SRCH-12
 def normalize_nct(s: str) -> str:
     s = _payload(s, ("nct",), ("clinicaltrials.gov", "www.clinicaltrials.gov"))
     s = re.sub(r"^(?:study|ct2/show)/", "", s, flags=re.I).rstrip("/").upper()
     return "NCT" + _match(s.removeprefix("NCT"), r"[0-9]{8}")
 
 
+# @spec SRCH-12
 def normalize_rfc(s: str) -> str:
     s = _payload(s, ("rfc",), ("rfc-editor.org", "www.rfc-editor.org", "datatracker.ietf.org"))
     s = re.sub(r"^(?:rfc/|doc/html/)", "", s, flags=re.I)
@@ -134,11 +143,13 @@ def normalize_rfc(s: str) -> str:
     return str(int(_match(s, r"[0-9]+")))
 
 
+# @spec SRCH-12
 def normalize_handle(s: str) -> str:
     s = _payload(s, ("handle", "hdl"), ("hdl.handle.net",))
     return _match(s, r"[0-9]+(?:\.[0-9]+)*/\S+")
 
 
+# @spec SRCH-12
 def normalize_dspace_uuid(s: str) -> str:
     s = _payload(s, ("dspace_uuid", "uuid"))
     return _match(s.lower(), r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
@@ -154,6 +165,7 @@ def normalize_github(s: str) -> str:
     return s
 
 
+# @spec SRCH-13
 def normalize_url(s: str) -> str:
     s = _text(s)
     if any(c.isspace() for c in s):
@@ -226,6 +238,7 @@ _SHAPES = (
 )
 
 
+# @spec SRCH-14, SRCH-15
 def parse_any(s: str) -> Identifier:
     s = _text(s)
     prefix, separator, rest = s.partition(":")
@@ -280,6 +293,7 @@ _STOP_WORDS = frozenset(
 )
 
 
+# @spec SRCH-16
 def title_key(title: str) -> str:
     text = unicodedata.normalize("NFKC", title).casefold()
     text = "".join(" " if unicodedata.category(c).startswith("P") else c for c in text)

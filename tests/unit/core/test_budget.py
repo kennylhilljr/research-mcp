@@ -10,7 +10,7 @@ from research_mcp.core.models import FederatedResult, Work
 
 
 def test_budget():
-    """AT-PLAT-31: Trim list tails and text by bytes while preserving cursors."""
+    """@spec PLAT-31: Trim list tails and text by bytes while preserving cursors."""
     original = ToolResult[list[int]](data=list(range(100)), next_cursor="opaque")
     result = fit(original, 150)
     assert result.truncated and result.next_cursor == "opaque"
@@ -27,7 +27,7 @@ def test_budget():
 
 
 def test_statuses_are_mandatory():
-    """AT-PLAT-31: Both source-status locations survive trimming and cannot be dropped."""
+    """@spec PLAT-31: Both source-status locations survive trimming and cannot be dropped."""
     statuses = [SourceStatus(source="arxiv", state="ok", count=1)]
     work = Work(
         ids=[],
@@ -54,7 +54,7 @@ def test_statuses_are_mandatory():
 
 
 def test_invalid_prefix_is_not_a_size_result():
-    """AT-PLAT-31: Invalid short prefixes cannot masquerade as fitting results."""
+    """@spec PLAT-31: Invalid short prefixes cannot masquerade as fitting results."""
     result = ToolResult[Annotated[list[str], Field(min_length=2)]](data=["a" * 500] * 3)
     trimmed = fit(result, 180)
     assert len(trimmed.data) == 2 and trimmed.truncated
@@ -64,7 +64,7 @@ def test_invalid_prefix_is_not_a_size_result():
 
 
 def test_cursors():
-    """AT-PLAT-34: Signed cursors reject tampering, foreign keys and malformed input."""
+    """@spec PLAT-34: Signed cursors reject tampering, foreign keys and malformed input."""
     key = b"test-only-key"
     payload = {"offset": 4, "source": "arxiv"}
     cursor = encode_cursor(payload, key)

@@ -1,0 +1,125 @@
+{
+  "$schema": "./tools/sdd/sdd.config.schema.json",
+  "frameworkVersion": "1.1.0",
+  "project": {
+    "name": "research-mcp",
+    "description": "Research MCP v2: one local MCP server that federates scholarly and technical sources, with a cache, health checks and a small local UI",
+    "scope": "research-mcp"
+  },
+  "adoption": {
+    "mode": "enforced",
+    "adopted": "2026-10-22"
+  },
+  "paths": {
+    "docs": "docs",
+    "codeRoots": [
+      "src"
+    ],
+    "testRoots": [
+      "tests"
+    ],
+    "traceIndex": "docs/trace/index.yaml",
+    "coverage": "docs/trace/coverage.md",
+    "docMap": "docs/README.md",
+    "scopeMap": "docs/scope/scope-map.yaml",
+    "testPlan": "docs/test/test-plan-v1.md"
+  },
+  "approvals": {
+    "requireApprover": false
+  },
+  "components": {
+    "platform": {
+      "prefix": "PLAT",
+      "paths": [
+        "src/research_mcp/__init__.py",
+        "src/research_mcp/version.py",
+        "src/research_mcp/cli.py",
+        "src/research_mcp/daemon.py",
+        "src/research_mcp/app.py",
+        "src/research_mcp/shim.py",
+        "src/research_mcp/settings.py",
+        "src/research_mcp/core",
+        "src/research_mcp/platform",
+        "src/research_mcp/testing",
+        "src/research_mcp/packaging",
+        "tests/unit",
+        "tools/ci.sh"
+      ]
+    },
+    "sources": {
+      "prefix": "SRC",
+      "paths": [
+        "src/research_mcp/sources",
+        "tests/sources"
+      ]
+    },
+    "search": {
+      "prefix": "SRCH",
+      "paths": [
+        "src/research_mcp/core/ids.py",
+        "tests/unit/core/test_ids.py",
+        "tests/services/test_federation.py",
+        "tests/services/test_works.py",
+        "src/research_mcp/services/federation.py",
+        "src/research_mcp/services/works.py",
+        "src/research_mcp/services/citations.py",
+        "src/research_mcp/services/cite.py",
+        "src/research_mcp/services/integrity.py",
+        "src/research_mcp/mcp_app",
+        "tests/contract"
+      ]
+    },
+    "cache": {
+      "prefix": "CACHE",
+      "paths": [
+        "src/research_mcp/services/cache.py",
+        "src/research_mcp/services/lifecycle.py",
+        "src/research_mcp/services/archive.py",
+        "src/research_mcp/services/extract.py",
+        "src/research_mcp/services/chunking.py",
+        "src/research_mcp/services/embeddings.py",
+        "src/research_mcp/services/maintenance.py",
+        "src/research_mcp/services/backup.py"
+      ]
+    },
+    "health": {
+      "prefix": "HLTH",
+      "paths": [
+        "src/research_mcp/services/health.py",
+        "src/research_mcp/services/credentials.py",
+        "src/research_mcp/services/notify.py",
+        "src/research_mcp/services/disk.py"
+      ]
+    },
+    "ui": {
+      "prefix": "UI",
+      "paths": [
+        "src/research_mcp/ui",
+        "tests/ui"
+      ]
+    },
+    "migration": {
+      "prefix": "MIG",
+      "paths": [
+        "src/research_mcp/services/legacy_import.py"
+      ]
+    },
+    "security": {
+      "prefix": "SEC",
+      "paths": [
+        "tests/security"
+      ]
+    }
+  },
+  "trace": {
+    "staleAfterDays": 30,
+    "reachWarnBelow": 0.8
+  },
+  "features": {
+    "gateHook": true,
+    "protectApprovedDocs": true,
+    "reachReport": true,
+    "divergenceProbe": false,
+    "differentialAudit": false
+  }
+}

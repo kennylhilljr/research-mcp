@@ -66,7 +66,7 @@ def _assert_refused_before_io(call: Callable[[], object], events: list[str]) -> 
 
 
 def test_blocks_connect_before_io(socket_events: list[str]) -> None:
-    """AT-PLAT-05: connect and connect_ex to a non-loopback address are refused before I/O."""
+    """@spec PLAT-5: connect and connect_ex to a non-loopback address are refused before I/O."""
     for family, address in (
         (socket.AF_INET, (UNROUTABLE, 80)),
         (socket.AF_INET6, ("2001:db8::1", 80, 0, 0)),
@@ -83,7 +83,7 @@ def test_blocks_connect_before_io(socket_events: list[str]) -> None:
 
 
 def test_blocks_create_connection_before_io(socket_events: list[str]) -> None:
-    """AT-PLAT-05: socket.create_connection to a non-loopback host is refused before I/O."""
+    """@spec PLAT-5: socket.create_connection to a non-loopback host is refused before I/O."""
     for host in (UNROUTABLE, PUBLIC_NAME):
         _assert_refused_before_io(
             lambda h=host: socket.create_connection((h, 80), timeout=0.5), socket_events
@@ -91,7 +91,7 @@ def test_blocks_create_connection_before_io(socket_events: list[str]) -> None:
 
 
 def test_blocks_datagrams_before_io(socket_events: list[str]) -> None:
-    """AT-PLAT-05: sendto and sendmsg with a non-loopback address are refused before I/O."""
+    """@spec PLAT-5: sendto and sendmsg with a non-loopback address are refused before I/O."""
     with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as sock:
         target = (UNROUTABLE, 53)
         _assert_refused_before_io(lambda: sock.sendto(b"x", target), socket_events)
@@ -101,14 +101,14 @@ def test_blocks_datagrams_before_io(socket_events: list[str]) -> None:
 
 @pytest.mark.parametrize("name", ["getaddrinfo", "gethostbyname", "gethostbyname_ex"])
 def test_blocks_name_lookup_before_io(name: str, socket_events: list[str]) -> None:
-    """AT-PLAT-05: resolving a public host name is refused before any lookup."""
+    """@spec PLAT-5: resolving a public host name is refused before any lookup."""
     lookup = getattr(socket, name)
     args = (PUBLIC_NAME, 443) if name == "getaddrinfo" else (PUBLIC_NAME,)
     _assert_refused_before_io(lambda: lookup(*args), socket_events)
 
 
 def test_blocks_reverse_lookup_before_io(socket_events: list[str]) -> None:
-    """AT-PLAT-05: gethostbyaddr for a non-loopback name or address is refused before I/O."""
+    """@spec PLAT-5: gethostbyaddr for a non-loopback name or address is refused before I/O."""
     for host in (PUBLIC_NAME, UNROUTABLE):
         _assert_refused_before_io(lambda h=host: socket.gethostbyaddr(h), socket_events)
 
@@ -119,7 +119,7 @@ LOOPBACK_LOOKALIKES = (f"127.0.0.1%{PUBLIC_NAME}", f"::1%{PUBLIC_NAME}", "localh
 
 @pytest.mark.parametrize("host", LOOPBACK_LOOKALIKES)
 def test_blocks_loopback_lookalikes_before_io(host: str, socket_events: list[str]) -> None:
-    """AT-PLAT-05: a loopback prefix with a scope suffix or trailing dot is refused before I/O."""
+    """@spec PLAT-5: a loopback prefix with a scope suffix or trailing dot is refused before I/O."""
     _assert_refused_before_io(lambda: socket.getaddrinfo(host, 443), socket_events)
     _assert_refused_before_io(lambda: socket.gethostbyname(host), socket_events)
     _assert_refused_before_io(lambda: socket.gethostbyname_ex(host), socket_events)
@@ -140,7 +140,7 @@ def _blocked(error: BaseException) -> bool:
 
 
 async def test_blocks_async_http_client(socket_events: list[str]) -> None:
-    """AT-PLAT-05: the guard also stops httpx on the event loop, before any I/O."""
+    """@spec PLAT-5: the guard also stops httpx on the event loop, before any I/O."""
     async with httpx.AsyncClient(timeout=0.5) as client:
         # anyio may wrap the guard error in an exception group.
         with pytest.raises((RuntimeError, BaseExceptionGroup)) as info:
@@ -150,7 +150,7 @@ async def test_blocks_async_http_client(socket_events: list[str]) -> None:
 
 
 def test_passes_loopback_through(socket_events: list[str]) -> None:
-    """AT-PLAT-05: loopback connects and lookups reach the OS instead of being refused."""
+    """@spec PLAT-5: loopback connects and lookups reach the OS instead of being refused."""
     for host in ("127.0.0.1", "localhost"):
         with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
             sock.settimeout(0.5)
@@ -163,7 +163,7 @@ def test_passes_loopback_through(socket_events: list[str]) -> None:
 
 
 def test_allows_loopback_server() -> None:
-    """AT-PLAT-05: loopback connections stay open for local test servers."""
+    """@spec PLAT-5: loopback connections stay open for local test servers."""
     try:
         server = socket.create_server(("127.0.0.1", 0))
     except PermissionError:
@@ -213,7 +213,7 @@ def test_offline():
 
 
 def test_live_tests_deselected_by_default(pytester: pytest.Pytester) -> None:
-    """AT-PLAT-05: live tests are deselected by default; the guard covers the rest."""
+    """@spec PLAT-5: live tests are deselected by default; the guard covers the rest."""
     _copy_pytest_setup(pytester, test_markers=MARKER_TESTS)
     result = pytester.runpytest_subprocess("-v")
     result.assert_outcomes(passed=1, deselected=1)
@@ -221,7 +221,7 @@ def test_live_tests_deselected_by_default(pytester: pytest.Pytester) -> None:
 
 
 def test_live_tests_run_unguarded_when_selected(pytester: pytest.Pytester) -> None:
-    """AT-PLAT-05: with -m live, live tests run without the socket guard."""
+    """@spec PLAT-5: with -m live, live tests run without the socket guard."""
     _copy_pytest_setup(pytester, test_markers=MARKER_TESTS)
     result = pytester.runpytest_subprocess("-m", "live", "-v")
     result.assert_outcomes(passed=1, deselected=1)
@@ -229,7 +229,7 @@ def test_live_tests_run_unguarded_when_selected(pytester: pytest.Pytester) -> No
 
 
 def test_guard_covers_session_fixtures(pytester: pytest.Pytester) -> None:
-    """AT-PLAT-05: a session-scoped fixture set up for an offline test is guarded."""
+    """@spec PLAT-5: a session-scoped fixture set up for an offline test is guarded."""
     _copy_pytest_setup(
         pytester,
         test_session=f"""
@@ -253,7 +253,7 @@ def test_guard_covers_session_fixtures(pytester: pytest.Pytester) -> None:
 
 
 def test_guard_covers_collection(pytester: pytest.Pytester) -> None:
-    """AT-PLAT-05: network calls made while a test module is imported are guarded."""
+    """@spec PLAT-5: network calls made while a test module is imported are guarded."""
     _copy_pytest_setup(
         pytester,
         test_import_time=f"""

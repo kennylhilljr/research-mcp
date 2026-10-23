@@ -36,6 +36,7 @@ def _printable_ascii(text: str) -> bool:
     return all(" " <= char <= "~" for char in text)
 
 
+# @spec PLAT-12
 @dataclass(frozen=True)
 class SecretRef:
     """Where a secret lives: ``keychain:research-mcp/NAME`` or ``env:NAME``.
@@ -81,6 +82,7 @@ class SecretMeta:
     modified_at: datetime | None
 
 
+# @spec SEC-1
 class Secret:
     """A secret value whose text form shows only its name and fingerprint."""
 
@@ -170,6 +172,7 @@ def _parse_mdat(stdout: str) -> datetime | None:
         return None
 
 
+# @spec SEC-2, SEC-3, SEC-13
 class KeychainProvider:
     """Reads and writes Keychain generic passwords through ``/usr/bin/security``."""
 
@@ -276,7 +279,7 @@ class FakeProvider:
 
 
 class SecretCache:
-    """Secrets read once and kept in memory; ``reload`` re-reads them (FR-PLAT-15).
+    """Secrets read once and kept in memory; ``reload`` re-reads them (PLAT-FR-15).
 
     ``refs`` maps credential names to references. ``sources`` maps a source id to the
     credential name it uses, which makes the cache a ``CredentialResolver``.
@@ -305,6 +308,7 @@ class SecretCache:
     def state(self, name: str) -> SecretState:
         return self._entries.get(name, (SecretState.MISSING, None))[0]
 
+    # @spec SEC-4
     def reload(self) -> list[str]:
         before = {name: self._fingerprint(name) for name in self._refs}
         self._entries = self._read()

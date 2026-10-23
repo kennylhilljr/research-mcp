@@ -1,4 +1,4 @@
-"""Builds .orchestration/plan-m0.json from SPEC-v2 section 12.3 and TEST-PLAN-v3 Appendix A.
+"""Builds .orchestration/plan-m0.json from the task table of the M0 milestone plan (docs/build/M0-plan-v1.md).
 
 `--check` exits 1 when the committed plan is stale (tools/ci.sh runs it)."""
 import json
@@ -7,16 +7,21 @@ import re
 import sys
 
 ROOT = pathlib.Path(__file__).resolve().parents[1]
-SPEC = "docs/spec/SPEC-v2.md"
-TEST_PLAN = "docs/test-plan/TEST-PLAN-v3.md"
-spec = (ROOT / SPEC).read_text()
-plan = (ROOT / TEST_PLAN).read_text()
+PLAN = "docs/build/M0-plan-v1.md"
+plan = (ROOT / PLAN).read_text()
 
-sec = spec.split("### 12.3", 1)[1].split("### 12.4", 1)[0]
-rows = [line for line in sec.splitlines() if line.startswith("| M0-")]
-appx = plan.split("## Appendix A", 1)[1].split("\n## ", 1)[0]
-tests = {m.group(1): m.group(2) for m in re.finditer(r"^\| (M0-\d\d) \| ([^|]+) \|", appx, re.M)}
-clarified = set(re.findall(r"^\| (M0-\d\d) \|", spec.split("### 0.6", 1)[1].split("\n## ", 1)[0], re.M))
+tasks = plan.split("## 2. Tasks", 1)[1].split("\n### ", 1)[0]
+rows = [line for line in tasks.splitlines() if line.startswith("| M0-")]
+clar = plan.split("### 2.2 Clarifications from the first M0 attempt", 1)[1].split("\n## ", 1)[0]
+clarified = set(re.findall(r"^\| (M0-\d\d) \|", clar, re.M))
+
+CONFIG = json.loads((ROOT / "sdd.config.json").read_text())
+PREFIX_PRD = {}
+for _name, _comp in CONFIG["components"].items():
+    _versions = sorted((ROOT / "docs/prd/components").glob(f"PRD-{_name}-v*.md"),
+                       key=lambda p: int(re.search(r"-v(\d+)\.md$", p.name).group(1)))
+    if _versions:
+        PREFIX_PRD[_comp["prefix"]] = _versions[-1].relative_to(ROOT).as_posix()
 
 PKG = "src/research_mcp/"
 TOP = ("src/", "tests/", "tools/", "docs/", ".github/")
@@ -40,12 +45,12 @@ RULES = (
     "(M0-01 owns them). Never touch the v1 repository (my-research-mcp-server) or ~/arxiv-papers, never read real "
     "credentials or the Keychain, and use fakes and recorded fixtures for every external system; tests pass with the "
     "network blocked. A prior attempt exists read-only at ~/Documents/GitHub/my-research-mcp; you may read it, but "
-    "SPEC-v2 wins wherever they differ, and section 0.6 lists defects that attempt shipped."
+    "the LLDs win wherever they differ, and the plan's clarifications list defects that attempt shipped."
 )
 
 units = []
 for row in rows:
-    uid, title, impl, files, deps, risk = [c.strip() for c in row.strip("|").split("|")]
+    uid, title, criteria, deps, _persona, impl, files, risk, _status = [c.strip() for c in row.strip("|").split("|")]
     file_list = []
     for f in re.findall(r"`([^`]+)`", files):
         if f.endswith("/*"):
@@ -55,7 +60,7 @@ for row in rows:
         else:
             file_list.append(expand(f))
     dep_list = [] if deps == "none" else [d.strip() for d in deps.split(",")]
-    at = tests[uid].strip()
+    ids = criteria.strip()
     test_files = [f for f in file_list if f.startswith("tests/") and f.endswith(".py") and "/test_" in f]
     if uid == "M0-01":
         cmds = ["uv sync --frozen", "uv run pytest tests/unit -q"]
@@ -65,15 +70,16 @@ for row in rows:
     if m and m.group(1) not in ("base", "registry"):
         cmds.append(f"uv run pytest tests/sources/test_conformance.py -k {m.group(1)} -q")
     cmds.append("tools/ci.sh --python-only")
-    note = " Section 0.6 has clarifications for this unit; they are requirements." if uid in clarified else ""
-    nums = list(dict.fromkeys(re.findall(r"\b\d+(?:\.\d+)*\b", re.sub(r"`[^`]*`", "", impl))))
-    implemented = "sections " + (", ".join(nums[:-1]) + " and " + nums[-1] if len(nums) > 1 else nums[0])
-    desc = (f"Read AGENTS.md first. Build work unit {uid} exactly as {SPEC} specifies: its row in section 12.3, "
-            f"{implemented}, which it implements ({impl}), and section 0 (conformance).{note} SPEC-v2 owns every "
-            "name. Write the "
-            f"acceptance tests {TEST_PLAN} Appendix A assigns to this unit: {at}; put each test id first in its test's "
-            "docstring (test plan section 1.3). Keep tools/ci.sh --python-only green; gates run commands without a "
-            "shell, so tools/ci.sh stays executable with a #!/usr/bin/env bash line. " + RULES)
+    note = (f" {PLAN} section 2.2 lists clarifications for this unit (from the first M0 attempt); they are "
+            "requirements." if uid in clarified else "")
+    prds = list(dict.fromkeys(PREFIX_PRD[i.split("-")[0]] for i in ids.split(", ") if i))
+    implemented = impl.replace("`", "")
+    desc = (f"Read AGENTS.md first. Build work unit {uid} exactly as {PLAN} specifies: its task row and the low level "
+            f"designs it implements: {implemented}.{note} The LLDs own every name. Write a test for each acceptance "
+            f"criterion this unit owns: {ids} (their text is in {', '.join(prds)} section 2.4); start each test's docstring with `@spec <ID>:` and put a `# @spec <ID>` comment "
+            "on the behavior's entry point in code. Keep tools/ci.sh --python-only green, including "
+            "`node tools/sdd/cli.mjs check`; gates run commands without a shell, so tools/ci.sh stays executable with "
+            "a #!/usr/bin/env bash line. " + RULES)
     units.append({
         "schema_version": "1.0", "id": uid, "title": title, "description": desc,
         "depends_on": dep_list, "scope": {"files": file_list},

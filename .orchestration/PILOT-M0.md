@@ -1,10 +1,18 @@
 # M0 run guide
 
-Milestone M0 (SPEC v2 section 12.3: 16 units in 10 waves) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
+Milestone M0 ([M0 plan](../docs/build/M0-plan-v1.md): 16 units in 10 waves) delivered by the agent team under ECC, following TEAM-DELIVERY v5 (agent-control-plane-infra).
 
 ## Providers
 
 Claude is the only provider. It writes code and plays every team role: PR reviewer, security reviewer, verifier, architect, designer, delivery lead and product owners (`.orchestration/config.yaml`, `team.json`). Independence comes from each role's persona and its own session, not from a different provider (`review_independence: persona` in `config.yaml`; TEAM-DELIVERY v3). The model follows the unit's class: Haiku, Sonnet or Opus (`cli_models`). Every unit applies the build skills in `.agents/skills` (AGENTS.md) in the author's own session, so the separate skills pass is off.
+
+## Roles and personas
+
+Each ECC role plays an SDD persona: its prompt starts with the persona file in `.claude/agents/` (`personas` in `team.json`). The coder is the `implementer`; the PR reviewer and the QA verifier are the `verifier`; the security reviewer is the `security-reviewer`; the architect is the `architect`; the product owners are the `product-writer`; the learning steward is the `doc-steward`. The designer and the delivery lead keep ECC's own prompts. ECC stops before a run if an assigned persona file is missing.
+
+## SDD gates before a run
+
+The documents follow the SDD framework (ADR 0013). Agents never approve, so before a run the owner approves, in order: the problem framing in [PRD v5](../docs/prd/PRD-v5.md) (intake checkpoint), the PRDs (Gate 1), [SPEC v3](../docs/spec/SPEC-v3.md) (Gate 2) and the LLD of each component the plan builds (Gate 3). The doc map (`docs/README.md`, `node tools/sdd/cli.mjs docmap`) shows each document's status, and `/sdd-status` in Claude Code summarizes it.
 
 ## Before the first run
 
@@ -21,15 +29,15 @@ Claude is the only provider. It writes code and plays every team role: PR review
 
 ```sh
 cd ~/Documents/GitHub/research-mcp
-ecc create-run --run-id rm-m0b --plan .orchestration/plan-m0.json
-ecc drive --run-id rm-m0b
+ecc create-run --run-id rm-m0c --plan .orchestration/plan-m0.json
+ecc drive --run-id rm-m0c
 ```
 
 The drive checks the plan (architect), then builds, reviews, verifies and merges units wave by wave. Agents merge into `main` locally; nothing is pushed.
 
 ## When the drive stops
 
-It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0b` shows every unit.
+It stops only when no unit can move after the delivery lead's own recoveries (TEAM-DELIVERY v5 7.1). The output lists `next:` lines: run them in order; the last one continues the drive. `ecc status --run-id rm-m0c` shows every unit.
 
 ## Done
 

@@ -1,0 +1,6 @@
+# Trace index: per-component audit state. Derived; maintained by the verifier and trace-check --write.
+# The verifier keeps the audit record (status, scope, owner, sampled, audited, audited_sha, findings,
+# disposition, drift as a list of criterion IDs, next); trace-check --write adds the governing
+# artifact versions and the evidence counts.
+schema_version: 2
+components:

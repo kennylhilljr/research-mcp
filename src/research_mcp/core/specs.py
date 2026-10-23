@@ -10,6 +10,7 @@ from pydantic.dataclasses import dataclass
 from research_mcp.core.errors import ErrorCode
 
 
+# @spec PLAT-6
 @dataclass(frozen=True, config=ConfigDict(defer_build=True))
 class AuthSpec:
     secrets: tuple[str, ...]
@@ -54,6 +55,7 @@ class ProbeSpec:
 ErrorClassifier = Callable[[int, bytes], tuple[ErrorCode, str | None] | None]
 
 
+# @spec PLAT-6
 @dataclass(frozen=True, config=ConfigDict(defer_build=True))
 class SourcePolicy:
     source: str

@@ -3,6 +3,7 @@
 from enum import StrEnum
 
 
+# @spec PLAT-32
 class ErrorCode(StrEnum):
     INVALID_ARGUMENT = "invalid_argument"
     NOT_FOUND = "not_found"

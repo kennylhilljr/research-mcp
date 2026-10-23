@@ -28,6 +28,7 @@ class SourceStatus(BaseModel):
     error_code: ErrorCode | None = None
 
 
+# @spec PLAT-33
 class Untrusted(BaseModel):
     model_config = ConfigDict(defer_build=True)
 
@@ -36,6 +37,7 @@ class Untrusted(BaseModel):
     content: str
 
 
+# @spec PLAT-30
 class ToolResult[T](BaseModel):
     model_config = ConfigDict(defer_build=True)
 

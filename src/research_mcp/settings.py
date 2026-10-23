@@ -51,6 +51,7 @@ class ServerSettings(_Config):
     port: int = Field(default=7319, ge=1, le=65535)
     token: str = "keychain:research-mcp/DAEMON_TOKEN"  # noqa: S105 - reference, not a secret
 
+    # @spec PLAT-10
     @field_validator("host")
     @classmethod
     def loopback(cls, value: str) -> str:
@@ -63,6 +64,7 @@ class ServerSettings(_Config):
         return value
 
 
+# @spec PLAT-9
 class PathSettings(_Config):
     state_dir: Path = Path("~/Library/Application Support/research-mcp")
     data_dir: Path = Path("~/Library/Application Support/research-mcp/cache")
@@ -91,6 +93,7 @@ class PathSettings(_Config):
 class ContactSettings(_Config):
     email: str | None = None
 
+    # @spec PLAT-11
     @field_validator("email")
     @classmethod
     def real_email(cls, value: str | None) -> str | None:
@@ -249,6 +252,7 @@ class _Environment(EnvSettingsSource):
         return data
 
 
+# @spec PLAT-8
 class Settings(BaseSettings):
     model_config = SettingsConfigDict(
         defer_build=True,

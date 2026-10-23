@@ -12,7 +12,7 @@ from research_mcp.testing.clock import FakeClock, FakeSleeper
 
 
 async def test_models_and_clock():
-    """AT-PLAT-06: Policy/data types validate and fake time advances deterministically."""
+    """@spec PLAT-6: Policy/data types validate and fake time advances deterministically."""
     auth = AuthSpec(("API_KEY",), True, "header", "x-api-key", ("https://example.org",), "")
     policy = SourcePolicy("example", frozenset({"example.org"}), auth, RateSpec(1), 5, 1000)
     assert policy.rate.burst == 1 and policy.auth == auth

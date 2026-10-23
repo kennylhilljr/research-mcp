@@ -1,0 +1,30 @@
+name: ci
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  checks:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        shell: bash
+        run: if [ -f package-lock.json ]; then npm ci; elif [ -f package.json ]; then npm install; fi
+      - name: Typecheck
+        run: npm run typecheck --if-present
+      - name: Tests
+        run: npm test --if-present
+      - name: spec-lint
+        run: node tools/spec-lint/spec-lint.mjs
+      - name: trace-check
+        run: node tools/trace-check/trace-check.mjs --base origin/${{ github.base_ref || 'main' }}
+      - name: Doc map and catalog are current
+        run: node tools/sdd/cli.mjs docmap --check && node tools/sdd/cli.mjs catalog --check

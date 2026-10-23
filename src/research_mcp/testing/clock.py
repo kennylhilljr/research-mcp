@@ -3,6 +3,7 @@
 from datetime import UTC, datetime, timedelta
 
 
+# @spec PLAT-6
 class FakeClock:
     def __init__(self, start: datetime | None = None) -> None:
         start = start if start is not None else datetime(2000, 1, 1, tzinfo=UTC)

@@ -66,11 +66,11 @@ class Recorder:
 CORE = SecretRef.parse("keychain:research-mcp/CORE_API_KEY")
 
 
-# AT-PLAT-12
+# PLAT-12
 
 
 def test_parse_valid_references() -> None:
-    """AT-PLAT-12: keychain:research-mcp/NAME and env:NAME parse into SecretRef."""
+    """@spec PLAT-12: keychain:research-mcp/NAME and env:NAME parse into SecretRef."""
     assert SecretRef.parse("keychain:research-mcp/CORE_API_KEY") == SecretRef(
         "keychain", "CORE_API_KEY", "research-mcp/CORE_API_KEY"
     )
@@ -106,7 +106,7 @@ def test_parse_valid_references() -> None:
     ],
 )
 def test_parse_rejects_malformed_references(text: str) -> None:
-    """AT-PLAT-12: malformed references fail with ValueError."""
+    """@spec PLAT-12: malformed references fail with ValueError."""
     with pytest.raises(ValueError):
         SecretRef.parse(text)
 
@@ -124,13 +124,13 @@ def test_parse_rejects_malformed_references(text: str) -> None:
     ],
 )
 def test_direct_construction_validates(backend: Any, name: str, service: str) -> None:
-    """AT-PLAT-12: SecretRef validates on construction, not only in parse (SPEC 0.6)."""
+    """@spec PLAT-12: SecretRef validates on construction, not only in parse (SPEC 0.6)."""
     with pytest.raises(ValueError):
         SecretRef(backend, name, service)
 
 
 def test_parse_error_does_not_echo_input() -> None:
-    """AT-PLAT-12: a malformed reference (possibly a pasted secret) is not echoed."""
+    """@spec PLAT-12: a malformed reference (possibly a pasted secret) is not echoed."""
     pasted = "ghp_" + "x9" * 10
     for text in (pasted, "env:" + pasted, "keychain:research-mcp/" + pasted):
         with pytest.raises(ValueError) as caught:
@@ -138,11 +138,11 @@ def test_parse_error_does_not_echo_input() -> None:
         assert pasted not in str(caught.value)
 
 
-# AT-SEC-01
+# SEC-1
 
 
 def test_secret_text_forms_hide_value(caplog: pytest.LogCaptureFixture) -> None:
-    """AT-SEC-01: repr, str, format and logging never contain the value."""
+    """@spec SEC-1: repr, str, format and logging never contain the value."""
     secret = Secret(CORE, VALUE)
     fp = hashlib.sha256(VALUE.encode()).hexdigest()[:8]
     assert secret.fingerprint == fp
@@ -171,7 +171,7 @@ def test_secret_text_forms_hide_value(caplog: pytest.LogCaptureFixture) -> None:
 
 
 def test_secret_has_no_dict_and_refuses_pickle() -> None:
-    """AT-SEC-01: the value is not exposed through __dict__ or serialization."""
+    """@spec SEC-1: the value is not exposed through __dict__ or serialization."""
     secret = Secret(CORE, VALUE)
     assert not hasattr(secret, "__dict__")
     with pytest.raises(TypeError):
@@ -182,11 +182,11 @@ def test_secret_has_no_dict_and_refuses_pickle() -> None:
     assert copy.deepcopy(secret) is secret
 
 
-# AT-SEC-02
+# SEC-2
 
 
 def test_keychain_read_argv_and_timeout() -> None:
-    """AT-SEC-02: get runs /usr/bin/security find-generic-password -w with a 5 s timeout."""
+    """@spec SEC-2: get runs /usr/bin/security find-generic-password -w with a 5 s timeout."""
     runner = Recorder(stdout=VALUE + "\n")
     state, secret = KeychainProvider("tester", runner=runner).get(CORE)
     assert state is SecretState.OK
@@ -228,7 +228,10 @@ def test_keychain_read_exit_codes(
     caplog: pytest.LogCaptureFixture,
     capsys: pytest.CaptureFixture[str],
 ) -> None:
-    """AT-SEC-02: exit 44 is missing, a locked keychain is keychain_locked, stderr is not echoed."""
+    """@spec SEC-2: exit 44 is missing, a locked keychain is keychain_locked.
+
+    Stderr is not echoed.
+    """
     runner = Recorder(returncode=returncode, stdout="", stderr=stderr)
     with caplog.at_level(logging.DEBUG):
         state, secret = KeychainProvider("tester", runner=runner).get(CORE)
@@ -247,19 +250,19 @@ def test_keychain_read_exit_codes(
     ],
 )
 def test_keychain_read_failures_are_error(error: Exception) -> None:
-    """AT-SEC-02: a timeout or a missing binary maps to error without raising."""
+    """@spec SEC-2: a timeout or a missing binary maps to error without raising."""
     runner = Recorder(raises=error)
     assert KeychainProvider("tester", runner=runner).get(CORE) == (SecretState.ERROR, None)
 
 
 def test_keychain_empty_output_is_error() -> None:
-    """AT-SEC-02: exit 0 with no value is an error, not an empty secret."""
+    """@spec SEC-2: exit 0 with no value is an error, not an empty secret."""
     runner = Recorder(stdout="\n")
     assert KeychainProvider("tester", runner=runner).get(CORE) == (SecretState.ERROR, None)
 
 
 def test_env_reference_reads_environment(monkeypatch: pytest.MonkeyPatch) -> None:
-    """AT-SEC-02: env references are read from the environment without running security."""
+    """@spec SEC-2: env references are read from the environment without running security."""
     runner = Recorder()
     provider = KeychainProvider("tester", runner=runner)
     ref = SecretRef.parse("env:RESEARCH_MCP_TEST_SECRET")
@@ -275,16 +278,16 @@ def test_env_reference_reads_environment(monkeypatch: pytest.MonkeyPatch) -> Non
 
 @pytest.mark.parametrize("user", ["", "tes\nter", "tester\x00", "téster"])
 def test_keychain_rejects_unsafe_account(user: str) -> None:
-    """AT-SEC-02: the account name cannot carry control characters into security."""
+    """@spec SEC-2: the account name cannot carry control characters into security."""
     with pytest.raises(ValueError):
         KeychainProvider(user, runner=Recorder())
 
 
-# AT-SEC-13
+# SEC-13
 
 
 def test_keychain_set_writes_through_stdin() -> None:
-    """AT-SEC-13: set runs security -i and writes the command on stdin, never in argv."""
+    """@spec SEC-13: set runs security -i and writes the command on stdin, never in argv."""
     runner = Recorder()
     KeychainProvider("tester", runner=runner).set(CORE, VALUE)
     [(argv, kwargs)] = runner.calls
@@ -299,7 +302,7 @@ def test_keychain_set_writes_through_stdin() -> None:
 
 
 def test_keychain_set_quotes_value() -> None:
-    """AT-SEC-13: quotes and backslashes in a value stay inside one quoted argument."""
+    """@spec SEC-13: quotes and backslashes in a value stay inside one quoted argument."""
     runner = Recorder()
     KeychainProvider("tester", runner=runner).set(CORE, 'a"b\\c d')
     [(_argv, kwargs)] = runner.calls
@@ -311,7 +314,7 @@ def test_keychain_set_quotes_value() -> None:
     ["", VALUE + "\n", VALUE + "\nadd-generic-password -s x", "a\rb", "a\tb", "a\x00b", "kéy"],
 )
 def test_keychain_set_rejects_unprintable_values(value: str) -> None:
-    """AT-SEC-13: no control character reaches the security -i script; nothing runs."""
+    """@spec SEC-13: no control character reaches the security -i script; nothing runs."""
     runner = Recorder()
     with pytest.raises(ValueError) as caught:
         KeychainProvider("tester", runner=runner).set(CORE, value)
@@ -321,7 +324,7 @@ def test_keychain_set_rejects_unprintable_values(value: str) -> None:
 
 
 def test_keychain_set_failure_hides_stderr() -> None:
-    """AT-SEC-13: a failed write raises without the value or the stderr text."""
+    """@spec SEC-13: a failed write raises without the value or the stderr text."""
     runner = Recorder(returncode=1, stderr=STDERR)
     with pytest.raises(RuntimeError) as caught:
         KeychainProvider("tester", runner=runner).set(CORE, VALUE)
@@ -330,7 +333,7 @@ def test_keychain_set_failure_hides_stderr() -> None:
 
 
 def test_keychain_set_timeout_does_not_chain_stderr() -> None:
-    """AT-SEC-13: a timed-out write raises without chaining the exception that holds stderr."""
+    """@spec SEC-13: a timed-out write raises without chaining the exception that holds stderr."""
     timeout = subprocess.TimeoutExpired(["/usr/bin/security", "-i"], 5, stderr=STDERR)
     runner = Recorder(raises=timeout)
     with pytest.raises(RuntimeError) as caught:
@@ -340,7 +343,7 @@ def test_keychain_set_timeout_does_not_chain_stderr() -> None:
 
 
 def test_set_refuses_env_reference() -> None:
-    """AT-SEC-13: only Keychain items can be written; env references are refused."""
+    """@spec SEC-13: only Keychain items can be written; env references are refused."""
     ref = SecretRef.parse("env:CORE_API_KEY")
     runner = Recorder()
     with pytest.raises(ValueError):
@@ -351,7 +354,7 @@ def test_set_refuses_env_reference() -> None:
 
 
 def test_fake_provider_set_records_argv_without_value() -> None:
-    """AT-SEC-13: FakeProvider records the argv set would use, which never holds the value."""
+    """@spec SEC-13: FakeProvider records the argv set would use, which never holds the value."""
     fake = FakeProvider(user="tester")
     fake.set(CORE, VALUE)
     state, secret = fake.get(CORE)
@@ -364,11 +367,11 @@ def test_fake_provider_set_records_argv_without_value() -> None:
         fake.set(CORE, "bad\nvalue")
 
 
-# AT-SEC-03
+# SEC-3
 
 
 def test_keychain_metadata_never_passes_w() -> None:
-    """AT-SEC-03: metadata runs find-generic-password without -w and returns mdat only."""
+    """@spec SEC-3: metadata runs find-generic-password without -w and returns mdat only."""
     runner = Recorder(stdout=METADATA_STDOUT)
     meta = KeychainProvider("tester", runner=runner).metadata(CORE)
     assert meta == SecretMeta("CORE_API_KEY", datetime(2026, 10, 15, 8, 30, 15, tzinfo=UTC))
@@ -387,7 +390,7 @@ def test_keychain_metadata_never_passes_w() -> None:
 
 
 def test_keychain_metadata_without_mdat_and_failures() -> None:
-    """AT-SEC-03: a missing mdat gives no date; a missing or locked item gives no metadata."""
+    """@spec SEC-3: a missing mdat gives no date; a missing or locked item gives no metadata."""
     no_mdat = Recorder(stdout='attributes:\n    "acct"<blob>="tester"\n')
     assert KeychainProvider("tester", runner=no_mdat).metadata(CORE) == SecretMeta(
         "CORE_API_KEY", None
@@ -400,7 +403,7 @@ def test_keychain_metadata_without_mdat_and_failures() -> None:
 
 
 def test_env_reference_has_no_metadata_in_both_providers() -> None:
-    """AT-SEC-03: env references have no metadata in KeychainProvider and FakeProvider alike."""
+    """@spec SEC-3: env references have no metadata in KeychainProvider and FakeProvider alike."""
     ref = SecretRef.parse("env:CORE_API_KEY")
     runner = Recorder(stdout=METADATA_STDOUT)
     assert KeychainProvider("tester", runner=runner).metadata(ref) is None
@@ -411,7 +414,7 @@ def test_env_reference_has_no_metadata_in_both_providers() -> None:
 
 
 def test_fake_provider_metadata_matches_keychain() -> None:
-    """AT-SEC-03: FakeProvider.metadata records the no -w argv and returns the date only."""
+    """@spec SEC-3: FakeProvider.metadata records the no -w argv and returns the date only."""
     when = datetime(2026, 10, 15, 8, 30, 15, tzinfo=UTC)
     fake = FakeProvider({"CORE_API_KEY": VALUE}, modified={"CORE_API_KEY": when})
     assert fake.metadata(CORE) == SecretMeta("CORE_API_KEY", when)
@@ -431,11 +434,11 @@ def test_fake_provider_metadata_matches_keychain() -> None:
     assert fake.get(CORE) == (SecretState.LOCKED, None)
 
 
-# AT-SEC-04
+# SEC-4
 
 
 def test_secret_cache_reload_returns_changed_names() -> None:
-    """AT-SEC-04: reload re-reads secrets and returns the names whose fingerprints changed."""
+    """@spec SEC-4: reload re-reads secrets and returns the names whose fingerprints changed."""
     nvd = SecretRef.parse("keychain:research-mcp/NVD_API_KEY")
     gh = SecretRef.parse("env:GITHUB_TOKEN")
     zen = SecretRef.parse("keychain:research-mcp/ZENODO_TOKEN")

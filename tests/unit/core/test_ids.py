@@ -30,7 +30,7 @@ from research_mcp.core import ids
     ],
 )
 def test_doi(raw: str, expected: str) -> None:
-    """AT-SRCH-10: DOI prefixes, escapes, punctuation and suffix slashes."""
+    """@spec SRCH-10: DOI prefixes, escapes, punctuation and suffix slashes."""
     assert ids.normalize_doi(raw) == expected
     assert ids.normalize_doi(expected) == expected
 
@@ -49,7 +49,7 @@ def test_doi(raw: str, expected: str) -> None:
     ],
 )
 def test_bad_doi(raw: str) -> None:
-    """AT-SRCH-10: Invalid DOI forms and invalid UTF-8 are refused."""
+    """@spec SRCH-10: Invalid DOI forms and invalid UTF-8 are refused."""
     with pytest.raises(ids.IdentifierError):
         ids.normalize_doi(raw)
 
@@ -61,7 +61,10 @@ def test_bad_doi(raw: str) -> None:
 def test_unicode_whitespace_in_suffix(
     normalizer: Callable[[str], str], prefix: str, space: str
 ) -> None:
-    """AT-SRCH-10: DOI and handle suffixes refuse Unicode whitespace, literal or percent-encoded."""
+    """@spec SRCH-10: DOI and handle suffixes refuse Unicode whitespace.
+
+    Literal or percent-encoded.
+    """
     with pytest.raises(ids.IdentifierError):
         normalizer(f"{prefix}a{space}b")
 
@@ -79,7 +82,7 @@ def test_unicode_whitespace_in_suffix(
     ],
 )
 def test_arxiv(raw: str, value: str, version: int | None) -> None:
-    """AT-SRCH-11: arXiv version is separate from modern and legacy identities."""
+    """@spec SRCH-11: arXiv version is separate from modern and legacy identities."""
     assert ids.normalize_arxiv(raw) == (value, version)
     assert ids.parse_any(raw) == ids.Identifier("arxiv", value, version)
 
@@ -107,7 +110,7 @@ def test_arxiv(raw: str, value: str, version: int | None) -> None:
     ],
 )
 def test_canonical_forms(normalizer: Callable[[str], str], raw: str, expected: str) -> None:
-    """AT-SRCH-12: All non-DOI scholarly schemes have canonical forms."""
+    """@spec SRCH-12: All non-DOI scholarly schemes have canonical forms."""
     assert normalizer(raw) == expected
     assert normalizer(expected) == expected
 
@@ -130,7 +133,7 @@ def test_canonical_forms(normalizer: Callable[[str], str], raw: str, expected: s
     ],
 )
 def test_url(raw: str, expected: str) -> None:
-    """AT-SRCH-13: URL normalization preserves path case and meaningful query values."""
+    """@spec SRCH-13: URL normalization preserves path case and meaningful query values."""
     assert ids.normalize_url(raw) == expected
     assert ids.normalize_url(expected) == expected
 
@@ -146,7 +149,7 @@ def test_url(raw: str, expected: str) -> None:
     ],
 )
 def test_invalid_url(raw: str) -> None:
-    """AT-SRCH-13: Malformed URLs and invalid UTF-8 fail with IdentifierError."""
+    """@spec SRCH-13: Malformed URLs and invalid UTF-8 fail with IdentifierError."""
     with pytest.raises(ids.IdentifierError):
         ids.normalize_url(raw)
 
@@ -183,7 +186,7 @@ def test_invalid_url(raw: str) -> None:
     ],
 )
 def test_detect(raw: str, scheme: str, value: str) -> None:
-    """AT-SRCH-14: Explicit prefixes, recognized hosts and bare shapes select schemes."""
+    """@spec SRCH-14: Explicit prefixes, recognized hosts and bare shapes select schemes."""
     assert ids.parse_any(raw) == ids.Identifier(scheme, value)
 
 
@@ -203,7 +206,7 @@ def test_detect(raw: str, scheme: str, value: str) -> None:
     ],
 )
 def test_reject_unknown(raw: str) -> None:
-    """AT-SRCH-14: Unknown input and filename shapes never become identifiers."""
+    """@spec SRCH-14: Unknown input and filename shapes never become identifiers."""
     with pytest.raises(ids.IdentifierError):
         ids.parse_any(raw)
 
@@ -214,7 +217,10 @@ def test_reject_unknown(raw: str) -> None:
     padding=st.sampled_from(["", " ", "\t", "\n "]),
 )
 def test_normalizer_properties(number: int, upper: bool, padding: str) -> None:
-    """AT-SRCH-15: Normalizers are idempotent and stable under valid case and whitespace changes."""
+    """@spec SRCH-15: Normalizers are idempotent.
+
+    They are also stable under valid case and whitespace changes.
+    """
     cases = [
         (ids.normalize_doi, f"doi:10.1000/item{number}"),
         (ids.normalize_pmid, f"pmid:{number}"),
@@ -261,12 +267,12 @@ def test_normalizer_properties(number: int, upper: bool, padding: str) -> None:
     ],
 )
 def test_title(raw: str, expected: str) -> None:
-    """AT-SRCH-16: NFKC, casefold, punctuation, stop words and whitespace normalize titles."""
+    """@spec SRCH-16: NFKC, casefold, punctuation, stop words and whitespace normalize titles."""
     assert ids.title_key(raw) == expected
 
 
 def test_identifier_frozen() -> None:
-    """AT-SRCH-14: Parsed identifiers are immutable dataclass values."""
+    """@spec SRCH-14: Parsed identifiers are immutable dataclass values."""
     ident = ids.parse_any("pmid:123")
     with pytest.raises(FrozenInstanceError):
         ident.value = "456"
@@ -290,7 +296,7 @@ def test_identifier_frozen() -> None:
     ],
 )
 def test_invalid_scheme_forms(normalizer: Callable[[str], object], raw: str) -> None:
-    """AT-SRCH-12: Scheme normalizers refuse malformed values and unexpected URL hosts."""
+    """@spec SRCH-12: Scheme normalizers refuse malformed values and unexpected URL hosts."""
     with pytest.raises(ids.IdentifierError):
         normalizer(raw)
 
@@ -315,7 +321,7 @@ def test_invalid_scheme_forms(normalizer: Callable[[str], object], raw: str) -> 
 )
 @pytest.mark.parametrize("escape", ["%FF", "%C3%28", "%ED%A0%80"])
 def test_strict_utf8_decoding(normalizer: Callable[[str], object], escape: str) -> None:
-    """AT-SRCH-15: Every identifier normalizer rejects invalid UTF-8 escapes."""
+    """@spec SRCH-15: Every identifier normalizer rejects invalid UTF-8 escapes."""
     raw = f"https://example.org/{escape}" if normalizer is ids.normalize_url else escape
     with pytest.raises(ids.IdentifierError, match="Invalid UTF-8 escape"):
         normalizer(raw)
@@ -331,7 +337,7 @@ def test_strict_utf8_decoding(normalizer: Callable[[str], object], escape: str) 
     ],
 )
 def test_url_unencoded_whitespace(raw: str) -> None:
-    """AT-SRCH-15: URLs with raw inner whitespace are refused, so a second pass cannot differ."""
+    """@spec SRCH-15: URLs with raw inner whitespace are refused, so a second pass cannot differ."""
     with pytest.raises(ids.IdentifierError):
         ids.normalize_url(raw)
     encoded = ids.normalize_url("https://example.org/Case%20?utm_source=x")
