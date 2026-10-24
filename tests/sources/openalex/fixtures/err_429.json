@@ -1,0 +1,8 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "2",
+    "Content-Type": "application/json"
+  },
+  "body": { "error": "rate limit exceeded", "message": "too many requests" }
+}
