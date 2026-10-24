@@ -239,7 +239,7 @@ async def test_rrf_golden_order() -> None:
 
 
 async def test_per_source_limit_respects_page_size() -> None:
-    """@spec SRCH-6: each source is asked for min(per_source_limit, max_page_size) records."""
+    """Each source is asked for min(per_source_limit, max_page_size) records (5.4 step 2)."""
     harness = Harness()
     harness.add(spec("small", max_page_size=3), page("small"))
     harness.add(spec("large"), page("large"))
@@ -284,18 +284,109 @@ async def test_combined_cursor_rejects_tampering() -> None:
     service = harness.service()
     first = await service.search(SearchRequest(query="q"))
     assert first.next_cursor is not None
-    assert decode_cursor(first.next_cursor, KEY) == {"s": {"paged": "n"}}
+    payload = decode_cursor(first.next_cursor, KEY)
+    assert payload["s"] == {"paged": "n"}
+    query = payload["q"]
     harness.calls.clear()
     for cursor in (
         first.next_cursor[:-2] + "AA",
-        encode_cursor({"s": {"paged": "n"}}, b"other" * 8),
-        encode_cursor({"s": ["paged"]}, KEY),
-        encode_cursor({"s": {"paged": 3}}, KEY),
+        encode_cursor({"q": query, "s": {"paged": "n"}}, b"other" * 8),
+        encode_cursor({"q": query, "s": ["paged"]}, KEY),
+        encode_cursor({"q": query, "s": {"paged": 3}}, KEY),
+        encode_cursor({"s": {"paged": "n"}}, KEY),
     ):
         with pytest.raises(ToolError) as caught:
             await service.search(SearchRequest(query="q", cursor=cursor))
         assert caught.value.code is ErrorCode.INVALID_ARGUMENT
     assert harness.calls == []
+
+
+async def test_combined_cursor_retries_failed_sources() -> None:
+    """@spec SRCH-7: only exhausted sources are empty; failed and skipped ones run again.
+
+    A source that failed or was skipped on page 1 starts from its first page; one that
+    fails on a continued page keeps the cursor it had.
+    """
+    harness = Harness()
+    script: dict[str, list[Search]] = {
+        "paged": [
+            page("paged", "10.1/p1", next_cursor="p-2"),
+            failing(HttpError(ErrorCode.UPSTREAM_ERROR, status=503)),
+            page("paged", "10.1/p2", next_cursor="p-3"),
+        ],
+        "flaky": [
+            failing(HttpError(ErrorCode.UPSTREAM_ERROR, status=502)),
+            page("flaky", "10.1/f1", next_cursor="f-2"),
+            page("flaky", "10.1/f2"),
+        ],
+        "slow": [sleeping(30.0, "slow"), page("slow", "10.1/s1"), page("slow")],
+        "resting": [page("resting", "10.1/r1"), page("resting")],
+    }
+
+    def scripted(source: str) -> Search:
+        async def search(req: SearchRequest) -> SearchPage:
+            return await script[source].pop(0)(req)
+
+        return search
+
+    harness.add(spec("paged"), scripted("paged"))
+    harness.add(spec("flaky"), scripted("flaky"))
+    harness.add(spec("slow", timeout_s=0.5), scripted("slow"))
+    harness.add(spec("resting"), scripted("resting"))
+    harness.health["resting"] = "down"
+    service = harness.service()
+
+    first = await service.search(SearchRequest(query="q"))
+    assert states(first) == {
+        "paged": "ok",
+        "flaky": "error",
+        "slow": "timeout",
+        "resting": "skipped_unhealthy",
+    }
+    assert first.next_cursor is not None
+
+    harness.calls.clear()
+    del harness.health["resting"]
+    second = await service.search(SearchRequest(query="q", cursor=first.next_cursor))
+    cursors = {source: req.cursor for source, req in harness.calls}
+    assert cursors == {"paged": "p-2", "flaky": None, "slow": None, "resting": None}
+    assert states(second) == {"paged": "error", "flaky": "ok", "slow": "ok", "resting": "ok"}
+    assert second.next_cursor is not None
+
+    harness.calls.clear()
+    third = await service.search(SearchRequest(query="q", cursor=second.next_cursor))
+    cursors = {source: req.cursor for source, req in harness.calls}
+    assert cursors == {"paged": "p-2", "flaky": "f-2"}
+    assert states(third) == {"paged": "ok", "flaky": "ok", "slow": "empty", "resting": "empty"}
+    assert sorted(w.ids[0].value for w in third.works) == ["10.1/f2", "10.1/p2"]
+
+
+async def test_combined_cursor_bound_to_query() -> None:
+    """@spec SRCH-7: a combined cursor is rejected with another query, filters or selection."""
+    harness = Harness()
+    harness.add(spec("paged"), page("paged", "10.1/p", next_cursor="n"))
+    harness.add(spec("other"), page("other", "10.1/o", next_cursor="m"))
+    service = harness.service()
+    first = await service.search(SearchRequest(query="q"))
+    assert first.next_cursor is not None
+    harness.calls.clear()
+    for req, sources in (
+        (SearchRequest(query="other", cursor=first.next_cursor), "auto"),
+        (
+            SearchRequest(
+                query="q", filters=SearchFilters(year_from=2020), cursor=first.next_cursor
+            ),
+            "auto",
+        ),
+        (SearchRequest(query="q", cursor=first.next_cursor), ["paged"]),
+    ):
+        with pytest.raises(ToolError) as caught:
+            await service.search(req, sources=sources)
+        assert caught.value.code is ErrorCode.INVALID_ARGUMENT
+    assert harness.calls == []
+    # The page size is not part of the binding.
+    again = await service.search(SearchRequest(query="q", limit=5, cursor=first.next_cursor))
+    assert states(again) == {"paged": "ok", "other": "ok"}
 
 
 async def test_auto_skips_unconfigured_disabled_down() -> None:

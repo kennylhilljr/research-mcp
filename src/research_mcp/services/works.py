@@ -228,6 +228,20 @@ async def run_sources[T](
     return answers, failures
 
 
+class WorkLookupError(ToolError):
+    """``get_work`` found no record; ``statuses`` still holds one entry per source.
+
+    [assumption] The LLD names no type for this; the statuses ride on the error so an
+    outage is never reported as a work that does not exist.
+    """
+
+    def __init__(
+        self, code: ErrorCode, message: str, statuses: list[SourceStatus], retryable: bool
+    ) -> None:
+        super().__init__(code, message, retryable=retryable)
+        self.statuses = statuses
+
+
 class WorksService:
     def __init__(self, registry: SourceRegistry, settings: Settings) -> None:
         self._registry = registry
@@ -237,7 +251,9 @@ class WorksService:
     async def get_work(self, id: str) -> tuple[Work, list[SourceStatus]]:
         """The work behind ``id``, merged from every source that understands its scheme.
 
-        Raises ``IdentifierError`` for an id that does not parse, before any call.
+        Raises ``IdentifierError`` for an id that does not parse, before any call. With no
+        record, raises ``WorkLookupError``: ``not_found`` when at least one source answered,
+        otherwise ``upstream_error``.
         """
         ident = parse_any(id)
         selected = [
@@ -265,8 +281,17 @@ class WorksService:
                 latency_ms=answer.latency_ms,
             )
         ordered = [statuses[item.source] for item in selected]
+        if not records and answers:
+            raise WorkLookupError(
+                ErrorCode.NOT_FOUND,
+                "No source has a record for this identifier",
+                ordered,
+                retryable=False,
+            )
         if not records:
-            raise ToolError(ErrorCode.NOT_FOUND, "No source has a record for this identifier")
+            raise WorkLookupError(
+                ErrorCode.UPSTREAM_ERROR, "No source could be reached", ordered, retryable=True
+            )
         # Keep the selection order, so source priority ties break the same way every time.
         rank = {item.source: index for index, item in enumerate(selected)}
         records.sort(key=lambda r: rank.get(r.provenance.source, len(rank)))

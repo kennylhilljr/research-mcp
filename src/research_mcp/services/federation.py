@@ -4,6 +4,8 @@ LLD-search-v2 5.4. Search recording is an injected port whose default does nothi
 writes no ``searches`` row (M0-plan-v4 section 2.2, row M0-13; SRCH-34 wires it in M1).
 """
 
+import hashlib
+import json
 import logging
 from collections.abc import Awaitable, Callable, Sequence
 from typing import Literal
@@ -13,7 +15,13 @@ import anyio
 from research_mcp.core.budget import decode_cursor, encode_cursor
 from research_mcp.core.envelope import SourceStatus
 from research_mcp.core.errors import ErrorCode, ToolError
-from research_mcp.core.models import FederatedResult, SearchPage, SearchRequest, Work
+from research_mcp.core.models import (
+    FederatedResult,
+    JsonValue,
+    SearchPage,
+    SearchRequest,
+    Work,
+)
 from research_mcp.services.works import group, merge, run_sources
 from research_mcp.settings import Settings
 from research_mcp.sources.base import Capability, SourceAdapter
@@ -54,6 +62,18 @@ def rank(pages: Sequence[tuple[str, SearchPage]], *, fuzzy: bool = True) -> list
     return [work for _, _, work in sorted(scored, key=lambda item: item[:2])]
 
 
+def _binding(req: SearchRequest, explicit: list[str] | None, groups: Sequence[str]) -> str:
+    """A digest of what a combined cursor belongs to: the query, filters and selection."""
+    scope = {
+        "query": req.query,
+        "filters": req.filters.model_dump(mode="json"),
+        "sources": explicit,
+        "groups": list(groups),
+    }
+    body = json.dumps(scope, separators=(",", ":"), sort_keys=True).encode()
+    return hashlib.sha256(body).hexdigest()[:32]
+
+
 class FederationService:
     def __init__(
         self,
@@ -68,16 +88,21 @@ class FederationService:
         self._cursor_key = cursor_key
         self._record_search = record_search
 
-    def _slots(self, cursor: str | None) -> dict[str, str] | None:
-        """Each source's own cursor; ``None`` on the first page. Absent means exhausted."""
+    def _slots(self, cursor: str | None, binding: str) -> dict[str, str | None] | None:
+        """Each pending source's own cursor; ``None`` on the first page.
+
+        A source absent from the cursor is exhausted. One present with ``None`` failed or
+        was skipped before it returned a page, so it starts again from its first page.
+        """
         if cursor is None:
             return None
-        slots = decode_cursor(cursor, self._cursor_key).get("s")
-        if not isinstance(slots, dict):
+        payload = decode_cursor(cursor, self._cursor_key)
+        slots = payload.get("s")
+        if payload.get("q") != binding or not isinstance(slots, dict):
             raise ToolError(ErrorCode.INVALID_ARGUMENT, "Invalid cursor")
-        own: dict[str, str] = {}
+        own: dict[str, str | None] = {}
         for source, value in slots.items():
-            if not isinstance(value, str):
+            if value is not None and not isinstance(value, str):
                 raise ToolError(ErrorCode.INVALID_ARGUMENT, "Invalid cursor")
             own[source] = value
         return own
@@ -95,8 +120,9 @@ class FederationService:
         started = anyio.current_time()
         federation = self._settings.federation
         explicit = None if sources == "auto" else list(sources)
+        binding = _binding(req, explicit, groups)
+        slots = self._slots(req.cursor, binding)
         selected = self._registry.select(groups or None, Capability.SEARCH, req.filters, explicit)
-        slots = self._slots(req.cursor)
         statuses: dict[str, SourceStatus] = {}
         runnable = []
         for item in selected:
@@ -115,10 +141,13 @@ class FederationService:
         answers, failures = await run_sources(runnable, search, federation.deadline_s)
         statuses.update(failures)
         pages: list[tuple[str, SearchPage]] = []
-        next_slots: dict[str, str] = {}
-        for item in runnable:
+        next_slots: dict[str, JsonValue] = {}
+        for item in selected:
             answer = answers.get(item.source)
             if answer is None:
+                # Failed or skipped: still pending, from the cursor it had. Exhausted stays out.
+                if slots is None or item.source in slots:
+                    next_slots[item.source] = None if slots is None else slots[item.source]
                 continue
             count = len(answer.value.records)
             statuses[item.source] = SourceStatus(
@@ -131,11 +160,14 @@ class FederationService:
             if answer.value.next_cursor is not None:
                 next_slots[item.source] = answer.value.next_cursor
         works = rank(pages, fuzzy=federation.fuzzy_merge)[: req.limit]
+        # [assumption] Only a source with more pages keeps the listing open, so a source
+        # that keeps failing cannot hold a cursor open by itself.
+        more = any(isinstance(value, str) for value in next_slots.values())
         result = FederatedResult(
             works=works,
             statuses=[statuses[item.source] for item in selected],
-            next_cursor=encode_cursor({"s": dict(next_slots)}, self._cursor_key)
-            if next_slots
+            next_cursor=encode_cursor({"q": binding, "s": next_slots}, self._cursor_key)
+            if more
             else None,
         )
         if federation.record_searches:

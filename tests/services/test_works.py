@@ -16,7 +16,7 @@ from research_mcp.core.errors import ErrorCode, HttpError, ToolError
 from research_mcp.core.ids import Identifier, IdentifierError
 from research_mcp.core.models import Author, OaLocation, Provenance, WorkRecord
 from research_mcp.core.specs import RateSpec
-from research_mcp.services.works import Group, WorksService, group, merge
+from research_mcp.services.works import Group, WorkLookupError, WorksService, group, merge
 from research_mcp.settings import Settings, SourceSettings
 from research_mcp.sources.base import Capability, SourceContext, SourceSpec
 from research_mcp.sources.registry import SourceRegistry
@@ -334,3 +334,32 @@ async def test_get_work_not_found_and_bad_id() -> None:
     with pytest.raises(IdentifierError):
         await service.get_work("doi_10.1145_3649835")
     assert harness.calls == []
+
+
+async def test_get_work_outage_is_not_not_found() -> None:
+    """@spec SRCH-17: when no source answers, get_work fails as upstream and keeps statuses."""
+    harness = Harness()
+
+    async def broken(ident: Identifier) -> WorkRecord | None:
+        raise HttpError(ErrorCode.UPSTREAM_ERROR, status=503)
+
+    harness.add(spec("crossref", "doi"), broken)
+    harness.add(spec("offline", "doi"), returns(None))
+    service = harness.service(sources={"offline": {"enabled": False}})
+    with pytest.raises(WorkLookupError) as caught:
+        await service.get_work("10.1234/down")
+    assert caught.value.code is ErrorCode.UPSTREAM_ERROR
+    assert caught.value.retryable
+    assert {s.source: s.state for s in caught.value.statuses} == {
+        "crossref": "error",
+        "offline": "disabled",
+    }
+
+    # One source that answers without a record makes it not_found; the statuses stay.
+    with pytest.raises(WorkLookupError) as caught:
+        await harness.service().get_work("10.1234/down")
+    assert caught.value.code is ErrorCode.NOT_FOUND
+    assert {s.source: s.state for s in caught.value.statuses} == {
+        "crossref": "error",
+        "offline": "empty",
+    }
