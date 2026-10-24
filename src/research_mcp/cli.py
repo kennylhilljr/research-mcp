@@ -22,7 +22,12 @@ import anyio
 
 from research_mcp import daemon, shim
 from research_mcp.platform import auth
-from research_mcp.platform.secrets import KeychainProvider, SecretProvider, SecretRef
+from research_mcp.platform.secrets import (
+    KeychainProvider,
+    SecretProvider,
+    SecretRef,
+    SecretState,
+)
 from research_mcp.services import doctor as doctor_service
 from research_mcp.settings import Settings
 from research_mcp.shim import DAEMON_LABEL, LaunchctlPort, SystemLaunchctl
@@ -32,7 +37,11 @@ WATCHDOG_LABEL = "local.research-mcp-watchdog"
 LABELS = (DAEMON_LABEL, DOCTOR_LABEL, WATCHDOG_LABEL)
 
 TEMPLATES_DIR = Path(__file__).with_name("packaging") / "launchd"
-_PLACEHOLDER = re.compile(r"__[A-Z]+__")
+_PLACEHOLDER = re.compile(r"__[A-Z0-9_]+__")
+
+
+class InstallError(RuntimeError):
+    """Install cannot finish safely; the message says why and holds no secret."""
 
 
 def _template(label: str) -> str:
@@ -53,9 +62,14 @@ def default_venv_root() -> Path:
     return Path(sys.prefix)
 
 
-def render_plist(text: str, *, venv_root: Path, logs: Path) -> str:
-    """Fill ``__VENV__`` and ``__LOGS__``; raise if a placeholder is left unfilled (PLAT-81)."""
-    rendered = text.replace("__VENV__", str(venv_root)).replace("__LOGS__", str(logs))
+def render_plist(text: str, *, venv_root: Path, logs: Path, home: Path | None = None) -> str:
+    """Fill ``__VENV__``, ``__LOGS__`` and ``__HOME__``; raise if any ``__...__`` is left
+    unfilled (PLAT-81; LLD-platform-v2 2.5)."""
+    rendered = (
+        text.replace("__VENV__", str(venv_root))
+        .replace("__LOGS__", str(logs))
+        .replace("__HOME__", str(home or Path.home()))
+    )
     left = _PLACEHOLDER.search(rendered)
     if left is not None:
         raise ValueError(f"unfilled placeholder in plist template: {left.group()}")
@@ -72,7 +86,10 @@ def install(
 ) -> list[Path]:
     """Render the three launchd plists and generate ``DAEMON_TOKEN`` if it is absent.
 
-    Writes nothing secret: the token lives only in the Keychain, never in a plist.
+    Writes nothing secret: the token lives only in the Keychain, never in a plist. Only a
+    ``missing`` token is minted; a locked or unreadable Keychain raises ``InstallError``
+    instead, because minting then would silently replace a valid token and break every
+    configured shim.
     """
     settings.paths.create_directories()
     resolved_venv = venv_root or default_venv_root()
@@ -88,9 +105,14 @@ def install(
         written.append(path)
 
     ref = SecretRef.parse(settings.server.token)
-    _, secret = provider.get(ref)
-    if secret is None:
+    state, _ = provider.get(ref)
+    if state is SecretState.MISSING:
         provider.set(ref, auth.mint_token())  # @spec SEC-30
+    elif state is not SecretState.OK:
+        raise InstallError(
+            f"DAEMON_TOKEN could not be read from the Keychain ({state}); unlock the login "
+            "Keychain and run `research-mcp install` again."
+        )
     return written
 
 
@@ -166,7 +188,11 @@ def _cmd_install(args: argparse.Namespace) -> int:
     settings = Settings()
     provider = KeychainProvider(getpass.getuser())
     launchctl = SystemLaunchctl()
-    written = install(settings, provider=provider)
+    try:
+        written = install(settings, provider=provider)
+    except InstallError as exc:
+        print(f"research-mcp install: {exc}", file=sys.stderr)
+        return 1
     anyio.run(load_jobs, launchctl, written)
     if args.print_client_config:
         print(client_config_json(default_venv_root()))

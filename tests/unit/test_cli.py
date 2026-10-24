@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.util
 import json
+import re
 import sys
 from pathlib import Path
 from types import ModuleType
@@ -67,6 +68,11 @@ def test_help_lists_every_platform_command(capsys: pytest.CaptureFixture[str]) -
         cli.main(["--help"])
     assert exc.value.code == 0
     out = capsys.readouterr().out
+    # The subcommand list argparse prints, `{serve,stdio,...}`, is matched by whole name,
+    # so a help string that mentions "config" cannot stand in for a missing command.
+    choices = re.search(r"\{([a-z,-]+)\}", out)
+    assert choices is not None
+    listed = set(choices.group(1).split(","))
     for name in (
         "serve",
         "stdio",
@@ -79,7 +85,8 @@ def test_help_lists_every_platform_command(capsys: pytest.CaptureFixture[str]) -
         "secrets",
         "import-legacy",
     ):
-        assert name in out
+        assert name in listed
+        assert re.search(rf"^\s+{re.escape(name)}\s", out, re.MULTILINE)
 
 
 async def test_doctor_runs_four_checks_with_fakes(tmp_path: Path) -> None:
@@ -176,25 +183,43 @@ def test_settings_error_elsewhere_becomes_the_settings_check() -> None:
     assert check.status == "install_critical"
 
 
+def _healthy(_request: httpx.Request) -> httpx.Response:
+    return httpx.Response(200, json={"status": "ok"})
+
+
+@pytest.mark.parametrize(
+    ("handler", "expected_exit"), [(_fail, 1), (_healthy, 0)], ids=["dead", "alive"]
+)
 def test_main_doctor_wires_json_and_liveness_flags(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+    tmp_path: Path,
+    monkeypatch: pytest.MonkeyPatch,
+    capsys: pytest.CaptureFixture[str],
+    handler: Any,
+    expected_exit: int,
 ) -> None:
     """@spec HLTH-40: `research-mcp doctor --json --liveness` wires the flags through
-    main() and _cmd_doctor to DoctorRunner.run, printing a JSON report with an exit code
-    that reflects the dead daemon."""
+    main() and _cmd_doctor to DoctorRunner.run, printing a JSON report whose exit code
+    follows the daemon's /healthz answer. The probe goes to a mock transport, never a real
+    loopback port, so a daemon running on the machine cannot change the result."""
     settings = offline_settings(tmp_path)
-    monkeypatch.setattr(doctor, "Settings", lambda: settings)
-    monkeypatch.setattr(doctor, "KeychainProvider", lambda _user: FakeProvider({}))
+    real_runner = doctor.DoctorRunner
+    monkeypatch.setattr(
+        doctor,
+        "DoctorRunner",
+        lambda: real_runner(
+            settings, provider=FakeProvider({}), transport=httpx.MockTransport(handler)
+        ),
+    )
 
     exit_code = cli.main(["doctor", "--json", "--liveness"])
 
-    assert exit_code == 1
+    assert exit_code == expected_exit
     payload = json.loads(capsys.readouterr().out)
-    assert payload["exit_code"] == 1
-    assert {check["name"] for check in payload["checks"]} == {
+    assert payload["exit_code"] == expected_exit
+    assert [check["name"] for check in payload["checks"]] == [
         "daemon_alive",
         "keychain_readable",
-    }
+    ]
 
 
 def test_gen_inventory_check_fails_on_stale_inventory(

@@ -15,12 +15,12 @@ import pytest
 
 from research_mcp import cli
 from research_mcp.platform import auth
-from research_mcp.platform.secrets import FakeProvider, SecretRef
+from research_mcp.platform.secrets import FakeProvider, SecretRef, SecretState
 from research_mcp.settings import Settings
 from research_mcp.shim import DAEMON_LABEL
 from research_mcp.testing.launchctl import FakeLaunchctl
 
-_PLACEHOLDER = re.compile(r"__[A-Z]+__")
+_PLACEHOLDER = re.compile(r"__[A-Z0-9_]+__")
 
 
 class OfflineSettings(Settings):
@@ -95,6 +95,60 @@ def test_install_generates_daemon_token_only_when_absent(tmp_path: Path) -> None
 
     do_install(settings, provider, tmp_path)
     assert provider.items["DAEMON_TOKEN"] == minted
+
+
+@pytest.mark.parametrize("state", [SecretState.LOCKED, SecretState.ERROR])
+def test_install_never_replaces_a_token_it_cannot_read(tmp_path: Path, state: SecretState) -> None:
+    """@spec PLAT-83: a locked or unreadable Keychain is not an absent token; install
+    fails and leaves the existing DAEMON_TOKEN in place instead of minting a new one."""
+    settings = offline_settings(tmp_path)
+    existing = auth.mint_token()
+    provider = FakeProvider({"DAEMON_TOKEN": existing})
+    provider.states["DAEMON_TOKEN"] = state
+
+    with pytest.raises(cli.InstallError):
+        do_install(settings, provider, tmp_path)
+
+    assert provider.items["DAEMON_TOKEN"] == existing
+
+
+def test_main_install_exits_non_zero_on_a_locked_keychain(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """@spec PLAT-83: `research-mcp install` on a locked Keychain exits 1, loads no job
+    and keeps the existing token."""
+    settings = offline_settings(tmp_path)
+    existing = auth.mint_token()
+    provider = FakeProvider({"DAEMON_TOKEN": existing})
+    provider.states["DAEMON_TOKEN"] = SecretState.LOCKED
+    launchctl = FakeLaunchctl(loaded=False)
+    monkeypatch.setattr(cli, "Settings", lambda: settings)
+    monkeypatch.setattr(cli, "KeychainProvider", lambda _user: provider)
+    monkeypatch.setattr(cli, "SystemLaunchctl", lambda: launchctl)
+    monkeypatch.setattr(cli, "default_agents_dir", lambda: tmp_path / "LaunchAgents")
+
+    exit_code = cli.main(["install"])
+
+    assert exit_code == 1
+    assert provider.items["DAEMON_TOKEN"] == existing
+    assert not [call for call in launchctl.calls if call[0] == "bootstrap"]
+    err = capsys.readouterr().err
+    assert "Keychain" in err
+    assert existing not in err
+
+
+def test_render_plist_fills_home_and_rejects_any_leftover_placeholder(tmp_path: Path) -> None:
+    """@spec PLAT-81: __HOME__ is filled, and a leftover placeholder with digits or
+    underscores in its name still fails the render."""
+    rendered = cli.render_plist(
+        "__VENV__ __LOGS__ __HOME__",
+        venv_root=tmp_path / "v",
+        logs=tmp_path / "l",
+        home=tmp_path / "h",
+    )
+    assert rendered == f"{tmp_path / 'v'} {tmp_path / 'l'} {tmp_path / 'h'}"
+    with pytest.raises(ValueError, match="__LOG_DIR2__"):
+        cli.render_plist("__LOG_DIR2__", venv_root=tmp_path, logs=tmp_path, home=tmp_path)
 
 
 def test_install_print_client_config_has_no_secret(tmp_path: Path) -> None:
