@@ -6,6 +6,11 @@ A personal MCP server for macOS that gives Claude Code, Claude desktop, Codex, a
 
 v2 is a clean rebuild of v1 (`my-research-mcp-server`), which stays read-only until cutover.
 
+[![GitHub release](https://img.shields.io/github/v/release/khillerkb/research-mcp?label=release&color=3b82f6)](https://github.com/khillerkb/research-mcp/releases)
+[![Top language](https://img.shields.io/github/languages/top/khillerkb/research-mcp?label=language&color=84cc16)](https://github.com/khillerkb/research-mcp)
+[![License](https://img.shields.io/github/license/khillerkb/research-mcp?label=license&color=f1f5f9)](LICENSE)
+[![Last commit](https://img.shields.io/github/last-commit/khillerkb/research-mcp?label=last+commit&color=a3e635)](https://github.com/khillerkb/research-mcp/commits/main)
+
 ## Build status
 
 Milestone M0 is in progress. Core, platform (HTTP client, secrets, stores, logging, rate limits, downloader), three source adapters (arXiv, Crossref, OpenAlex), federated search, and the MCP app are built. The daemon process, cache lifecycle, health monitoring, local UI, and migration from v1 are planned for M1 through M4.
