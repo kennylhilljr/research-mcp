@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import sys
 from pathlib import Path
 from typing import Any
 
@@ -12,7 +11,7 @@ import pytest
 from mcp import types
 
 from research_mcp import shim as shim_module
-from research_mcp.platform.secrets import FakeProvider
+from research_mcp.platform.secrets import FakeProvider, SecretState
 from research_mcp.settings import Settings
 from research_mcp.shim import AUTH_FAILED_MESSAGE, Shim
 from research_mcp.testing.clock import FakeClock, FakeSleeper
@@ -76,7 +75,6 @@ async def test_shim_reads_daemon_token_only_from_keychain(
     """@spec SEC-26: the shim sends the Keychain token and ignores decoys outside the Keychain."""
     for name in ("DAEMON_TOKEN", "RESEARCH_MCP_DAEMON_TOKEN", "RESEARCH_MCP_TOKEN", "MCP_TOKEN"):
         monkeypatch.setenv(name, DECOY_TOKEN)
-    monkeypatch.setattr(sys, "argv", ["research-mcp", "stdio", "--token", DECOY_TOKEN])
     monkeypatch.chdir(tmp_path)
     (tmp_path / "DAEMON_TOKEN").write_text(DECOY_TOKEN)
     provider = FakeProvider({"DAEMON_TOKEN": KEYCHAIN_TOKEN}, environ={"DAEMON_TOKEN": DECOY_TOKEN})
@@ -102,11 +100,32 @@ def test_shim_builds_keychain_provider_for_settings_token(monkeypatch: pytest.Mo
     monkeypatch.setattr(shim_module, "KeychainProvider", keychain_provider)
     monkeypatch.setattr(shim_module.getpass, "getuser", lambda: "owner")
 
-    with pytest.raises(ValueError, match="keychain"):
-        OfflineSettings(server={"token": "env:DAEMON_TOKEN"})
     Shim(OfflineSettings())
 
     assert built == ["owner"]
+
+
+@pytest.mark.parametrize("state", [SecretState.MISSING, SecretState.LOCKED])
+async def test_shim_has_no_fallback_when_keychain_has_no_token(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path, state: SecretState
+) -> None:
+    """@spec SEC-26: with no readable Keychain token the shim sends nothing, despite decoys."""
+    for name in ("DAEMON_TOKEN", "RESEARCH_MCP_DAEMON_TOKEN", "RESEARCH_MCP_TOKEN", "MCP_TOKEN"):
+        monkeypatch.setenv(name, DECOY_TOKEN)
+    monkeypatch.chdir(tmp_path)
+    (tmp_path / "DAEMON_TOKEN").write_text(DECOY_TOKEN)
+    provider = FakeProvider(environ={"DAEMON_TOKEN": DECOY_TOKEN})
+    if state is not SecretState.MISSING:
+        provider.items["DAEMON_TOKEN"] = KEYCHAIN_TOKEN
+        provider.states["DAEMON_TOKEN"] = state
+    daemon = Daemon({DECOY_TOKEN})
+
+    reply = await make_shim(provider, daemon).handle(ping(3))
+
+    assert reply is not None and isinstance(reply.root, types.JSONRPCError)
+    assert reply.root.error.data == {"code": "auth_failed", "retryable": False}
+    assert daemon.bearers == []
+    assert keychain_reads(provider)
 
 
 async def test_shim_rereads_keychain_token_once_on_401() -> None:
