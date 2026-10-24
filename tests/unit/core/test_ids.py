@@ -358,9 +358,16 @@ def test_url_unencoded_whitespace(raw: str) -> None:
         ("https://example.org?q=1", "https://example.org?q=1"),
         ("https://example.org/a/b/c/", "https://example.org/a/b/c"),
         ("https://example.org/a/b/c", "https://example.org/a/b/c"),
+        ("https://example.org//", "https://example.org"),
+        ("https://example.org///", "https://example.org"),
+        ("https://example.org/docs//", "https://example.org/docs"),
     ],
 )
 def test_url_trailing_slash(raw: str, expected: str) -> None:
-    """@spec SRCH-38: Trailing slash normalization is idempotent."""
+    """@spec SRCH-38: Trailing slash normalization is idempotent.
+
+    Repeated trailing slashes collapse to the same form as a single one,
+    so a second normalization never changes the result (SRCH-15, SRCH-11).
+    """
     assert ids.normalize_url(raw) == expected
     assert ids.normalize_url(expected) == expected
