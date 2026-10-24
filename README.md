@@ -7,7 +7,10 @@ A personal MCP server for macOS that gives Claude Code, Claude desktop, Codex, a
 v2 is a clean rebuild of v1 (`my-research-mcp-server`), which stays read-only until cutover.
 
 [![GitHub release](https://img.shields.io/github/v/release/khillerkb/research-mcp?label=release&color=3b82f6)](https://github.com/khillerkb/research-mcp/releases)
-[![Top language](https://img.shields.io/github/languages/top/khillerkb/research-mcp?label=language&color=84cc16)](https://github.com/khillerkb/research-mcp)
+[![Python](https://img.shields.io/badge/Python-3.12-3776ab?logo=python&logoColor=white)](https://www.python.org/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![SQLite](https://img.shields.io/badge/SQLite-FTS5%20%2B%20vectors-003b57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Shell](https://img.shields.io/badge/Shell-bash-4eaa25?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
 [![License](https://img.shields.io/github/license/khillerkb/research-mcp?label=license&color=f1f5f9)](LICENSE)
 [![Last commit](https://img.shields.io/github/last-commit/khillerkb/research-mcp?label=last+commit&color=a3e635)](https://github.com/khillerkb/research-mcp/commits/main)
 
