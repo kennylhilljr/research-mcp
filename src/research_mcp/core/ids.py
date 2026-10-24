@@ -155,7 +155,6 @@ def normalize_dspace_uuid(s: str) -> str:
     return _match(s.lower(), r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
 
 
-# @spec SRCH-14
 def normalize_github(s: str) -> str:
     s = _payload(s, ("github",), ("github.com", "www.github.com")).lower().rstrip("/")
     while s.endswith(".git"):
