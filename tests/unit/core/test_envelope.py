@@ -22,6 +22,27 @@ def test_envelope():
     assert ToolResult(data=None).warnings == []
 
 
+def test_source_states_budget_exhausted_and_not_needed():
+    """@spec PLAT-30: Source states include budget_exhausted and not_needed."""
+    budget_exhausted = ToolResult[list[str]](
+        data=[], source_status=[SourceStatus(source="arxiv", state="budget_exhausted")]
+    )
+    wire = json.loads(budget_exhausted.model_dump_json())
+    assert wire["source_status"][0]["state"] == "budget_exhausted"
+
+    not_needed = ToolResult[list[str]](
+        data=[], source_status=[SourceStatus(source="web", state="not_needed")]
+    )
+    wire = json.loads(not_needed.model_dump_json())
+    assert wire["source_status"][0]["state"] == "not_needed"
+
+    schema = ToolResult[list[str]].model_json_schema()
+    source_status_schema = schema["$defs"]["SourceStatus"]
+    state_enum = source_status_schema["properties"]["state"]["enum"]
+    assert "budget_exhausted" in state_enum
+    assert "not_needed" in state_enum
+
+
 def test_errors():
     """@spec PLAT-32: All specified error codes and ToolError fields are available."""
     assert {code.value for code in ErrorCode} == set(

@@ -7,6 +7,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from research_mcp.core.errors import ErrorCode
 
 
+# @spec PLAT-30
 class SourceStatus(BaseModel):
     model_config = ConfigDict(defer_build=True)
 
@@ -20,7 +21,8 @@ class SourceStatus(BaseModel):
         "unconfigured",
         "disabled",
         "skipped_unhealthy",
-        "skipped_budget",
+        "budget_exhausted",
+        "not_needed",
     ]
     count: int = 0
     latency_ms: int | None = None
