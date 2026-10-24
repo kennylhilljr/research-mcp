@@ -155,6 +155,7 @@ def normalize_dspace_uuid(s: str) -> str:
     return _match(s.lower(), r"[0-9a-f]{8}(?:-[0-9a-f]{4}){3}-[0-9a-f]{12}")
 
 
+# @spec SRCH-14
 def normalize_github(s: str) -> str:
     s = _payload(s, ("github",), ("github.com", "www.github.com")).lower().rstrip("/")
     while s.endswith(".git"):
@@ -165,7 +166,7 @@ def normalize_github(s: str) -> str:
     return s
 
 
-# @spec SRCH-13
+# @spec SRCH-13, SRCH-38
 def normalize_url(s: str) -> str:
     s = _text(s)
     if any(c.isspace() for c in s):
@@ -187,7 +188,12 @@ def normalize_url(s: str) -> str:
             for k, v in parse_qsl(url.query, keep_blank_values=True, errors="strict")
             if not k.lower().startswith("utm_") and k.lower() not in {"fbclid", "gclid"}
         ]
-        return urlunsplit((scheme, host, url.path, urlencode(query), ""))
+        path = url.path
+        if path == "/":
+            path = ""
+        elif path.endswith("/"):
+            path = path[:-1]
+        return urlunsplit((scheme, host, path, urlencode(query), ""))
     except (ValueError, UnicodeError) as exc:
         raise IdentifierError("Invalid URL") from exc
 

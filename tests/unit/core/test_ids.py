@@ -122,9 +122,9 @@ def test_canonical_forms(normalizer: Callable[[str], str], raw: str, expected: s
             "HTTPS://Example.ORG:443/Case/Path?utm_source=x&keep=Yes&fbclid=x#frag",
             "https://example.org/Case/Path?keep=Yes",
         ),
-        ("http://EXAMPLE.org:80/?gclid=x&empty=&a=1&a=2", "http://example.org/?empty=&a=1&a=2"),
+        ("http://EXAMPLE.org:80/?gclid=x&empty=&a=1&a=2", "http://example.org?empty=&a=1&a=2"),
         ("https://example.org:8443/A%2Fb", "https://example.org:8443/A%2Fb"),
-        ("http://[::1]:80/", "http://[::1]/"),
+        ("http://[::1]:80/", "http://[::1]"),
         (
             "https://example.org/report?progress=100%25",
             "https://example.org/report?progress=100%25",
@@ -133,7 +133,7 @@ def test_canonical_forms(normalizer: Callable[[str], str], raw: str, expected: s
     ],
 )
 def test_url(raw: str, expected: str) -> None:
-    """@spec SRCH-13: URL normalization preserves path case and meaningful query values."""
+    """@spec SRCH-13, SRCH-38: URL normalization with trailing slash removal."""
     assert ids.normalize_url(raw) == expected
     assert ids.normalize_url(expected) == expected
 
@@ -343,3 +343,24 @@ def test_url_unencoded_whitespace(raw: str) -> None:
     encoded = ids.normalize_url("https://example.org/Case%20?utm_source=x")
     assert encoded == "https://example.org/Case%20"
     assert ids.normalize_url(encoded) == encoded
+
+
+@pytest.mark.parametrize(
+    ("raw", "expected"),
+    [
+        ("https://a.example/docs/", "https://a.example/docs"),
+        ("https://a.example/docs", "https://a.example/docs"),
+        ("https://a.example/", "https://a.example"),
+        ("https://a.example", "https://a.example"),
+        ("https://example.org/docs/?q=1", "https://example.org/docs?q=1"),
+        ("https://example.org/docs?q=1", "https://example.org/docs?q=1"),
+        ("https://example.org/?q=1", "https://example.org?q=1"),
+        ("https://example.org?q=1", "https://example.org?q=1"),
+        ("https://example.org/a/b/c/", "https://example.org/a/b/c"),
+        ("https://example.org/a/b/c", "https://example.org/a/b/c"),
+    ],
+)
+def test_url_trailing_slash(raw: str, expected: str) -> None:
+    """@spec SRCH-38: Trailing slash normalization is idempotent."""
+    assert ids.normalize_url(raw) == expected
+    assert ids.normalize_url(expected) == expected
