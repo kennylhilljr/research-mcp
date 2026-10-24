@@ -90,9 +90,10 @@ async def test_doctor_runs_four_checks_with_fakes(tmp_path: Path) -> None:
 
     async with app.router.lifespan_context(app):
         transport = httpx.ASGITransport(app=app)
-        report = await doctor.run_doctor(
+        runner = doctor.DoctorRunner(
             settings, provider=FakeProvider({"DAEMON_TOKEN": "tok"}), transport=transport
         )
+        report = await runner.run()
 
     assert [c.name for c in report.checks] == [
         "daemon_alive",
@@ -109,12 +110,10 @@ async def test_doctor_liveness_runs_only_two_checks(tmp_path: Path) -> None:
     daemon is reported install_critical."""
     settings = offline_settings(tmp_path)
 
-    report = await doctor.run_doctor(
-        settings,
-        provider=FakeProvider({}),
-        transport=httpx.MockTransport(_fail),
-        liveness=True,
+    runner = doctor.DoctorRunner(
+        settings, provider=FakeProvider({}), transport=httpx.MockTransport(_fail)
     )
+    report = await runner.run(liveness=True)
 
     assert [c.name for c in report.checks] == ["daemon_alive", "keychain_readable"]
     assert report.checks[0].status == "install_critical"
@@ -126,9 +125,10 @@ async def test_doctor_json_output_is_machine_readable(tmp_path: Path) -> None:
     """@spec HLTH-40: --json produces a report that round-trips through json.dumps/loads."""
     settings = offline_settings(tmp_path)
 
-    report = await doctor.run_doctor(
+    runner = doctor.DoctorRunner(
         settings, provider=FakeProvider({}), transport=httpx.MockTransport(_fail)
     )
+    report = await runner.run()
     payload = json.loads(json.dumps(report.to_json()))
 
     assert payload["exit_code"] == 1
@@ -140,8 +140,25 @@ async def test_doctor_json_output_is_machine_readable(tmp_path: Path) -> None:
     }
 
 
+async def test_doctor_reports_db_unreadable_for_a_corrupt_database(tmp_path: Path) -> None:
+    """@spec HLTH-40: a present but corrupt state.db is reported schema_versions
+    install_critical db_unreadable, not an uncaught sqlite3.DatabaseError."""
+    settings = offline_settings(tmp_path, contact={"email": "owner@example.net"})
+    state_db = Path(settings.paths.state_dir) / "state.db"
+    state_db.write_bytes(b"not a sqlite database")
+
+    runner = doctor.DoctorRunner(
+        settings, provider=FakeProvider({}), transport=httpx.MockTransport(_fail)
+    )
+    report = await runner.run()
+
+    schema_check = next(c for c in report.checks if c.name == "schema_versions")
+    assert schema_check.status == "install_critical"
+    assert schema_check.code == "db_unreadable"
+
+
 def test_settings_error_on_a_placeholder_contact_becomes_the_contact_email_check() -> None:
-    """LLD-health-v2 5.9: a settings validation error does not abort doctor; a placeholder
+    """@spec HLTH-40: a settings validation error does not abort doctor; a placeholder
     contact.email becomes the contact_email check, install_critical."""
     with pytest.raises(ValidationError) as exc:
         OfflineSettings(contact={"email": "owner@example.com"})
@@ -151,12 +168,33 @@ def test_settings_error_on_a_placeholder_contact_becomes_the_contact_email_check
 
 
 def test_settings_error_elsewhere_becomes_the_settings_check() -> None:
-    """LLD-health-v2 5.9: a validation error outside contact.email becomes the settings check."""
+    """@spec HLTH-40: a validation error outside contact.email becomes the settings check."""
     with pytest.raises(ValidationError) as exc:
         OfflineSettings(server={"host": "8.8.8.8"})
     check = doctor._settings_check(exc.value)
     assert check.name == "settings"
     assert check.status == "install_critical"
+
+
+def test_main_doctor_wires_json_and_liveness_flags(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """@spec HLTH-40: `research-mcp doctor --json --liveness` wires the flags through
+    main() and _cmd_doctor to DoctorRunner.run, printing a JSON report with an exit code
+    that reflects the dead daemon."""
+    settings = offline_settings(tmp_path)
+    monkeypatch.setattr(doctor, "Settings", lambda: settings)
+    monkeypatch.setattr(doctor, "KeychainProvider", lambda _user: FakeProvider({}))
+
+    exit_code = cli.main(["doctor", "--json", "--liveness"])
+
+    assert exit_code == 1
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["exit_code"] == 1
+    assert {check["name"] for check in payload["checks"]} == {
+        "daemon_alive",
+        "keychain_readable",
+    }
 
 
 def test_gen_inventory_check_fails_on_stale_inventory(

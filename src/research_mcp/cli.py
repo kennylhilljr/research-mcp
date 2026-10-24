@@ -44,8 +44,13 @@ def default_agents_dir() -> Path:
 
 
 def default_venv_root() -> Path:
-    """The venv's root; ``sys.executable`` of the running interpreter is ``<root>/bin/python``."""
-    return Path(sys.executable).resolve().parent.parent
+    """The venv's root (``sys.prefix``).
+
+    ``sys.executable`` is not safe for this: a ``uv``-managed venv's ``bin/python`` is a
+    symlink to a shared base interpreter outside the venv, so resolving it walks past
+    ``<venv>/bin/research-mcp`` entirely. ``sys.prefix`` is always the venv root.
+    """
+    return Path(sys.prefix)
 
 
 def render_plist(text: str, *, venv_root: Path, logs: Path) -> str:
@@ -131,15 +136,6 @@ async def rotate_token(
     return 0
 
 
-def _secrets_list(settings: Settings, provider: SecretProvider) -> int:
-    """Names, fingerprints and states only; never a value (LLD-platform-v2 2.4)."""
-    ref = SecretRef.parse(settings.server.token)
-    state, secret = provider.get(ref)
-    fingerprint = "" if secret is None else secret.fingerprint
-    print(f"{auth.DAEMON_TOKEN}\t{state.value}\t{fingerprint}")
-    return 0
-
-
 def _print_doctor_report(report: doctor_service.DoctorReport, *, as_json: bool) -> None:
     if as_json:
         print(json.dumps(report.to_json()))
@@ -156,7 +152,7 @@ def _print_doctor_report(report: doctor_service.DoctorReport, *, as_json: bool) 
 
 def _cmd_doctor(args: argparse.Namespace) -> int:
     async def run() -> doctor_service.DoctorReport:
-        return await doctor_service.run_doctor(None, liveness=args.liveness, quick=args.quick)
+        return await doctor_service.DoctorRunner().run(liveness=args.liveness, quick=args.quick)
 
     report = anyio.run(run)
     _print_doctor_report(report, as_json=args.json)
@@ -178,12 +174,10 @@ def _cmd_install(args: argparse.Namespace) -> int:
 
 
 def _cmd_secrets(args: argparse.Namespace) -> int:
-    settings = Settings()
-    provider = KeychainProvider(getpass.getuser())
     if args.secrets_command == "rotate-token":
+        settings = Settings()
+        provider = KeychainProvider(getpass.getuser())
         return anyio.run(rotate_token, settings, provider, SystemLaunchctl())
-    if args.secrets_command == "list":
-        return _secrets_list(settings, provider)
     print(f"research-mcp secrets {args.secrets_command}: not yet available in M0", file=sys.stderr)
     return 2
 

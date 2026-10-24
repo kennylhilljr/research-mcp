@@ -6,6 +6,7 @@ import base64
 import json
 import plistlib
 import re
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -147,8 +148,28 @@ def test_rotate_token_skips_the_signal_when_the_daemon_is_not_loaded(tmp_path: P
     assert provider.items["DAEMON_TOKEN"]
 
 
+def test_default_venv_root_does_not_follow_the_python_symlink(
+    monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """@spec PLAT-81, PLAT-82: default_venv_root() is the venv root even when
+    sys.executable's symlink resolves outside it, as it does for a uv-managed venv whose
+    bin/python points at a shared base interpreter."""
+    shared = tmp_path / "shared-interpreters" / "cpython-3.12" / "bin" / "python3.12"
+    shared.parent.mkdir(parents=True)
+    shared.touch()
+    venv_root = tmp_path / "venv"
+    (venv_root / "bin").mkdir(parents=True)
+    venv_python = venv_root / "bin" / "python3.12"
+    venv_python.symlink_to(shared)
+    monkeypatch.setattr(sys, "executable", str(venv_python))
+    monkeypatch.setattr(sys, "prefix", str(venv_root))
+
+    assert cli.default_venv_root() == venv_root
+
+
 def test_load_jobs_boots_out_an_already_loaded_job_first(tmp_path: Path) -> None:
-    """install is idempotent: loading an already-loaded job first removes it (5.9)."""
+    """@spec PLAT-81: install is idempotent: loading an already-loaded job first removes
+    it (5.9)."""
     settings = offline_settings(tmp_path)
     provider = FakeProvider({})
     written = do_install(settings, provider, tmp_path)
@@ -172,3 +193,63 @@ def test_every_plist_label_matches_its_filename(tmp_path: Path, label: str) -> N
     do_install(settings, FakeProvider({}), tmp_path)
     parsed = plistlib.loads((tmp_path / "LaunchAgents" / f"{label}.plist").read_bytes())
     assert parsed["Label"] == label
+
+
+def test_main_install_wires_print_client_config_flag(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """@spec PLAT-81, PLAT-82, PLAT-83: `research-mcp install --print-client-config` wires
+    the flag through main() and _cmd_install to install(), load_jobs() and
+    client_config_json()."""
+    settings = offline_settings(tmp_path)
+    provider = FakeProvider({})
+    launchctl = FakeLaunchctl(loaded=False)
+    agents_dir = tmp_path / "LaunchAgents"
+    monkeypatch.setattr(cli, "Settings", lambda: settings)
+    monkeypatch.setattr(cli, "KeychainProvider", lambda _user: provider)
+    monkeypatch.setattr(cli, "SystemLaunchctl", lambda: launchctl)
+    monkeypatch.setattr(cli, "default_agents_dir", lambda: agents_dir)
+
+    exit_code = cli.main(["install", "--print-client-config"])
+
+    assert exit_code == 0
+    written = {path.name for path in agents_dir.iterdir()}
+    assert written == {
+        "local.research-mcpd.plist",
+        "local.research-mcp-doctor.plist",
+        "local.research-mcp-watchdog.plist",
+    }
+    bootstrapped = {Path(call[1]).name for call in launchctl.calls if call[0] == "bootstrap"}
+    assert bootstrapped == written
+    config = json.loads(capsys.readouterr().out)
+    assert config["mcpServers"]["research"]["args"] == ["stdio"]
+    assert provider.items["DAEMON_TOKEN"] not in json.dumps(config)
+
+
+def test_main_secrets_rotate_token_wires_through(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """@spec PLAT-83, SEC-30: `research-mcp secrets rotate-token` wires through main() and
+    _cmd_secrets to rotate_token(), replacing the stored token and signaling the daemon."""
+    settings = offline_settings(tmp_path)
+    old_token = auth.mint_token()
+    provider = FakeProvider({"DAEMON_TOKEN": old_token})
+    launchctl = FakeLaunchctl(loaded=True)
+    monkeypatch.setattr(cli, "Settings", lambda: settings)
+    monkeypatch.setattr(cli, "KeychainProvider", lambda _user: provider)
+    monkeypatch.setattr(cli, "SystemLaunchctl", lambda: launchctl)
+
+    exit_code = cli.main(["secrets", "rotate-token"])
+
+    assert exit_code == 0
+    assert provider.items["DAEMON_TOKEN"] != old_token
+    assert ("kill", "SIGHUP", DAEMON_LABEL) in launchctl.calls
+
+
+def test_main_secrets_list_is_not_yet_available(capsys: pytest.CaptureFixture[str]) -> None:
+    """secrets list is named only so --help lists the full command table (PLAT-80); it is
+    not built by this unit and must not crash main()."""
+    exit_code = cli.main(["secrets", "list"])
+
+    assert exit_code == 2
+    assert "not yet available" in capsys.readouterr().err

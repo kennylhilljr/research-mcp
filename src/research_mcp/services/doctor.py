@@ -148,8 +148,22 @@ def _contact_email(settings: Settings) -> CheckResult:
     return CheckResult("contact_email", "ok", None, "A contact email is configured.")
 
 
+def _db_unreadable(label: str) -> CheckResult:
+    return CheckResult(
+        "schema_versions",
+        "install_critical",
+        "db_unreadable",
+        f"{label} could not be opened.",
+        "Restore a backup, or reinstall.",
+    )
+
+
 async def _schema_check(label: str, path: Path, migrations: Path) -> CheckResult | None:
-    """``None`` when ``label`` is at the current schema; a result otherwise."""
+    """``None`` when ``label`` is at the current schema; a result otherwise.
+
+    A present-but-corrupt file opens without error (SQLite validates the header lazily);
+    the first ``PRAGMA`` raises ``sqlite3.DatabaseError``, so that call is guarded too.
+    """
     if not await anyio.to_thread.run_sync(path.exists):
         return CheckResult(
             "schema_versions",
@@ -161,18 +175,15 @@ async def _schema_check(label: str, path: Path, migrations: Path) -> CheckResult
     try:
         conn = await aiosqlite.connect(path, isolation_level=None)
     except sqlite3.Error:
-        return CheckResult(
-            "schema_versions",
-            "install_critical",
-            "db_unreadable",
-            f"{label} could not be opened.",
-            "Restore a backup, or reinstall.",
-        )
+        return _db_unreadable(label)
     try:
-        await conn.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
-        cursor = await conn.execute("PRAGMA user_version")
-        row = await cursor.fetchone()
-        await cursor.close()
+        try:
+            await conn.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
+            cursor = await conn.execute("PRAGMA user_version")
+            row = await cursor.fetchone()
+            await cursor.close()
+        except sqlite3.Error:
+            return _db_unreadable(label)
         version = int(row[0]) if row else 0
         latest = Migrator(migrations).latest
         if version != latest:
@@ -204,33 +215,43 @@ async def _schema_versions(settings: Settings) -> CheckResult:
     )
 
 
-# @spec HLTH-40
-async def run_doctor(
-    settings: Settings | None = None,
-    *,
-    provider: SecretProvider | None = None,
-    transport: httpx.AsyncBaseTransport | None = None,
-    liveness: bool = False,
-    quick: bool = False,
-) -> DoctorReport:
-    """Run the M0 doctor checks without the daemon; the keyword arguments are the test seams.
+class DoctorRunner:
+    """Runs the M0 doctor checks without the daemon (LLD-health-v2 5.9).
 
-    ``--liveness`` runs only ``daemon_alive`` and ``keychain_readable``. ``--quick`` skips
-    metered probes; M0 has none, so it changes nothing yet (HLTH-FR-41 arrives in M1).
+    ``settings``, ``provider`` and ``transport`` are the test seams; omitted, ``run``
+    builds the real ``Settings`` and a real ``KeychainProvider``, and probes the real
+    network for ``daemon_alive``.
     """
-    del quick
-    try:
-        resolved = settings or Settings()
-    except ValidationError as exc:
-        return DoctorReport([_settings_check(exc)])
 
-    resolved_provider = provider or KeychainProvider(getpass.getuser())
-    checks = [
-        await _daemon_alive(resolved, transport),
-        _keychain_readable(resolved, resolved_provider),
-    ]
-    if liveness:
+    def __init__(
+        self,
+        settings: Settings | None = None,
+        *,
+        provider: SecretProvider | None = None,
+        transport: httpx.AsyncBaseTransport | None = None,
+    ) -> None:
+        self._settings = settings
+        self._provider = provider
+        self._transport = transport
+
+    # @spec HLTH-40
+    async def run(self, *, liveness: bool = False, quick: bool = False) -> DoctorReport:
+        """``--liveness`` runs only ``daemon_alive`` and ``keychain_readable``. ``--quick``
+        skips metered probes; M0 has none, so it changes nothing yet (HLTH-FR-41 arrives
+        in M1)."""
+        del quick
+        try:
+            settings = self._settings or Settings()
+        except ValidationError as exc:
+            return DoctorReport([_settings_check(exc)])
+
+        provider = self._provider or KeychainProvider(getpass.getuser())
+        checks = [
+            await _daemon_alive(settings, self._transport),
+            _keychain_readable(settings, provider),
+        ]
+        if liveness:
+            return DoctorReport(checks)
+        checks.append(_contact_email(settings))
+        checks.append(await _schema_versions(settings))
         return DoctorReport(checks)
-    checks.append(_contact_email(resolved))
-    checks.append(await _schema_versions(resolved))
-    return DoctorReport(checks)
