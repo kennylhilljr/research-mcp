@@ -215,6 +215,7 @@ class Shim:
         except httpx.HTTPError:
             raise _Unreachable from None
 
+    # @spec SEC-26
     async def _bearer(self) -> dict[str, str]:
         if self._token is None:
             _, secret = await anyio.to_thread.run_sync(self._provider.get, self._ref)

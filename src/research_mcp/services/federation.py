@@ -107,7 +107,7 @@ class FederationService:
             own[source] = value
         return own
 
-    # @spec SRCH-1, SRCH-2, SRCH-3, SRCH-6, SRCH-7, SRCH-8
+    # @spec SRCH-1, SRCH-2, SRCH-3, SRCH-6, SRCH-7, SRCH-8, SRCH-37
     async def search(
         self,
         req: SearchRequest,

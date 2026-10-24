@@ -432,6 +432,27 @@ async def test_auto_skips_unconfigured_disabled_down() -> None:
     assert harness.called() == ["medline"]
 
 
+async def test_auto_skips_rate_limited_sources_and_reports_status() -> None:
+    """@spec SRCH-37: auto skips a rate_limited source and reports it skipped_unhealthy."""
+    harness = Harness()
+    harness.add(spec("ready"), page("ready", "10.1/r"))
+    harness.add(spec("limited"), page("limited", "10.1/l"))
+    harness.health["limited"] = "rate_limited"
+    service = harness.service()
+
+    result = await service.search(SearchRequest(query="q"))
+    assert states(result) == {"ready": "ok", "limited": "skipped_unhealthy"}
+    assert harness.called() == ["ready"]
+    limited = next(s for s in result.statuses if s.source == "limited")
+    assert limited.retry_after_ms is None
+
+    # A source named explicitly that is rate_limited is tried once (SRCH-FR-8).
+    harness.calls.clear()
+    named = await service.search(SearchRequest(query="q"), sources=["limited"])
+    assert states(named) == {"limited": "ok"}
+    assert harness.called() == ["limited"]
+
+
 async def test_search_recording_port() -> None:
     """The search goes to the injected recording port only while record_searches is on.
 
