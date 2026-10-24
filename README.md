@@ -6,6 +6,12 @@ A personal MCP server for macOS that gives Claude Code, Claude desktop, Codex, a
 
 v2 is a clean rebuild of v1 (`my-research-mcp-server`), which stays read-only until cutover.
 
+[![Python](https://img.shields.io/badge/Python-3.12-3776ab?logo=python&logoColor=white)](https://www.python.org/)
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES2022-f7df1e?logo=javascript&logoColor=black)](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
+[![SQLite](https://img.shields.io/badge/SQLite-FTS5%20%2B%20vectors-003b57?logo=sqlite&logoColor=white)](https://www.sqlite.org/)
+[![Shell](https://img.shields.io/badge/Shell-bash-4eaa25?logo=gnubash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![License](https://img.shields.io/badge/license-MIT-green?logo=opensourceinitiative&logoColor=white)](LICENSE)
+
 ## Build status
 
 Milestone M0 is in progress. Core, platform (HTTP client, secrets, stores, logging, rate limits, downloader), three source adapters (arXiv, Crossref, OpenAlex), federated search, and the MCP app are built. The daemon process, cache lifecycle, health monitoring, local UI, and migration from v1 are planned for M1 through M4.
