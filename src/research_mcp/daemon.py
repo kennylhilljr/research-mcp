@@ -84,6 +84,7 @@ def _print_invalid(exc: ValidationError) -> None:
         print(f"research-mcpd: invalid setting {where}: {error['msg']}", file=sys.stderr)
 
 
+# @spec SEC-24
 def main() -> int:
     try:
         settings = Settings()

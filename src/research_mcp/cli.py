@@ -76,7 +76,7 @@ def render_plist(text: str, *, venv_root: Path, logs: Path, home: Path | None = 
     return rendered
 
 
-# @spec PLAT-81, PLAT-83
+# @spec PLAT-81, PLAT-83, SEC-24
 def install(
     settings: Settings,
     *,
