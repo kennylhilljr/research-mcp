@@ -68,8 +68,9 @@ From [scope/scope-map.yaml](scope/scope-map.yaml).
 | Low level design (LLD) | [Security low level design](lld/LLD-security-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Sources low level design](lld/LLD-sources-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Local UI low level design](lld/LLD-ui-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
-| Test strategy | [Research MCP v2 test plan](test/test-plan-v4.md) | v4 | approved | `research-mcp` | docs-archive/test-plan/TEST-PLAN-v3.md | Kenny Hill |
+| Test strategy | [Research MCP v2 test plan](test/test-plan-v5.md) | v5 | draft | `research-mcp` | docs-archive/test-plan/TEST-PLAN-v3.md | Kenny Hill |
 | Plan | [M0 plan: foundations and three sources](build/M0-plan-v4.md) | v4 | approved | `research-mcp` | [SPEC-v5.md](spec/SPEC-v5.md) | Kenny Hill |
+| Handoff | [M0 handoff](build/M0-handoff-v1.md) | v1 | draft | `research-mcp` |  | Kenny Hill |
 | Operations | [Cutover from v1 to v2](runbooks/migration-cutover-v2.md) | v2 | draft | `research-mcp` | [migration-cutover-v1.md](runbooks/migration-cutover-v1.md) | Kenny Hill |
 | Standard | [Persona standard](standards/agent-personas-v2.md) | v2 | draft |  |  | Framework owner |
 | Standard | [Spec-driven development standard](standards/spec-driven-development-v3.md) | v3 | in-review |  |  | Framework owner |
