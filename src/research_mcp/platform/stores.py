@@ -15,6 +15,7 @@ from contextlib import asynccontextmanager
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any, Literal, Self
+from urllib.parse import quote
 
 import aiosqlite
 from pydantic import BaseModel, ConfigDict, field_validator
@@ -74,6 +75,18 @@ async def _scalar(conn: aiosqlite.Connection, sql: str) -> Any:
     row = await cursor.fetchone()
     await cursor.close()
     return None if row is None else row[0]
+
+
+async def read_schema_version(path: Path) -> int:
+    """``PRAGMA user_version`` of ``path``, opened read-only with the busy timeout and no
+    migration, for ``doctor`` (LLD-health-v2 5.9). An unreadable file raises ``sqlite3.Error``."""
+    uri = f"file:{quote(str(path))}?mode=ro"
+    conn = await aiosqlite.connect(uri, uri=True, isolation_level=None)
+    try:
+        await _run(conn, f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
+        return int(await _scalar(conn, "PRAGMA user_version") or 0)
+    finally:
+        await conn.close()
 
 
 class Migrator:

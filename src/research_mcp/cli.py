@@ -19,9 +19,11 @@ from collections.abc import Callable, Sequence
 from pathlib import Path
 
 import anyio
+from pydantic import ValidationError
 
 from research_mcp import daemon, shim
 from research_mcp.platform import auth
+from research_mcp.platform.logging import configure_logging
 from research_mcp.platform.secrets import (
     KeychainProvider,
     SecretProvider,
@@ -172,9 +174,23 @@ def _print_doctor_report(report: doctor_service.DoctorReport, *, as_json: bool) 
             print(f"  fix: {check.fix}")
 
 
+def _settings() -> Settings:
+    """Load ``Settings`` and install the redacting log handlers before any work
+    (LLD-platform-v2 4.3: ``configure_logging`` is called by ``daemon.py`` and ``cli.py``)."""
+    settings = Settings()
+    configure_logging(settings)
+    return settings
+
+
 def _cmd_doctor(args: argparse.Namespace) -> int:
+    try:
+        settings: Settings | None = _settings()
+    except ValidationError:
+        settings = None  # DoctorRunner reports the error as a check (LLD-health-v2 5.9)
+
     async def run() -> doctor_service.DoctorReport:
-        return await doctor_service.DoctorRunner().run(liveness=args.liveness, quick=args.quick)
+        runner = doctor_service.DoctorRunner(settings)
+        return await runner.run(liveness=args.liveness, quick=args.quick)
 
     report = anyio.run(run)
     _print_doctor_report(report, as_json=args.json)
@@ -185,7 +201,7 @@ def _cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def _cmd_install(args: argparse.Namespace) -> int:
-    settings = Settings()
+    settings = _settings()
     provider = KeychainProvider(getpass.getuser())
     launchctl = SystemLaunchctl()
     try:
@@ -201,7 +217,7 @@ def _cmd_install(args: argparse.Namespace) -> int:
 
 def _cmd_secrets(args: argparse.Namespace) -> int:
     if args.secrets_command == "rotate-token":
-        settings = Settings()
+        settings = _settings()
         provider = KeychainProvider(getpass.getuser())
         return anyio.run(rotate_token, settings, provider, SystemLaunchctl())
     print(f"research-mcp secrets {args.secrets_command}: not yet available in M0", file=sys.stderr)
@@ -213,7 +229,7 @@ def _cmd_serve(_args: argparse.Namespace) -> int:
 
 
 def _cmd_stdio(_args: argparse.Namespace) -> int:
-    return shim.main(Settings())
+    return shim.main(_settings())
 
 
 def _unavailable(name: str) -> Callable[[argparse.Namespace], int]:

@@ -14,7 +14,6 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Any, Literal
 
-import aiosqlite
 import anyio
 import httpx
 from pydantic import ValidationError
@@ -26,10 +25,10 @@ from research_mcp.platform.secrets import (
     SecretState,
 )
 from research_mcp.platform.stores import (
-    BUSY_TIMEOUT_MS,
     CACHE_MIGRATIONS,
     STATE_MIGRATIONS,
     Migrator,
+    read_schema_version,
 )
 from research_mcp.settings import Settings
 
@@ -161,8 +160,8 @@ def _db_unreadable(label: str) -> CheckResult:
 async def _schema_check(label: str, path: Path, migrations: Path) -> CheckResult | None:
     """``None`` when ``label`` is at the current schema; a result otherwise.
 
-    A present-but-corrupt file opens without error (SQLite validates the header lazily);
-    the first ``PRAGMA`` raises ``sqlite3.DatabaseError``, so that call is guarded too.
+    The store reads the version read-only with no migration; a corrupt file raises
+    ``sqlite3.DatabaseError`` from the first ``PRAGMA`` and becomes ``db_unreadable``.
     """
     if not await anyio.to_thread.run_sync(path.exists):
         return CheckResult(
@@ -173,29 +172,18 @@ async def _schema_check(label: str, path: Path, migrations: Path) -> CheckResult
             "Run `research-mcp install` and start the daemon.",
         )
     try:
-        conn = await aiosqlite.connect(path, isolation_level=None)
+        version = await read_schema_version(path)
     except sqlite3.Error:
         return _db_unreadable(label)
-    try:
-        try:
-            await conn.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
-            cursor = await conn.execute("PRAGMA user_version")
-            row = await cursor.fetchone()
-            await cursor.close()
-        except sqlite3.Error:
-            return _db_unreadable(label)
-        version = int(row[0]) if row else 0
-        latest = Migrator(migrations).latest
-        if version != latest:
-            return CheckResult(
-                "schema_versions",
-                "install_critical",
-                "migration_failed",
-                f"{label} is at schema {version}, expected {latest}.",
-                "Run `research-mcp upgrade`, or restart the daemon.",
-            )
-    finally:
-        await conn.close()
+    latest = Migrator(migrations).latest
+    if version != latest:
+        return CheckResult(
+            "schema_versions",
+            "install_critical",
+            "migration_failed",
+            f"{label} is at schema {version}, expected {latest}.",
+            "Run `research-mcp upgrade`, or restart the daemon.",
+        )
     return None
 
 

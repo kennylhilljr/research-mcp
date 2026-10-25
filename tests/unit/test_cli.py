@@ -5,11 +5,13 @@ from __future__ import annotations
 import importlib.util
 import json
 import re
+import sqlite3
 import sys
 from pathlib import Path
 from types import ModuleType
 from typing import Any
 
+import anyio
 import httpx
 import pytest
 from pydantic import ValidationError
@@ -203,10 +205,11 @@ def test_main_doctor_wires_json_and_liveness_flags(
     loopback port, so a daemon running on the machine cannot change the result."""
     settings = offline_settings(tmp_path)
     real_runner = doctor.DoctorRunner
+    monkeypatch.setattr(cli, "Settings", lambda: settings)
     monkeypatch.setattr(
         doctor,
         "DoctorRunner",
-        lambda: real_runner(
+        lambda _settings: real_runner(
             settings, provider=FakeProvider({}), transport=httpx.MockTransport(handler)
         ),
     )
@@ -236,3 +239,68 @@ def test_gen_inventory_check_fails_on_stale_inventory(
 
     committed.write_text(module.render(), encoding="utf-8")
     assert module.main(["--check"]) == 0
+
+
+async def test_doctor_reads_the_schema_through_the_store_read_only(tmp_path: Path) -> None:
+    """@spec HLTH-40: doctor reads PRAGMA user_version through platform.stores, opening the
+    file read-only with no migration, so an old state.db is reported and left untouched
+    (architect drift finding, rm-m0f; LLD-platform-v2 5.1, LLD-health-v2 5.9)."""
+    settings = offline_settings(tmp_path, contact={"email": "owner@example.net"})
+    state_db = Path(settings.paths.state_dir) / "state.db"
+    with sqlite3.connect(state_db) as conn:
+        conn.execute("PRAGMA user_version = 0")
+        conn.execute("CREATE TABLE marker (x)")
+    before = state_db.read_bytes()
+
+    runner = doctor.DoctorRunner(
+        settings, provider=FakeProvider({}), transport=httpx.MockTransport(_fail)
+    )
+    report = await runner.run()
+
+    schema_check = next(c for c in report.checks if c.name == "schema_versions")
+    assert schema_check.code == "migration_failed"
+    assert state_db.read_bytes() == before
+    assert not await anyio.Path(f"{state_db}-wal").exists()
+    assert "aiosqlite" not in vars(doctor)
+
+
+@pytest.mark.parametrize(
+    "argv",
+    [["install"], ["doctor"], ["secrets", "rotate-token"], ["stdio"]],
+)
+def test_cli_commands_install_the_redacting_log_handlers_first(
+    argv: list[str], tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """@spec PLAT-40: install, doctor, secrets rotate-token and stdio call
+    configure_logging(settings) before their work, so their log records pass the
+    redacting filter (architect drift finding, rm-m0f; LLD-platform-v2 4.3)."""
+    settings = offline_settings(tmp_path, contact={"email": "owner@example.net"})
+    events: list[str] = []
+
+    def fake_configure(given: Settings, **_kw: Any) -> None:
+        assert given is settings
+        events.append("logging")
+
+    def work(*_a: Any, **_kw: Any) -> Any:
+        events.append("work")
+        raise cli.InstallError("stop")
+
+    async def async_work(*_a: Any, **_kw: Any) -> Any:
+        events.append("work")
+        return doctor.DoctorReport([])
+
+    monkeypatch.setattr(cli, "Settings", lambda: settings)
+    monkeypatch.setattr(cli, "configure_logging", fake_configure)
+    monkeypatch.setattr(cli, "install", work)
+    monkeypatch.setattr(cli, "rotate_token", lambda *_a: events.append("work") or 0)
+    real_run = anyio.run
+    monkeypatch.setattr(cli.anyio, "run", lambda fn, *a: fn(*a) if a else real_run(fn))
+    monkeypatch.setattr(cli.shim, "main", lambda _s: events.append("work") or 0)
+    monkeypatch.setattr(cli.doctor_service.DoctorRunner, "run", async_work)
+    monkeypatch.setattr(cli, "_print_doctor_report", lambda *_a, **_kw: None)
+    monkeypatch.setattr(cli, "KeychainProvider", lambda *_a: None)
+    monkeypatch.setattr(cli, "SystemLaunchctl", lambda: None)
+
+    cli.main(argv)
+
+    assert events[:2] == ["logging", "work"]
