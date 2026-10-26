@@ -27,7 +27,7 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 - **The LLDs own every name.** Code follows them. If an LLD is wrong or contradicts a PRD or the test plan, do not pick a side: record the conflict in your handoff and build everything it does not touch.
 - **Clarifications from the first M0 attempt** (marked "SPEC-v2 0.6" in the LLDs and listed in the M0 plan) are requirements.
 - **Docs are versioned.** To change one, add the next `-vN` file and update links; never edit an earlier version, and never edit an approved one. `docs-archive/` holds the superseded originals (PRD v4, HLD v3, SPEC v1 and v2, TEST-PLAN v3, the migration doc and the design review); it is read-only history.
-- **Generated files** are never edited by hand; run their generators: `.orchestration/plan-m0.json` (`tools/gen_m0_plan.py`), `docs/README.md` doc map (`node tools/sdd/cli.mjs docmap`), `docs/guide/catalog.md` (`node tools/sdd/cli.mjs catalog`), `docs/trace/coverage.md` (`node tools/trace-check/trace-check.mjs --write`), `docs/generated/*`.
+- **Generated files** are never edited by hand; run their generators: `.orchestration/plan-m0.json` and `plan-m1.json` (`tools/gen_m0_plan.py`), `docs/README.md` doc map (`node tools/sdd/cli.mjs docmap`), `docs/guide/catalog.md` (`node tools/sdd/cli.mjs catalog`), `docs/trace/coverage.md` (`node tools/trace-check/trace-check.mjs --write`), `docs/generated/*`.
 
 ## Three separate concepts
 
@@ -125,7 +125,7 @@ The team's practices evolve during a build (TEAM-DELIVERY v7). Every reviewer, t
 uv sync --frozen
 tools/ci.sh --python-only               # lint, types, tests, generator checks, SDD checks
 uv run pytest -q
-python3 tools/gen_m0_plan.py            # after changing the task table in docs/build/M0-plan-v4.md
+python3 tools/gen_m0_plan.py            # after changing the task table in docs/build/M0-plan-v4.md or M1-plan-v1.md
 node tools/sdd/cli.mjs check            # spec-lint and trace-check
 node tools/sdd/cli.mjs docmap           # after adding or versioning a document
 node tools/sdd/cli.mjs new --next <path>  # the next version of a document
