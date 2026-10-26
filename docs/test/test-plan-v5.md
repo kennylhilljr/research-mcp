@@ -2,7 +2,9 @@
 title: "Research MCP v2 test plan"
 type: test-plan
 version: 5
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-25
 supersedes: docs/test/test-plan-v4.md
 owner: "Kenny Hill"
 artifact_type: test-strategy

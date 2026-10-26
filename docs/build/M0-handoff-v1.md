@@ -54,7 +54,6 @@ The record of what M0 built and the evidence that it works, written after the pr
 
 | Item | Type | Severity or priority |
 | --- | --- | --- |
-| Approve test plan v5, then point `sdd.config.json`, `AGENTS.md`, `README.md` and `.orchestration/team.json` at it | owner approval | blocks the M0 review |
 | Run and record OC-01 and OC-02 | owner check | blocks the M0 review |
 | Decide each minor drift finding of the architect (redact.py `reveal`, `normalize_url` trailing slashes, `build_app` seams, SecretCache load location, jobs and scheduler layer, `/api/status` fields, `log_rotate` schedule, README) | owner decision | minor |
 | Correct LLD-sources-v2 5.2 selection row 8 (`skipped_unhealthy` for `rate_limited` under `auto`) | LLD correction | minor |

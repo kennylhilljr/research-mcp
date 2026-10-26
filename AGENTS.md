@@ -20,7 +20,7 @@ Framework: spec-driven development (SDD) 1.1.0 ([ADR 0013](docs/adr/0013-adopt-s
 | Component PRDs | [docs/prd/components/](docs/prd/components/) | Requirements `<PREFIX>-FR-n` and acceptance criteria `<PREFIX>-n` (PLAT, SEC, SRC, SRCH, CACHE, HLTH, UI, MIG) |
 | SPEC (system high level design) | [docs/spec/SPEC-v5.md](docs/spec/SPEC-v5.md) and [docs/adr/](docs/adr/) | The shape of the system and its decisions |
 | LLDs, one per component | [docs/lld/](docs/lld/) | Every name (modules, classes, functions, tables, columns, settings keys, Keychain items, routes, error codes), every interface and format |
-| Test plan | [docs/test/test-plan-v4.md](docs/test/test-plan-v4.md) | How each criterion is verified; owner checks; milestone exit gates |
+| Test plan | [docs/test/test-plan-v5.md](docs/test/test-plan-v5.md) | How each criterion is verified; owner checks; milestone exit gates |
 | Milestone plan | [docs/build/M0-plan-v4.md](docs/build/M0-plan-v4.md) | Work units, their criteria, scope and dependencies |
 | Runbooks and contracts | [docs/runbooks/](docs/runbooks/), [docs/contracts/](docs/contracts/) | Operating steps; the MCP prompt texts |
 
