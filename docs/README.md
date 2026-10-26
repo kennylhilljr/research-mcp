@@ -61,12 +61,12 @@ From [scope/scope-map.yaml](scope/scope-map.yaml).
 | Product specification (component PRD) | [Local UI](prd/components/PRD-ui-v4.md) | v4 | approved | `research-mcp` | [PRD-v7.md](prd/PRD-v7.md) | Kenny Hill |
 | High level design (SPEC) | [Research MCP v2 system design](spec/SPEC-v5.md) | v5 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Retrieval and Cache low level design](lld/LLD-cache-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
-| Low level design (LLD) | [Health, Credentials and Notifications low level design](lld/LLD-health-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
+| Low level design (LLD) | [Health, Credentials and Notifications low level design](lld/LLD-health-v3.md) | v3 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Migration and Cutover low level design](lld/LLD-migration-v2.md) | v2 | approved | `research-mcp` | [LLD-migration-v1.md](lld/LLD-migration-v1.md) | Kenny Hill |
-| Low level design (LLD) | [Platform and Security low level design](lld/LLD-platform-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
-| Low level design (LLD) | [Search and Identity low level design](lld/LLD-search-v2.md) | v2 | approved | `research-mcp` | [LLD-search-v1.md](lld/LLD-search-v1.md) | Kenny Hill |
+| Low level design (LLD) | [Platform and Security low level design](lld/LLD-platform-v3.md) | v3 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
+| Low level design (LLD) | [Search and Identity low level design](lld/LLD-search-v3.md) | v3 | draft | `research-mcp` | [LLD-search-v1.md](lld/LLD-search-v1.md) | Kenny Hill |
 | Low level design (LLD) | [Security low level design](lld/LLD-security-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
-| Low level design (LLD) | [Sources low level design](lld/LLD-sources-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
+| Low level design (LLD) | [Sources low level design](lld/LLD-sources-v3.md) | v3 | draft | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Low level design (LLD) | [Local UI low level design](lld/LLD-ui-v2.md) | v2 | approved | `research-mcp` | docs-archive/spec/SPEC-v2.md | Kenny Hill |
 | Test strategy | [Research MCP v2 test plan](test/test-plan-v5.md) | v5 | approved | `research-mcp` | docs-archive/test-plan/TEST-PLAN-v3.md | Kenny Hill |
 | Plan | [M0 plan: foundations and three sources](build/M0-plan-v4.md) | v4 | approved | `research-mcp` | [SPEC-v5.md](spec/SPEC-v5.md) | Kenny Hill |
