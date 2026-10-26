@@ -48,12 +48,33 @@ The record of what M0 built and the evidence that it works, written after the pr
 
 *Left for the verifier and the product owners in the next milestone review.*
 
+## Owner decisions on the architect's drift findings
+
+> **Owner:** A · **Persona:** `implementer`
+
+The owner decided each open drift finding of the `rm-m0f` architect report on 2026-10-25.
+
+| Finding | Decision | Where it lands |
+| --- | --- | --- |
+| (major) `services/doctor.py` builds its own `httpx.AsyncClient` for `/healthz`, while LLD-health-v2 5.9 says doctor builds an `HttpClient` | Keep `httpx.AsyncClient` for the loopback `/healthz` check, as LLD-platform-v2 5.1 allows and the shim does. `HttpClient` is the port for upstream sources: it allows only listed hosts and retries three times, which breaks doctor's 3 s liveness budget. Doctor builds an `HttpClient` in M1, when it gains source probes. The SQLite part of this finding was fixed in `7317a7e`. | LLD-health-v2 next version: 5.9 says the `HttpClient` serves the source probes |
+| `platform/redact.py` calls `Secret.reveal()` | Code stands: the redactor must hold the revealed value to mask it (LLD-platform-v2 4.3). | LLD-platform-v2 next version: 4.1 and PLAT-FR-11 name `redact.py` among the callers of `reveal` |
+| `core/ids.py` `normalize_url` strips every trailing slash | Code stands: removing one slash is not idempotent (SRCH-15). | LLD-search-v2 next version: 5.2 says every trailing slash |
+| `SecretCache` is built and loaded in the `build_app` lifespan | Code stands: it follows LLD-platform-v2 2.3. | LLD-platform-v2 next version: 5.10 step 5 matches 2.3 |
+| `jobs.py` and `scheduler.py` sit in `platform/` | Code stands: it matches the layout in LLD-platform-v2 5.1. | SPEC-v5 3 and LLD-platform-v2 5.2 layer diagrams, next versions |
+| `build_app` redactor seam; `launchctl` typed `Any` | Keep the redactor seam; type `launchctl` as `LaunchctlPort`. | M1 follow-up (code) and LLD-platform-v2 2.3 |
+| `log_rotate` runs at start only when overdue | Run it every 15 minutes and once at start, as LLD-platform-v2 5.10 says. | M1 follow-up (code) |
+| README out of date (clients over stdio or HTTP, `token_keychain`, daemon and install "planned") | Update the README. | M1 follow-up (docs) |
+| `/api/status` returns fewer fields than LLD-platform-v2 4.5 | Deferred: credential metadata, quotas, cache stats, disk, archive target and notifications arrive with their components in M1 and M2. | M1 and M2 plans |
+
 ## Follow-ups
 
 > **Owner:** A · **Persona:** `implementer`
 
 | Item | Type | Severity or priority |
 | --- | --- | --- |
-| Decide each minor drift finding of the architect (redact.py `reveal`, `normalize_url` trailing slashes, `build_app` seams, SecretCache load location, jobs and scheduler layer, `/api/status` fields, `log_rotate` schedule, README) | owner decision | minor |
+| Type `launchctl` as `LaunchctlPort` in `build_app` | code | minor, M1 |
+| `log_rotate` every 15 minutes and once at start | code | minor, M1 |
+| Update the README (shim-only clients, no `token_keychain`, daemon and install built) | docs | minor, M1 |
+| LLD corrections from the owner decisions above (LLD-health-v2 5.9, LLD-platform-v2 2.3, 4.1, 5.10, 5.2, LLD-search-v2 5.2, SPEC-v5 3) | LLD correction | minor, next versions |
 | Correct LLD-sources-v2 5.2 selection row 8 (`skipped_unhealthy` for `rate_limited` under `auto`) | LLD correction | minor |
 | SPEC-v5 sections 14 and 17 still link M0 plan v1 | doc correction | minor |
