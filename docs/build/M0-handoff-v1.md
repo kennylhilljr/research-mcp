@@ -11,7 +11,7 @@ date: 2026-10-25
 
 # M0 handoff (v1)
 
-The record of what M0 built and the evidence that it works, written after the product owners rejected the first milestone review of ECC run `rm-m0f` (report `rm-m0f-M0-product-v1.md` under the ECC state folder). It answers the findings of that report that can be answered in the repository. The owner checks OC-01 and OC-02 are run on the owner's Mac and recorded below when done.
+The record of what M0 built and the evidence that it works, written after the product owners rejected the first milestone review of ECC run `rm-m0f` (report `rm-m0f-M0-product-v1.md` under the ECC state folder). It answers the findings of that report that can be answered in the repository. The owner ran the owner checks OC-01 and OC-02 on his Mac on 2026-10-25; the results are below.
 
 ## What changed
 
@@ -39,8 +39,8 @@ The record of what M0 built and the evidence that it works, written after the pr
 | Criteria passing, failing, deferred or excepted | Every criterion in the task table has a passing test that cites it. Deferred by the plan: SRCH-34 (M1; M0-13 records searches through a no-op port). |
 | Code review (reviewer, link) | Each unit was reviewed by the ECC persona panel (pr_reviewer, security_reviewer, architect where the risk required it) and verified by the verifier; the per-unit record is in the product report's retrospective. |
 | M0-22 verifier verdict | Recorded `inconclusive` in `rm-m0f` only because the verifier's sandbox refused to run `node tools/sdd/cli.mjs check`. Its other checks passed, including two decoy experiments: the shim sends only the Keychain token, and with no Keychain item it sends nothing and returns `auth_failed`. Re-checked here: `tests/unit/test_shim.py` and `tests/security/test_no_secret_at_rest.py` pass (7 tests), and the SDD check passes inside the full CI run above. |
-| Owner check OC-01 (install, doctor green, a client searches three sources through the shim) | Not run yet. |
-| Owner check OC-02 (the daemon reads every Keychain item with no prompt; doctor shows each credential state) | Not run yet. |
+| Owner check OC-01 (install, doctor green, a client searches three sources through the shim) | Passed, 2026-10-25, owner's Mac, `main` at `640fbb8`. `research-mcp install` wrote the launchd jobs; with `contact.email` set in `~/.config/research-mcp/config.toml`, `research-mcp doctor` reported `daemon_alive`, `keychain_readable`, `contact_email` and `schema_versions` all `ok` (exit 0). Claude Code, registered with `claude mcp add research -- <venv>/bin/research-mcp stdio`, searched "graph neural networks" through the shim: `source_status` arxiv `ok` (10 results, 2227 ms), crossref `ok` (10, 676 ms), openalex `ok` (10, 1203 ms). |
+| Owner check OC-02 (the daemon reads every Keychain item with no prompt; doctor shows each credential state) | Passed, 2026-10-25, owner's Mac. After `launchctl kickstart -k gui/$UID/local.research-mcpd` the daemon restarted and read `DAEMON_TOKEN`, the only Keychain item in M0, with no Keychain prompt; `/healthz` answered 200, `daemon.err.log` stayed empty, and doctor reported `keychain_readable: ok`. Owner decision (2026-10-25): in M0, `keychain_readable` is the credential state doctor shows, because `DAEMON_TOKEN` is the only credential; the per-credential checks (`credential:<NAME>`) arrive with the credential service in M1, as LLD-health-v2 5.9 schedules them. |
 
 ## Verification
 
@@ -54,7 +54,6 @@ The record of what M0 built and the evidence that it works, written after the pr
 
 | Item | Type | Severity or priority |
 | --- | --- | --- |
-| Run and record OC-01 and OC-02 | owner check | blocks the M0 review |
 | Decide each minor drift finding of the architect (redact.py `reveal`, `normalize_url` trailing slashes, `build_app` seams, SecretCache load location, jobs and scheduler layer, `/api/status` fields, `log_rotate` schedule, README) | owner decision | minor |
 | Correct LLD-sources-v2 5.2 selection row 8 (`skipped_unhealthy` for `rate_limited` under `auto`) | LLD correction | minor |
 | SPEC-v5 sections 14 and 17 still link M0 plan v1 | doc correction | minor |
