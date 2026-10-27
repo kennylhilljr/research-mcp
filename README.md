@@ -196,7 +196,8 @@ The project follows spec-driven development. Every design decision has a numbere
 | [SPEC v5](docs/spec/SPEC-v5.md) | System high-level design |
 | [LLDs](docs/lld/) | Build contracts: names, interfaces, schemas, behavior |
 | [Test plan v5](docs/test/test-plan-v5.md) | How each criterion is verified; exit gates |
-| [M0 plan v4](docs/build/M0-plan-v4.md) | Work units and dependencies for milestone 0 |
+| [M1 plan v1](docs/build/M1-plan-v1.md) | Work units and dependencies for milestone 1 |
+| [M0 plan v4](docs/build/M0-plan-v4.md) | Work units and dependencies for milestone 0 (done) |
 | [ADRs](docs/adr/) | Architecture decisions |
 | [Doc map](docs/README.md) | Index of all documents with status |
 

@@ -3,7 +3,9 @@ title: "Health, Credentials and Notifications low level design"
 type: lld
 version: 3
 supersedes: docs/lld/LLD-health-v2.md
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-27
 owner: "Kenny Hill"
 prefix: HLTH
 component: health
@@ -19,7 +21,7 @@ date: 2026-10-22
 
 This LLD carries over SPEC-v2 section 10 (10.1 to 10.5) and SPEC-v5 section 7. Names are copied from SPEC-v2 unchanged unless section 10 renames one. Requirements and criteria: [PRD-health v4](../prd/components/PRD-health-v4.md). System design: [SPEC-v5](../spec/SPEC-v5.md). Cross-cutting security: [PRD-security v3](../prd/components/PRD-security-v3.md) and [LLD-security v2](LLD-security-v2.md) (draft). Platform parts this LLD consumes: [LLD-platform v2](LLD-platform-v2.md) (draft). Test plan: [test plan v4](../test/test-plan-v4.md) (draft). Machine-readable contract: [health status, doctor output and webhook payload v1](../contracts/health-status-and-webhook-v1.md) (draft for the owner). Supersedes [LLD-health v1](LLD-health-v1.md).
 
-**Changes in v3** (draft, 2026-10-26). 5.9 records the owner's decision on the M0 drift finding about `doctor` (M0 handoff, 2026-10-25): the loopback `/healthz` check uses a plain `httpx.AsyncClient` within its 3 s budget, the `HttpClient` serves the source probes, and the schema check reads through the store, read-only.
+**Changes in v3** (approved 2026-10-27). 5.9 records the owner's decision on the M0 drift finding about `doctor` (M0 handoff, 2026-10-25): the loopback `/healthz` check uses a plain `httpx.AsyncClient` within its 3 s budget, the `HttpClient` serves the source probes, and the schema check reads through the store, read-only.
 
 **Changes in v2.** This version follows the approved PRD-health v4 and SPEC-v4, which win wherever v1 disagreed. History note: `skipped_budget` is now `budget_exhausted` and the `web` fallback adds `not_needed` (SRCH-FR-27); v1 cited the earlier IDs FR-HLTH-04, PLAT-39 and SRC-8 in places, which now use the current IDs. Added: HLTH-43 and HLTH-44 in the criteria (1, 9); the source and credential state rules as executable algorithms with the pure function `evaluate_source` (5.5, 5.7); the probe scheduler, passive evidence and the telemetry rollup (5.3, 5.4); the local targets (5.6); the notification rules (5.8): dedupe keys, quiet hours, the digest, the banner feed, snooze, argv and shell safety, and the webhook through the HTTP layer; `doctor` severities, `--quick`, `--notify` memory and the milestone split (5.9); readiness (5.10); the machine-readable contract. The twelve open questions of v1 are settled in section 10 from the approved sources; the two that the sources left to the owner were answered on 2026-10-22 (the account email column and what is critical) and no question is open in section 11.
 

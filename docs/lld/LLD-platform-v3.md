@@ -2,7 +2,9 @@
 title: "Platform and Security low level design"
 type: lld
 version: 3
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-27
 owner: "Kenny Hill"
 prefix: PLAT
 component: platform
@@ -19,7 +21,7 @@ date: 2026-10-22
 
 This LLD carries over SPEC-v2 sections 1 (conventions and layout), 2 (settings and paths), 3.1 to 3.7 (secrets, Google sign-in, redaction and logging, HTTP client, downloader, stores and migrations, workers and jobs, errors and the envelope), 7.4 (MCP transport), 12.1 (packaging and CI) and 12.2 (launchd, install and upgrade), with HLD-v3 sections 3, 10 and 12 for context. Names are unchanged from SPEC-v2 unless a decision in section 10 renames one. Requirements and criteria are in [PRD-platform v4](../prd/components/PRD-platform-v4.md); the system design is [SPEC-v5](../spec/SPEC-v5.md); the security component's requirements are in [PRD-security v3](../prd/components/PRD-security-v3.md) and the test strategy is [test plan v4](../test/test-plan-v4.md) (draft). Supersedes [LLD-platform v1](LLD-platform-v1.md). The machine-readable contract is [envelope and error codes v1](../contracts/envelope-and-errors-v1.md) (draft).
 
-**Changes in v3** (draft, 2026-10-26). This version records the owner's decisions on the drift findings of the M0 run (M0 handoff, 2026-10-25), where the code was right and v2 was not: `platform/redact.py` is among the callers of `Secret.reveal()`, because the `Redactor` must hold revealed values to mask them (4.1, 4.3); `build_app` takes a `redactor` seam that the daemon passes, and `launchctl` is a `LaunchctlPort` (2.3); `SecretCache` is built and loaded in the `build_app` lifespan, as 2.3 already said, so 5.10 now agrees; and `jobs` and `scheduler` sit in the platform layer, matching the layout in 5.1 (5.2).
+**Changes in v3** (approved 2026-10-27). This version records the owner's decisions on the drift findings of the M0 run (M0 handoff, 2026-10-25), where the code was right and v2 was not: `platform/redact.py` is among the callers of `Secret.reveal()`, because the `Redactor` must hold revealed values to mask them (4.1, 4.3); `build_app` takes a `redactor` seam that the daemon passes, and `launchctl` is a `LaunchctlPort` (2.3); `SecretCache` is built and loaded in the `build_app` lifespan, as 2.3 already said, so 5.10 now agrees; and `jobs` and `scheduler` sit in the platform layer, matching the layout in 5.1 (5.2).
 
 **Changes in v2.** This version follows the approved PRD-platform v4, SPEC-v4 and PRD-security v2, which win wherever v1 disagreed. History note: PLAT-FR-16 is replaced by PLAT-FR-59 (the daemon token rotates only from the CLI, owner decision, 2026-10-22); SRC-FR-11 by SRC-FR-24; SRCH-FR-4 and SRCH-FR-10 by SRCH-FR-27 and SRCH-FR-28; MIG-FR-23 by MIG-FR-25; the source state `skipped_budget` is now `budget_exhausted`, and the `web` fallback adds `not_needed`. Added: PLAT-FR-40 as 5 files of 10 MB with the `daemon.err.log` rotation that SPEC-v4 12 hands to this LLD (4.3, 5.10), PLAT-FR-57 as 7 nightly backups (3.3), PLAT-84 (1, 9), the platform side of SEC-INV-1 to SEC-INV-11 (4.7), the enforcement points of SEC-24 and SEC-26 (4.7), the stdio-shim-only client rule (5.7), the SIGHUP handler (5.10) and the user agent without a contact (5.3). The open questions of v1 are settled in section 10 from the approved sources; the two that the sources left open were answered by the owner on 2026-10-22 (3.3, 4.5, 9), and section 11 holds no open question. The owner also answered the questions of LLD-security v2 that touch this LLD: the single auth gate (4.5), the redaction of tool results with SEC-28, proposed in PRD-security v3 (4.5, 4.7, 5.6, 9), and the unauthenticated surfaces (4.5).
 

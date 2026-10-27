@@ -3,7 +3,9 @@ title: "Search and Identity low level design"
 type: lld
 version: 3
 supersedes: docs/lld/LLD-search-v2.md
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-27
 owner: "Kenny Hill"
 prefix: SRCH
 component: search
@@ -17,7 +19,7 @@ date: 2026-10-22
 
 # LLD: Search and Identity (v3)
 
-**Changes in v3** (draft, 2026-10-26). 5.2 records the owner's decision on the M0 drift finding about `normalize_url` (M0 handoff, 2026-10-25): every trailing slash is removed, because removing one is not idempotent (SRCH-15). M0-17 built that rule, so the divergence in 12 is gone.
+**Changes in v3** (approved 2026-10-27). 5.2 records the owner's decision on the M0 drift finding about `normalize_url` (M0 handoff, 2026-10-25): every trailing slash is removed, because removing one is not idempotent (SRCH-15). M0-17 built that rule, so the divergence in 12 is gone.
 
 This version supersedes [LLD-search v1](LLD-search-v1.md). It follows [SPEC-v5](../spec/SPEC-v5.md) sections 5 and 11.1 and the approved [PRD-search v3](../prd/components/PRD-search-v3.md). Changes from v1: requirement IDs are the current ones (SRCH-FR-27 and SRCH-FR-28 replace the two superseded IDs); criteria SRCH-37 and SRCH-38 are designed; source states are `budget_exhausted` and `not_needed`; the M1 services (`citations`, `authors`, `cite`, `check_integrity`) are designed in 5.7 to 5.10; the feature flags are listed in 7; and the v1 open questions are answered. It cites [LLD-platform v2](LLD-platform-v2.md) and [LLD-security v2](LLD-security-v2.md) and does not contradict them. Section numbers are unchanged from v1 (SPEC-v5 section 19 cites them); new material uses new numbers.
 

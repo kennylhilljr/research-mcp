@@ -12,7 +12,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-platform-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-platform-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    artifacts: [docs/lld/LLD-platform-v3.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-platform-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
     criteria: 46
     linked: 16
     passing: 0
@@ -54,7 +54,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-sources-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-sources-v5.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    artifacts: [docs/lld/LLD-sources-v3.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-sources-v5.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
     criteria: 26
     linked: 0
     passing: 0
@@ -75,7 +75,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3; then the verifier audits M0-01 to M0-05
-    artifacts: [docs/lld/LLD-search-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-search-v3.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    artifacts: [docs/lld/LLD-search-v3.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-search-v3.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
     criteria: 29
     linked: 7
     passing: 0
@@ -117,7 +117,7 @@ components:
     disposition: null
     drift: null
     next: The owner approves the LLD at Gate 3
-    artifacts: [docs/lld/LLD-health-v2.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-health-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
+    artifacts: [docs/lld/LLD-health-v3.md@approved, docs/prd/PRD-v8.md@approved, docs/prd/components/PRD-health-v4.md@approved, docs/spec/SPEC-v5.md@approved, docs/test/test-plan-v4.md@approved]
     criteria: 25
     linked: 0
     passing: 0

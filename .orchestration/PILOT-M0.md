@@ -42,3 +42,15 @@ It stops only when no unit can move after the delivery lead's own recoveries (TE
 ## Done
 
 The drive ends with the product owners' report under the ECC state folder (`reports/`). M0 is complete when both accept; then push `main`.
+
+## M1 run
+
+M0 was accepted on 2026-10-25 ([M0 handoff](../docs/build/M0-handoff-v1.md)). M1 follows the same steps with [M1 plan v1](../docs/build/M1-plan-v1.md) (30 units in 6 waves, approved 2026-10-27) and the v3 LLDs of platform, health, search and sources. `team.json` names M1 for the product owners' review. The drive dispatches one unit at a time. Keep `main` unchanged while it runs (no pushes, pulls or editor auto-sync), and push `main` when both product owners accept.
+
+```sh
+cd ~/Documents/GitHub/research-mcp
+ecc create-run --run-id rm-m1a --plan .orchestration/plan-m1.json
+ecc drive --run-id rm-m1a
+```
+
+Before the live check and OC-12, add the provider keys to the Keychain (M1 plan section 4).

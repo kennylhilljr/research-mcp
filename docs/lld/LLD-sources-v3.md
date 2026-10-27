@@ -2,7 +2,9 @@
 title: "Sources low level design"
 type: lld
 version: 3
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-27
 owner: "Kenny Hill"
 prefix: SRC
 component: sources
@@ -19,7 +21,7 @@ date: 2026-10-22
 
 This LLD carries the sources design out of [SPEC v5](../spec/SPEC-v5.md) section 4 (sources), with sections 5, 9 and 13 where they touch the `web` group and the inventory. Detail that SPEC-v2 held in its sections 4 (specs, models and the source contract) and 5.1 to 5.5 (registry, fixtures and conformance, live check, new-source checklist, site sets, docs sites and web search) is kept here under the same subsection numbers that SPEC-v5 section 4 cites. Requirements and criteria are in [PRD-sources v5](../prd/components/PRD-sources-v5.md); the cross-cutting security rules are in [PRD-security v3](../prd/components/PRD-security-v3.md) and [LLD-security v2](LLD-security-v2.md); platform types, the HTTP client and the flag table are in [LLD-platform v2](LLD-platform-v2.md); the test plan is [test plan v4](../test/test-plan-v4.md) (draft). Code paths: `src/research_mcp/sources` and `tests/sources` (`sdd.config.json`). The machine-readable contract is [source adapter v1](../contracts/source-adapter-v1.md) (draft, new).
 
-**Changes in v3** (draft, 2026-10-26). 5.2 selection row 8 follows PRD-search v3 SRCH-FR-8 and LLD-search 5.4, as the owner decided in M0 plan v3 (2026-10-23): under `auto` a `rate_limited` source is reported `skipped_unhealthy`; a spent budget keeps `budget_exhausted`.
+**Changes in v3** (approved 2026-10-27). 5.2 selection row 8 follows PRD-search v3 SRCH-FR-8 and LLD-search 5.4, as the owner decided in M0 plan v3 (2026-10-23): under `auto` a `rate_limited` source is reported `skipped_unhealthy`; a spent budget keeps `budget_exhausted`.
 
 **Changes in v2.** This version follows the approved PRD-sources v5 and SPEC-v4, which win wherever v1 disagreed. History note: SRC-FR-11 is replaced by SRC-FR-24 (a placeholder contact address stops the daemon starting), SRC-FR-13 by SRC-FR-25 (the inventory comes only from `tools/gen_inventory.py`) and SRC-FR-16 by SRC-FR-26 (the new-source checklist without its old step 5); the source state `skipped_budget` is now `budget_exhausted`, and the `web` fallback adds `not_needed`. Added: `SourceSpec` validation and its bounds (2.1, SRC-1); the registry's selection order, fix hints and `SourceView` (5.2); the instance and discovery rules (2.3, 3.2); site-set merging (3.2, 3.3); the docs-site allowlist and `robots.txt` design (5.11); the DSpace and upstream MCP details (5.6, 5.12); the web-source cap check (5.9); the live check design (5.4); the catalog to module map (5.1); a feature flag table that answers the v1 question about flags (7); a planned test for every criterion (9). The fourteen open questions of v1 are settled from the approved documents and the owner decisions of 2026-10-22 (section 10 records each answer with its source); the four questions that section 11 kept were answered by the owner on 2026-10-22 and are recorded in section 10.
 

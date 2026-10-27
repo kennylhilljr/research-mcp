@@ -69,13 +69,14 @@
     }
   },
   "milestone": {
-    "name": "M0",
+    "name": "M1",
     "docs": [
       {
-        "path": "docs/build/M0-plan-v4.md",
+        "path": "docs/build/M1-plan-v1.md",
         "sections": [
           "1",
-          "2"
+          "2",
+          "3"
         ]
       },
       {
