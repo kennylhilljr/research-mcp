@@ -1,0 +1,8 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": "a tool result whose content is not a list",
+    "isError": false
+  }
+}

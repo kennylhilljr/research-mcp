@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "[{\"rank_order\": 2, \"url\": \"https://docs.aws.amazon.com/AmazonS3/latest/userguide/object-lifecycle-mgmt.html\", \"title\": \"Managing the lifecycle of objects\", \"context\": \"To manage your objects so that they are stored cost effectively throughout their lifecycle, configure their Amazon S3 Lifecycle.\"}, {\"rank_order\": 1, \"url\": \"https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html\", \"title\": \"What is Amazon S3?\", \"context\": \"Amazon Simple Storage Service (Amazon S3) is an object storage service.\"}]"
+      }
+    ],
+    "isError": false
+  }
+}

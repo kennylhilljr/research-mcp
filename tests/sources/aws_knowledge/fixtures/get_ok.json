@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "AWS Documentation from https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html:\n\n# What is Amazon S3?\n\nAmazon Simple Storage Service (Amazon S3) is an object storage service that offers industry-leading scalability, data availability, security, and performance."
+      }
+    ],
+    "isError": false
+  }
+}

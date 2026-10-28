@@ -49,6 +49,12 @@ VERTEX_ORIGIN = "https://discoveryengine.googleapis.com"
 USER_PROJECT_HEADER = "X-Goog-User-Project"
 # The codings ``capped_body`` can inflate under a cap; nothing else is asked for.
 ACCEPT_ENCODING = "gzip, deflate"
+# Streamable HTTP (the upstream MCP client): the session header and the event-stream type.
+SESSION_HEADER = "Mcp-Session-Id"
+EVENT_STREAM = "text/event-stream"
+# The MCP rules allow visible ASCII only in a session id; the length bound is ours.
+_SESSION_ID = re.compile(r"[\x21-\x7e]{1,256}")
+_LINE_BREAK = re.compile(r"\r\n|\r|\n")
 
 _WBITS = {"gzip": 16 + zlib.MAX_WBITS, "x-gzip": 16 + zlib.MAX_WBITS, "deflate": zlib.MAX_WBITS}
 # Longer waits are reported as one day; they fail at once either way (MAX_RETRY_AFTER_S).
@@ -238,6 +244,58 @@ async def capped_body(response: httpx.Response, cap: int) -> AsyncGenerator[byte
     yield inflater.flush()
 
 
+@dataclass(frozen=True)
+class EventReply:
+    """A ``post_events`` reply: its status, the ``Mcp-Session-Id`` and the JSON messages."""
+
+    status: int
+    session_id: str | None
+    messages: list[JsonValue]
+
+
+def event_data(text: str) -> list[str]:
+    """The ``data`` of each ``message`` event in an event stream, by the SSE rules.
+
+    Data lines of one event join with a newline; an event named other than ``message`` and
+    an event the stream ends before finishing are dropped.
+    """
+    found: list[str] = []
+    data: list[str] = []
+    name = ""
+    for line in _LINE_BREAK.split(text):
+        if not line:
+            if data and name in ("", "message"):
+                found.append("\n".join(data))
+            data, name = [], ""
+            continue
+        if line.startswith(":"):
+            continue
+        key, _, value = line.partition(":")
+        value = value.removeprefix(" ")
+        if key == "data":
+            data.append(value)
+        elif key == "event":
+            name = value
+    return found
+
+
+def _messages(result: _Attempt) -> list[JsonValue]:
+    """The JSON messages of a reply body: one JSON value (a list is a batch), or events."""
+    if not result.content.strip():
+        return []
+    media = result.headers.get("content-type", "").split(";")[0].strip().lower()
+    try:
+        if media == "application/json":
+            value = cast(JsonValue, _json.loads(result.content))
+            return list(value) if isinstance(value, list) else [value]
+        if media == EVENT_STREAM:
+            text = result.content.decode("utf-8")
+            return [cast(JsonValue, _json.loads(data)) for data in event_data(text)]
+    except ValueError:
+        pass
+    raise HttpError(ErrorCode.UPSTREAM_ERROR, status=result.status, detail="malformed_body")
+
+
 @dataclass
 class _Attempt:
     """What one attempt produced; ``error`` is ``None`` for a 2xx response."""
@@ -347,6 +405,33 @@ class HttpClient:
             status=result.status or 0,
             content_type=result.headers.get("content-type", ""),
             text=text,
+        )
+
+    # @spec SRC-22
+    async def post_events(
+        self,
+        url: str,
+        *,
+        source: str,
+        json: JsonValue,
+        params: Mapping[str, str] | None = None,
+        headers: Mapping[str, str] | None = None,
+        max_bytes: int | None = None,
+        auth: AuthUse = AuthUse.SPEC,
+    ) -> EventReply:
+        """POST JSON and read a JSON or ``text/event-stream`` reply (MCP streamable HTTP).
+
+        The reply's ``Mcp-Session-Id`` is returned for the caller to send back; the request
+        takes the same policy, rate, retry, cap and telemetry path as ``post_json``.
+        """
+        result, _ = await self._request(
+            "POST", "post_events", url, source, params, headers, json, max_bytes, auth
+        )
+        session_id = result.headers.get(SESSION_HEADER)
+        if session_id is not None and not _SESSION_ID.fullmatch(session_id):
+            raise HttpError(ErrorCode.UPSTREAM_ERROR, status=result.status, detail="session id")
+        return EventReply(
+            status=result.status or 0, session_id=session_id, messages=_messages(result)
         )
 
     @staticmethod

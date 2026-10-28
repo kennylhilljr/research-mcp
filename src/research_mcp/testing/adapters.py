@@ -5,14 +5,21 @@ conformance suite and the registry tests run before any real adapter exists. The
 speaks a small JSON API at ``https://api.fake-source.org`` and does all its I/O through
 ``ctx.http``, like a real adapter. ``FAKE_KIND_SPEC``, ``FakeInstance`` and
 ``fake_instance_spec`` make the same adapter an instance kind for discovery tests.
+
+``FakeMcpServer`` is the in-memory upstream MCP server for the upstream MCP adapters and
+``platform/mcp_client.py`` (LLD-sources-v3 5.6): an ``httpx.MockTransport`` handler that
+speaks MCP streamable HTTP, so the tests send real requests through ``HttpClient``.
 """
 
 import dataclasses
 import functools
+import itertools
 import json
+from collections.abc import AsyncIterator, Callable, Mapping
 from typing import Any, Literal
 from urllib.parse import quote, urlsplit
 
+import httpx
 from pydantic import BaseModel, ConfigDict
 
 from research_mcp.core.errors import ErrorCode, HttpError
@@ -21,6 +28,7 @@ from research_mcp.core.models import (
     AuthorRecord,
     CitationPage,
     FulltextCandidate,
+    JsonValue,
     ProbeResult,
     Provenance,
     SearchPage,
@@ -192,3 +200,145 @@ class FakeAdapter:
         return ProbeResult(
             ok=True, latency_ms=int(elapsed.total_seconds() * 1000), shape_ok=shape_ok
         )
+
+
+ToolHandler = Callable[[dict[str, Any]], JsonValue]
+MCP_ACCEPT = ("application/json", "text/event-stream")
+
+
+def text_result(text: str, *, is_error: bool = False) -> dict[str, JsonValue]:
+    """A ``tools/call`` result holding one text item."""
+    result: dict[str, JsonValue] = {"content": [{"type": "text", "text": text}]}
+    if is_error:
+        result["isError"] = True
+    return result
+
+
+class _Wire(httpx.AsyncByteStream):
+    """A body that arrives unread, as from a network transport, so the byte cap applies."""
+
+    def __init__(self, content: bytes) -> None:
+        self.content = content
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        yield self.content
+
+
+def _response(status: int, content: bytes = b"", content_type: str | None = None) -> httpx.Response:
+    headers = {"content-type": content_type} if content_type else {}
+    return httpx.Response(status, headers=headers, stream=_Wire(content))
+
+
+def _rpc_body(request: httpx.Request) -> dict[str, Any] | None:
+    try:
+        body = json.loads(request.content)
+    except ValueError:
+        return None
+    return body if isinstance(body, dict) else None
+
+
+class FakeMcpServer:
+    """An upstream MCP server in memory, served over streamable HTTP.
+
+    Use ``handle`` as an ``httpx.MockTransport`` handler. ``initialize`` opens a session and
+    returns its ``Mcp-Session-Id``; every later request must carry a live one (404 for an
+    unknown or expired id, 400 for none, as the MCP rules say). ``tools/call`` runs the
+    named handler, whose return value is the call's ``result``. Replies are event streams,
+    or JSON bodies with ``event_stream=False``. ``calls`` keeps each tool call made.
+    """
+
+    def __init__(
+        self, tools: Mapping[str, ToolHandler] | None = None, *, event_stream: bool = True
+    ) -> None:
+        self.tools = dict(tools or {})
+        self.event_stream = event_stream
+        self.sessions: set[str] = set()
+        self.calls: list[tuple[str, dict[str, Any]]] = []
+        self.methods: list[str] = []
+        self._ids = itertools.count(1)
+
+    def expire_sessions(self) -> None:
+        self.sessions.clear()
+
+    @staticmethod
+    def is_handshake(request: httpx.Request) -> bool:
+        """``initialize`` or a client notification: the requests before and between calls."""
+        body = _rpc_body(request) if request.method == "POST" else None
+        if body is None:
+            return False
+        method = body.get("method")
+        return method == "initialize" or (
+            isinstance(method, str) and method.startswith("notifications/") and "id" not in body
+        )
+
+    def handle(self, request: httpx.Request) -> httpx.Response:
+        if request.method != "POST":
+            return _response(405)
+        accept = request.headers.get("accept", "")
+        if not all(kind in accept for kind in MCP_ACCEPT):
+            return _response(406)
+        body = _rpc_body(request)
+        if body is None or body.get("jsonrpc") != "2.0":
+            return self._reply(None, {"code": -32700, "message": "parse error"}, error=True)
+        method = body.get("method")
+        self.methods.append(str(method))
+        if method == "initialize":
+            return self._initialize(body)
+        session = request.headers.get("mcp-session-id")
+        if session is None:
+            return _response(400)
+        if session not in self.sessions:
+            return _response(404)
+        if "id" not in body:
+            return _response(202)
+        if method == "tools/list":
+            tools: list[JsonValue] = [
+                {"name": name, "inputSchema": {"type": "object"}} for name in self.tools
+            ]
+            return self._reply(body["id"], {"tools": tools})
+        if method == "tools/call":
+            return self._call(body)
+        return self._reply(body["id"], {"code": -32601, "message": "method not found"}, error=True)
+
+    def replay(self, request: httpx.Request, content: bytes, content_type: str) -> httpx.Response:
+        """A recorded JSON-RPC reply given the request's id; any other body is sent as is."""
+        body = _rpc_body(request)
+        try:
+            recorded = json.loads(content)
+        except ValueError:
+            recorded = None
+        if body is None or not isinstance(recorded, dict) or "jsonrpc" not in recorded:
+            return _response(200, content, content_type)
+        return self._send({**recorded, "id": body.get("id")})
+
+    def _initialize(self, body: dict[str, Any]) -> httpx.Response:
+        session = f"fake-session-{next(self._ids)}"
+        self.sessions.add(session)
+        params = body.get("params") or {}
+        result = {
+            "protocolVersion": params.get("protocolVersion", "2025-06-18"),
+            "capabilities": {"tools": {}},
+            "serverInfo": {"name": "fake-mcp", "version": "1"},
+        }
+        response = self._reply(body.get("id"), result)
+        response.headers["Mcp-Session-Id"] = session
+        return response
+
+    def _call(self, body: dict[str, Any]) -> httpx.Response:
+        params = body.get("params") or {}
+        name = params.get("name")
+        handler = self.tools.get(name) if isinstance(name, str) else None
+        if handler is None:
+            return self._reply(body["id"], {"code": -32602, "message": "unknown tool"}, error=True)
+        arguments = params.get("arguments") or {}
+        self.calls.append((str(name), arguments))
+        return self._reply(body["id"], handler(arguments))
+
+    def _reply(self, rpc_id: Any, value: JsonValue, *, error: bool = False) -> httpx.Response:
+        return self._send({"jsonrpc": "2.0", "id": rpc_id, "error" if error else "result": value})
+
+    def _send(self, message: dict[str, Any]) -> httpx.Response:
+        if self.event_stream:
+            text = f"event: message\ndata: {json.dumps(message)}\n\n"
+            return _response(200, text.encode(), "text/event-stream")
+        return _response(200, json.dumps(message).encode(), "application/json")

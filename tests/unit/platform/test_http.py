@@ -668,3 +668,91 @@ async def test_user_project_header_needs_the_google_signin_and_a_project() -> No
     for request in (*keyed_harness.requests, *signed_in.requests):
         assert "x-goog-user-project" not in request.headers
     assert signed_in.requests[0].headers["authorization"].startswith("Bearer ya29.")
+
+
+# post_events: streamable-HTTP replies for the upstream MCP client (M1-plan-v6 2.2, M1-11)
+
+
+def events(body: str, status: int = 200, **headers: str) -> httpx.Response:
+    return httpx.Response(
+        status, text=body, headers={"Content-Type": "text/event-stream", **headers}
+    )
+
+
+async def test_post_events_reads_an_event_stream_and_the_session_header() -> None:
+    """@spec SRC-22: An SSE reply gives each data event as JSON, with the Mcp-Session-Id."""
+    body = (
+        ": a comment\n"
+        "event: message\n"
+        'data: {"jsonrpc": "2.0",\n'
+        'data:  "id": 1}\n'
+        "\n"
+        "event: ping\n"
+        "data: ignored\n"
+        "\n"
+        'data: {"id": 2}\r\n\r\n'
+        'data: {"id": 3}'
+    )
+    harness = Harness(replies(events(body, **{"Mcp-Session-Id": "s-1"})))
+    reply = await harness.client.post_events(
+        URL, source="crossref", json={"m": 1}, headers={"Accept": "application/json"}
+    )
+    assert reply.status == 200
+    assert reply.session_id == "s-1"
+    # The unterminated last event is discarded, as the SSE rules say.
+    assert reply.messages == [{"jsonrpc": "2.0", "id": 1}, {"id": 2}]
+    (request,) = harness.requests
+    assert request.method == "POST"
+    assert request.content == b'{"m":1}'
+    assert request.headers["Accept"] == "application/json"
+    assert harness.sink.records[0].op == "post_events"
+    assert harness.sink.records[0].source == "crossref"
+
+
+async def test_post_events_reads_json_and_empty_replies() -> None:
+    """@spec SRC-22: A JSON body is one message (a batch is several); a 202 has none."""
+    harness = Harness(replies(ok('{"id": 1}'), ok('[{"id": 2}, {"id": 3}]'), httpx.Response(202)))
+    first = await harness.client.post_events(URL, source="crossref", json={})
+    second = await harness.client.post_events(URL, source="crossref", json={})
+    third = await harness.client.post_events(URL, source="crossref", json={})
+    assert first.messages == [{"id": 1}]
+    assert first.session_id is None
+    assert second.messages == [{"id": 2}, {"id": 3}]
+    assert (third.status, third.messages) == (202, [])
+
+
+@pytest.mark.parametrize(
+    "response",
+    [
+        events("data: {not json\n\n"),
+        httpx.Response(200, text="<html>", headers={"Content-Type": "text/html"}),
+        events('data: {"id": 1}\n\n', **{"Mcp-Session-Id": "bad id"}),
+    ],
+    ids=["broken-event", "wrong-type", "bad-session-id"],
+)
+async def test_post_events_refuses_what_it_cannot_read(response: httpx.Response) -> None:
+    """@spec SRC-22: A broken event, another media type or a bad session id is upstream_error."""
+    harness = Harness(replies(response))
+    with pytest.raises(HttpError) as caught:
+        await harness.client.post_events(URL, source="crossref", json={})
+    assert caught.value.code is ErrorCode.UPSTREAM_ERROR
+    assert "not json" not in str(caught.value)
+
+
+async def test_post_events_keeps_host_policy_retries_and_the_byte_cap() -> None:
+    """@spec SRC-22: post_events goes through the same policy, retry and cap path."""
+    harness = Harness(replies(ok()))
+    with pytest.raises(HttpError) as caught:
+        await harness.client.post_events("https://evil.example/mcp", source="crossref", json={})
+    assert caught.value.code is ErrorCode.BLOCKED_BY_POLICY
+    assert harness.requests == []
+
+    harness = Harness(replies(httpx.Response(503), events('data: {"id": 1}\n\n')))
+    reply = await harness.client.post_events(URL, source="crossref", json={})
+    assert reply.messages == [{"id": 1}]
+    assert len(harness.requests) == 2
+
+    harness = Harness(replies(events("data: " + "x" * 2_000_000 + "\n\n")))
+    with pytest.raises(HttpError) as caught:
+        await harness.client.post_events(URL, source="crossref", json={})
+    assert caught.value.code is ErrorCode.TOO_LARGE

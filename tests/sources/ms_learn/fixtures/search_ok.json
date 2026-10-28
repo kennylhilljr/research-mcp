@@ -1,0 +1,13 @@
+{
+  "jsonrpc": "2.0",
+  "id": 1,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\"results\": [{\"title\": \"Introduction to Azure Blob Storage\", \"content\": \"Azure Blob Storage is Microsoft's object storage solution for the cloud.\", \"contentUrl\": \"https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction\"}, {\"title\": \"Optimize costs by automatically managing the data lifecycle\", \"content\": \"Lifecycle management policies move blobs to cooler tiers or delete them.\", \"contentUrl\": \"https://learn.microsoft.com/en-us/azure/storage/blobs/lifecycle-management-overview\"}]}"
+      }
+    ],
+    "isError": false
+  }
+}
