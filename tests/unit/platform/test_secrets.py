@@ -101,7 +101,11 @@ def test_parse_valid_references() -> None:
         "env:1ABC",
         "env:ABC\n",
         "vault:research-mcp/CORE_API_KEY",
-        "gcloud_adc:GOOGLE_SIGNIN",
+        "gcloud_adc:",
+        "gcloud_adc:google_signin",
+        "gcloud_adc:research-mcp/GOOGLE_SIGNIN",
+        "gcloud_adc:GOOGLE_SIGNIN\n",
+        "Gcloud_adc:GOOGLE_SIGNIN",
         "env:" + "A" * 65,
     ],
 )
@@ -120,6 +124,8 @@ def test_parse_rejects_malformed_references(text: str) -> None:
         ("keychain", "CORE\nKEY", "research-mcp/CORE\nKEY"),
         ("keychain", "core", "research-mcp/core"),
         ("env", "NCBI_API_KEY", "research-mcp/NCBI_API_KEY"),
+        ("gcloud_adc", "GOOGLE_SIGNIN", "research-mcp/GOOGLE_SIGNIN"),
+        ("gcloud_adc", "google_signin", ""),
         ("vault", "CORE_API_KEY", "research-mcp/CORE_API_KEY"),
     ],
 )
@@ -556,3 +562,41 @@ def test_secret_state_values() -> None:
         runner = Recorder(returncode=code, stdout=VALUE if code == 0 else "", stderr=STDERR)
         state, _secret = KeychainProvider("tester", runner=runner).get(CORE)
         assert state is not SecretState.INVALID
+
+
+# The Google sign-in backend (LLD-platform-v3 4.2, M1)
+
+SIGNIN = SecretRef.parse("gcloud_adc:GOOGLE_SIGNIN")
+
+
+def test_gcloud_adc_reference_has_no_keychain_service() -> None:
+    """``gcloud_adc:GOOGLE_SIGNIN`` names the Google sign-in, which is not a Keychain item."""
+    assert SecretRef("gcloud_adc", "GOOGLE_SIGNIN", "") == SIGNIN
+    assert str(SIGNIN) == "gcloud_adc:GOOGLE_SIGNIN"
+
+
+def test_keychain_and_fake_providers_do_not_serve_gcloud_adc() -> None:
+    """Only GoogleAdcProvider resolves the sign-in; nothing runs ``security`` for it."""
+    runner = Recorder(stdout=VALUE)
+    keychain = KeychainProvider("tester", runner=runner)
+    assert keychain.get(SIGNIN) == (SecretState.MISSING, None)
+    assert keychain.metadata(SIGNIN) is None
+    with pytest.raises(ValueError):
+        keychain.set(SIGNIN, VALUE)
+    assert runner.calls == []
+
+    fake = FakeProvider({"GOOGLE_SIGNIN": VALUE}, environ={"GOOGLE_SIGNIN": VALUE})
+    assert fake.get(SIGNIN) == (SecretState.MISSING, None)
+    assert fake.metadata(SIGNIN) is None
+    with pytest.raises(ValueError):
+        fake.set(SIGNIN, VALUE)
+    assert fake.argv == []
+
+
+def test_secret_meta_account_and_expiry_default_to_none() -> None:
+    """Keychain metadata has no account or expiry; the Google sign-in fills both."""
+    meta = SecretMeta("CORE_API_KEY", None)
+    assert (meta.account, meta.expires_at) == (None, None)
+    when = datetime(2026, 10, 27, 13, tzinfo=UTC)
+    signin = SecretMeta("GOOGLE_SIGNIN", None, account="owner@example.com", expires_at=when)
+    assert (signin.account, signin.expires_at) == ("owner@example.com", when)

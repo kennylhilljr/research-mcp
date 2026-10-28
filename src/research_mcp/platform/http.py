@@ -16,6 +16,7 @@ import json as _json
 import logging
 import math
 import random
+import re
 import time
 import zlib
 from collections.abc import AsyncGenerator, Mapping
@@ -43,6 +44,9 @@ MAX_CONNECTIONS = 50
 MAX_CONNECTIONS_PER_HOST = 8
 RETRIED_5XX = frozenset({500, 502, 503, 504})
 CRED_EXPIRY_HEADER = "github-authentication-token-expiration"
+# The Google sign-in goes only to the Vertex origin, with the project that pays for the call.
+VERTEX_ORIGIN = "https://discoveryengine.googleapis.com"
+USER_PROJECT_HEADER = "X-Goog-User-Project"
 # The codings ``capped_body`` can inflate under a cap; nothing else is asked for.
 ACCEPT_ENCODING = "gzip, deflate"
 
@@ -50,6 +54,9 @@ _WBITS = {"gzip": 16 + zlib.MAX_WBITS, "x-gzip": 16 + zlib.MAX_WBITS, "deflate":
 # Longer waits are reported as one day; they fail at once either way (MAX_RETRY_AFTER_S).
 _MAX_WAIT_S = 86_400.0
 _DEFAULT_PORTS = {"http": 80, "https": 443}
+# A Vertex path is /<version>/projects/<project>/...; the project id comes from settings.
+_PROJECT_ID = re.compile(r"[a-z0-9][a-z0-9.:-]{0,99}")
+_VERTEX = httpx.URL(VERTEX_ORIGIN)
 _log = logging.getLogger(__name__)
 
 
@@ -112,6 +119,14 @@ def build_user_agent(version: str, contact_email: str | None) -> str:
 def _origin(url: httpx.URL) -> tuple[str, str, int | None]:
     scheme = url.scheme.lower()
     return scheme, url.host.lower(), url.port or _DEFAULT_PORTS.get(scheme)
+
+
+def _vertex_project(url: httpx.URL) -> str | None:
+    """The project in a Vertex request path, which the instance settings put there."""
+    parts = url.path.split("/")
+    if len(parts) > 3 and parts[2] == "projects" and _PROJECT_ID.fullmatch(parts[3]):
+        return parts[3]
+    return None
 
 
 def _is_ascii_number(value: str) -> bool:
@@ -442,6 +457,10 @@ class HttpClient:
             headers[spec.param] = secret.reveal()
         elif spec.placement == "bearer":
             headers["Authorization"] = f"Bearer {secret.reveal()}"
+            if secret.ref.backend == "gcloud_adc" and _origin(target) == _origin(_VERTEX):
+                project = _vertex_project(target)
+                if project is not None:
+                    headers[USER_PROJECT_HEADER] = project
         else:
             # Query placement only where the API offers nothing else; the URL is never logged.
             target = target.copy_merge_params({spec.param: secret.reveal()})

@@ -602,3 +602,69 @@ async def test_get_text_returns_text_response() -> None:
     assert response.status == 200
     assert response.content_type == "text/plain; charset=latin-1"
     assert response.url == URL
+
+
+# The Google sign-in on the Vertex origin (LLD-platform-v3 4.2)
+
+VERTEX_ORIGIN = "https://discoveryengine.googleapis.com"
+VERTEX = SourcePolicy(
+    source="vertex_v1_docs",
+    hosts=frozenset({"discoveryengine.googleapis.com", "storage.googleapis.com"}),
+    auth=AuthSpec(
+        secrets=("GOOGLE_SIGNIN",),
+        required=True,
+        placement="bearer",
+        param="",
+        origins=(VERTEX_ORIGIN,),
+        signup_url="https://cloud.google.com/sdk/gcloud/reference/auth/application-default",
+    ),
+    rate=RateSpec(rps=1000.0, burst=1000),
+    timeout_s=10.0,
+    max_bytes=1_000_000,
+)
+ENGINE = (
+    VERTEX_ORIGIN + "/v1/projects/owner-project/locations/global/collections/"
+    "default_collection/engines/v1-docs"
+)
+SIGNIN = Secret(SecretRef.parse("gcloud_adc:GOOGLE_SIGNIN"), "ya29.test-access-token-0f3b9c")
+
+
+async def test_google_signin_goes_to_vertex_with_user_project_header() -> None:
+    """The Vertex origin gets the sign-in as a bearer plus X-Goog-User-Project."""
+    harness = Harness(
+        replies(ok(), ok()), VERTEX, credentials=Credentials({"vertex_v1_docs": SIGNIN})
+    )
+    await harness.client.post_json(
+        ENGINE + "/servingConfigs/default_search:search",
+        source="vertex_v1_docs",
+        json={"query": "q", "pageSize": 10},
+        headers={"X-Goog-User-Project": "other-project"},
+    )
+    await harness.client.get_json(ENGINE, source="vertex_v1_docs")
+    assert len(harness.requests) == 2
+    for request in harness.requests:
+        assert request.headers["authorization"] == "Bearer ya29.test-access-token-0f3b9c"
+        # The project is the one in the request path, never a caller's header.
+        assert request.headers.get_list("x-goog-user-project") == ["owner-project"]
+
+
+async def test_google_signin_and_user_project_go_nowhere_else() -> None:
+    """Another host of the policy gets neither the token nor the project."""
+    harness = Harness(replies(ok()), VERTEX, credentials=Credentials({"vertex_v1_docs": SIGNIN}))
+    await harness.client.get_json(
+        "https://storage.googleapis.com/v1/projects/owner-project/x", source="vertex_v1_docs"
+    )
+    (request,) = harness.requests
+    assert "authorization" not in request.headers
+    assert "x-goog-user-project" not in request.headers
+
+
+async def test_user_project_header_needs_the_google_signin_and_a_project() -> None:
+    """A Keychain secret on the Vertex origin, or a path without a project, adds no header."""
+    keyed_harness = Harness(replies(ok()), VERTEX, credentials=Credentials({"vertex_v1_docs": KEY}))
+    await keyed_harness.client.get_json(ENGINE, source="vertex_v1_docs")
+    signed_in = Harness(replies(ok()), VERTEX, credentials=Credentials({"vertex_v1_docs": SIGNIN}))
+    await signed_in.client.get_json(VERTEX_ORIGIN + "/v1/operations", source="vertex_v1_docs")
+    for request in (*keyed_harness.requests, *signed_in.requests):
+        assert "x-goog-user-project" not in request.headers
+    assert signed_in.requests[0].headers["authorization"].startswith("Bearer ya29.")

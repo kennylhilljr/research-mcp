@@ -26,6 +26,10 @@ pdf = ["pymupdf"]
 embeddings = ["fastembed", "numpy"]
 # PyObjC only builds on macOS; the marker keeps the lock and the Linux CI job resolvable.
 macos = ["pyobjc-framework-Cocoa; sys_platform == 'darwin'"]
+# The Google sign-in for vertex_search (LLD-platform-v3 4.2, PLAT-13).
+gcp = ["google-auth"]
+# The `text` citation format of cite (LLD-search-v3 5.9).
+cite = ["citeproc-py"]
 
 [project.scripts]
 research-mcp = "research_mcp.cli:main"
@@ -42,6 +46,8 @@ dev = [
     "mypy",
     "types-defusedxml",
     "types-psutil",
+    # The gcp extra's library, so the Google sign-in tests run its real refresh offline.
+    "google-auth",
 ]
 
 [build-system]
@@ -83,5 +89,5 @@ python_version = "3.12"
 files = ["src"]
 
 [[tool.mypy.overrides]]
-module = ["fitz.*", "fastembed.*", "objc.*", "Foundation.*", "selectolax.*"]
+module = ["fitz.*", "fastembed.*", "objc.*", "Foundation.*", "selectolax.*", "google.*"]
 ignore_missing_imports = true

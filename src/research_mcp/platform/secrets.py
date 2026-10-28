@@ -23,7 +23,8 @@ _SERVICE_PREFIX = "research-mcp/"
 _TIMEOUT_S = 5.0
 
 _NAME = re.compile(r"[A-Z][A-Z0-9_]{0,63}")
-_BACKENDS = ("keychain", "env")
+_BACKENDS = ("keychain", "env", "gcloud_adc")
+_BAD_BACKEND = "secret reference backend must be 'keychain', 'env' or 'gcloud_adc'"
 _EXIT_NOT_FOUND = 44
 _EXIT_LOCKED = (36, 51)
 _LOCKED_TEXT = "User interaction is not allowed"
@@ -39,30 +40,34 @@ def _printable_ascii(text: str) -> bool:
 # @spec PLAT-12
 @dataclass(frozen=True)
 class SecretRef:
-    """Where a secret lives: ``keychain:research-mcp/NAME`` or ``env:NAME``.
+    """Where a secret lives: ``keychain:research-mcp/NAME``, ``env:NAME`` or, for the Google
+    sign-in, ``gcloud_adc:NAME`` (LLD-platform-v3 4.2).
 
-    An ``env`` reference has no Keychain service, so its ``service`` is empty.
+    Only a Keychain reference has a Keychain service; for the others ``service`` is empty.
     """
 
-    backend: Literal["keychain", "env"]
+    backend: Literal["keychain", "env", "gcloud_adc"]
     name: str
     service: str
 
     def __post_init__(self) -> None:
         # Messages never echo the rejected values: a mistyped reference may be a pasted secret.
         if self.backend not in _BACKENDS:
-            raise ValueError("secret reference backend must be 'keychain' or 'env'")
+            raise ValueError(_BAD_BACKEND)
         if not isinstance(self.name, str) or _NAME.fullmatch(self.name) is None:
             raise ValueError("secret name must match [A-Z][A-Z0-9_]{0,63}")
         expected = _SERVICE_PREFIX + self.name if self.backend == "keychain" else ""
         if self.service != expected:
-            raise ValueError("keychain service must be research-mcp/<NAME>; env has none")
+            raise ValueError("keychain service must be research-mcp/<NAME>; no other has one")
 
     @classmethod
     def parse(cls, text: str) -> SecretRef:
         backend, sep, rest = text.partition(":")
         if not sep:
-            raise ValueError("secret reference must be keychain:research-mcp/<NAME> or env:<NAME>")
+            raise ValueError(
+                "secret reference must be keychain:research-mcp/<NAME>, env:<NAME> "
+                "or gcloud_adc:<NAME>"
+            )
         if backend == "keychain":
             if not rest.startswith(_SERVICE_PREFIX):
                 raise ValueError("keychain reference must be keychain:research-mcp/<NAME>")
@@ -70,16 +75,28 @@ class SecretRef:
             return cls("keychain", name, _SERVICE_PREFIX + name)
         if backend == "env":
             return cls("env", rest, "")
-        raise ValueError("secret reference backend must be 'keychain' or 'env'")
+        if backend == "gcloud_adc":
+            return cls("gcloud_adc", rest, "")
+        raise ValueError(_BAD_BACKEND)
 
     def __str__(self) -> str:
-        return f"keychain:{self.service}" if self.backend == "keychain" else f"env:{self.name}"
+        if self.backend == "keychain":
+            return f"keychain:{self.service}"
+        return f"{self.backend}:{self.name}"
 
 
 @dataclass(frozen=True)
 class SecretMeta:
+    """What is known about a secret besides its value, which it never holds.
+
+    ``account`` and ``expires_at`` are the Google sign-in's email and token expiry; both
+    stay ``None`` for Keychain items (LLD-health-v3 5.2).
+    """
+
     name: str
     modified_at: datetime | None
+    account: str | None = None
+    expires_at: datetime | None = None
 
 
 # @spec SEC-1
@@ -163,7 +180,7 @@ def _write_script(ref: SecretRef, user: str, value: str) -> str:
 
 def _check_writable(ref: SecretRef) -> None:
     if ref.backend != "keychain":
-        raise ValueError(f"{ref.name} is an env reference; only Keychain items can be set")
+        raise ValueError(f"{ref.name} is a {ref.backend} reference; only Keychain items can be set")
 
 
 def _parse_mdat(stdout: str) -> datetime | None:
@@ -195,6 +212,8 @@ class KeychainProvider:
         if ref.backend == "env":
             value = os.environ.get(ref.name)
             return (SecretState.OK, Secret(ref, value)) if value else (SecretState.MISSING, None)
+        if ref.backend != "keychain":
+            return SecretState.MISSING, None  # the Google sign-in is GoogleAdcProvider's
         try:
             done = self._run(_read_argv(ref, self._user, value=True))
         except (OSError, subprocess.SubprocessError):
@@ -258,6 +277,8 @@ class FakeProvider:
         if ref.backend == "env":
             value = self.environ.get(ref.name)
             return (SecretState.OK, Secret(ref, value)) if value else (SecretState.MISSING, None)
+        if ref.backend != "keychain":
+            return SecretState.MISSING, None
         self.argv.append(_read_argv(ref, self.user, value=True))
         forced = self.states.get(ref.name)
         if forced is not None and forced is not SecretState.OK:
