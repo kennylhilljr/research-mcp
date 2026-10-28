@@ -5,10 +5,10 @@ LLD-sources-v3 5.3. The suite is parametrized over ``SourceRegistry.all()`` (see
 serves one fixture for every request through ``httpx.MockTransport``, with a ``FakeClock``
 and a ``FakeSleeper``, so retries and waits are recorded and nothing sleeps for real.
 
-The checks are keyed by capability (M1-plan-v6 2.2): checks 1 and 2 and the search
-fixtures belong to ``search``, the ``get_ok`` mapping check to ``get``, and checks 3 to 6
-call the first method the source declares, so a source without ``search`` is never
-searched.
+The checks are keyed by capability (M1-plan-v6 2.2): checks 1 and 2 belong to ``search``,
+the ``get_ok`` mapping check to ``get``, and checks 3 to 6 call the first method the
+source declares, so a source without ``search`` is never searched. The fixtures are not
+keyed: every adapter keeps all seven (SRC-FR-8; LLD-sources-v3 3.4 and 5.3).
 """
 
 from __future__ import annotations
@@ -28,9 +28,9 @@ from research_mcp.sources.base import Capability, SourceAdapter, SourceSpec, tra
 from research_mcp.sources.registry import RegisteredSource, SourceRegistry
 from research_mcp.testing.adapters import FAKE_SPEC, FIXTURES, FakeAdapter
 
-SEARCH_FIXTURES = ("search_ok", "search_empty")
 FIXTURE_NAMES = (
-    *SEARCH_FIXTURES,
+    "search_ok",
+    "search_empty",
     "get_ok",
     "err_429",
     "err_5xx",
@@ -54,13 +54,6 @@ def ident_for(spec: SourceSpec) -> Identifier:
         scheme = min(spec.id_schemes, default="doi")
         return Identifier(scheme, "conformance-1")
     return Identifier(scheme, CONFORMANCE_IDS[scheme])
-
-
-def required_fixtures(spec: SourceSpec) -> tuple[str, ...]:
-    """The seven fixtures; the two search fixtures only for a source that can search."""
-    if Capability.SEARCH in spec.capabilities:
-        return FIXTURE_NAMES
-    return tuple(name for name in FIXTURE_NAMES if name not in SEARCH_FIXTURES)
 
 
 def first_call(source: RegisteredSource) -> Call:
@@ -213,7 +206,7 @@ async def run_conformance(
     source: RegisteredSource, harness_for: HarnessFor, fixtures_of: Any, stream_cls: Any
 ) -> None:
     fx = fixtures_of(source)
-    missing = [name for name in required_fixtures(source.spec) if name not in fx]
+    missing = [name for name in FIXTURE_NAMES if name not in fx]
     assert missing == [], f"{source.spec.id} lacks fixtures {missing}"
     capabilities = source.spec.capabilities
     call = first_call(source)
@@ -262,7 +255,6 @@ async def test_conformance_passes_for_fake_adapter(
 class GetOnlyAdapter(FakeAdapter):
     """A source that declares ``get`` but not ``search``, like ``docs_site`` in M1."""
 
-    FIXTURES = {name: FIXTURES[name] for name in FIXTURES if name not in SEARCH_FIXTURES}
     searched = 0
 
     async def search(self, req: SearchRequest) -> SearchPage:
@@ -281,14 +273,33 @@ async def test_conformance_runs_only_the_checks_of_declared_capabilities(
     assert fake is not None
     spec = dataclasses.replace(FAKE_SPEC, id="fake_get", capabilities=frozenset({Capability.GET}))
     source = RegisteredSource(spec, GetOnlyAdapter, fake.settings, None)
-    assert "search_ok" not in required_fixtures(spec)
-    assert "get_ok" in required_fixtures(spec)
     await run_conformance(source, harness_for, fixtures_of, counting_stream)
     assert GetOnlyAdapter.searched == 0
     # The same adapter declared with search is searched, so the keying is what spared it.
     searching = RegisteredSource(FAKE_SPEC, GetOnlyAdapter, fake.settings, None)
     with pytest.raises(AssertionError):
         await run_conformance(searching, harness_for, fixtures_of, counting_stream)
+
+
+class NoSearchFixturesAdapter(GetOnlyAdapter):
+    """A get-only source that ships five fixtures instead of seven."""
+
+    FIXTURES = {name: FIXTURES[name] for name in FIXTURES if not name.startswith("search_")}
+
+
+async def test_conformance_requires_seven_fixtures_without_search(
+    conformance: SourceRegistry,
+    harness_for: HarnessFor,
+    fixtures_of: Any,
+    counting_stream: Any,
+) -> None:
+    """@spec SRC-6: A source without ``search`` still needs all seven fixtures."""
+    fake = conformance.get(FAKE_SPEC.id)
+    assert fake is not None
+    spec = dataclasses.replace(FAKE_SPEC, id="fake_get", capabilities=frozenset({Capability.GET}))
+    source = RegisteredSource(spec, NoSearchFixturesAdapter, fake.settings, None)
+    with pytest.raises(AssertionError, match="lacks fixtures"):
+        await run_conformance(source, harness_for, fixtures_of, counting_stream)
 
 
 class RecordingMcp:
