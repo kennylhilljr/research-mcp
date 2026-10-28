@@ -99,6 +99,17 @@ async def test_search_is_capped_at_the_page_size_and_get_reads_the_page(mcp_stac
     assert stack.server.calls[-1] == (FETCH, {"url": BLOBS})
 
 
+@pytest.mark.parametrize("items", [[1, 2], ["a"], [None]])
+async def test_a_result_list_of_non_objects_is_upstream_error(mcp_stack: Any, items: Any) -> None:
+    """A search list whose items are not objects is ``upstream_error``, not a raw exception."""
+    payload = json.dumps({"results": items})
+    fake = FakeMcpServer({SEARCH: lambda arguments: text_result(payload)})
+    stack = stack_for(mcp_stack, fake)
+    with pytest.raises(HttpError) as caught:
+        await stack.adapter.search(SearchRequest(query="x"))
+    assert caught.value.code is ErrorCode.UPSTREAM_ERROR
+
+
 async def test_conformance_runs_over_the_upstream_mcp_port(
     conformance: Any,
     harness_for: Any,

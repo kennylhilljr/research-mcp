@@ -112,6 +112,28 @@ async def test_structured_results_are_read_too(mcp_stack: Any) -> None:
     assert len(page.records) == 2
 
 
+@pytest.mark.parametrize("items", [[1, 2], ["a"], [None], [[]]])
+async def test_a_result_list_of_non_objects_is_upstream_error(mcp_stack: Any, items: Any) -> None:
+    """A search list whose items are not objects is ``upstream_error``, not a raw exception."""
+    fake = FakeMcpServer({SEARCH: lambda arguments: text_result(json.dumps(items))})
+    stack = stack_for(mcp_stack, fake)
+    with pytest.raises(HttpError) as caught:
+        await stack.adapter.search(SearchRequest(query="x"))
+    assert caught.value.code is ErrorCode.UPSTREAM_ERROR
+
+
+@pytest.mark.parametrize(
+    "result",
+    [{"content": [1]}, {"content": ["text"]}, {"content": [{"type": "text"}]}, {"content": {}}],
+)
+async def test_a_malformed_page_makes_the_probe_shape_fail(mcp_stack: Any, result: Any) -> None:
+    """A read result in the wrong shape gives ``shape_ok=False`` and never raises."""
+    fake = FakeMcpServer({READ: lambda arguments: result})
+    stack = stack_for(mcp_stack, fake)
+    probe = await stack.adapter.probe()
+    assert (probe.ok, probe.shape_ok) == (True, False)
+
+
 async def test_conformance_runs_over_the_upstream_mcp_port(
     conformance: Any,
     harness_for: Any,

@@ -14,12 +14,11 @@ from typing import Any
 from research_mcp.core.models import JsonValue, SearchRequest, WorkRecord
 from research_mcp.core.specs import RateSpec
 from research_mcp.sources.base import Capability, SourceSpec
-from research_mcp.sources.mcp_upstream import UpstreamMcpAdapter, tool_json
+from research_mcp.sources.mcp_upstream import UpstreamMcpAdapter, object_list, tool_json
 
 _HOST = "learn.microsoft.com"
 
 
-# @spec SRC-22
 @functools.cache
 def _spec() -> SourceSpec:
     # Built on first use, not at import (PLAT-3), like the other adapters.
@@ -61,9 +60,7 @@ class MsLearnAdapter(UpstreamMcpAdapter):
 
     def map_search(self, payload: JsonValue) -> list[WorkRecord]:
         data: Any = tool_json(payload)
-        items = data["results"]
-        if not isinstance(items, list):
-            raise TypeError("search results are not a list")
+        items = object_list(data["results"])
         return [
             self.record(item["contentUrl"], item["title"], item.get("content")) for item in items
         ]

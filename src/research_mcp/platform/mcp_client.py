@@ -78,8 +78,11 @@ class McpClient:
         except HttpError as exc:
             if exc.code is not ErrorCode.NOT_FOUND or session.session_id is None:
                 raise
-            # The server ended the session: open a new one and repeat the call once.
-            self._sessions.pop((server, source), None)
+            # The server ended the session: open a new one and repeat the call once. Drop
+            # it only if it is still the stored one, so a concurrent call's fresh session
+            # survives.
+            if self._sessions.get((server, source)) is session:
+                del self._sessions[(server, source)]
             session = await self._session(server, source)
             result = await self._rpc(server, source, session, "tools/call", params)
         if result.get("isError") is True:

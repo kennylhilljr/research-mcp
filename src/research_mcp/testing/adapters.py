@@ -291,11 +291,6 @@ class FakeMcpServer:
             return _response(404)
         if "id" not in body:
             return _response(202)
-        if method == "tools/list":
-            tools: list[JsonValue] = [
-                {"name": name, "inputSchema": {"type": "object"}} for name in self.tools
-            ]
-            return self._reply(body["id"], {"tools": tools})
         if method == "tools/call":
             return self._call(body)
         return self._reply(body["id"], {"code": -32601, "message": "method not found"}, error=True)

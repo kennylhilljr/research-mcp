@@ -31,14 +31,18 @@ from research_mcp.core.models import (
 from research_mcp.sources.base import SourceContext, SourceSpec, translate_errors
 
 ADAPTER_VERSION = "1"
+# What ``translate_errors`` turns into upstream_error; the probe treats the same as shape_ok=False.
+_MALFORMED = (KeyError, TypeError, ValueError)
 
 
 def tool_text(payload: Any) -> str:
     """The text items of a ``tools/call`` result, joined; a result in another shape raises."""
+    if not isinstance(payload, dict):
+        raise TypeError("tool result is not an object")
     content = payload["content"]
-    if not isinstance(content, list):
-        raise TypeError("tool result content is not a list")
-    texts = [item["text"] for item in content if item["type"] == "text"]
+    if not isinstance(content, list) or not all(isinstance(item, dict) for item in content):
+        raise TypeError("tool result content is not a list of objects")
+    texts = [item["text"] for item in content if item.get("type") == "text"]
     if not all(isinstance(text, str) for text in texts):
         raise TypeError("tool result text is not a string")
     return "\n".join(texts)
@@ -52,6 +56,13 @@ def tool_json(payload: Any) -> Any:
     if structured is not None:
         return structured
     return json.loads(tool_text(payload))
+
+
+def object_list(items: Any) -> list[dict[str, Any]]:
+    """``items`` when it is a list of JSON objects; any other shape raises ``TypeError``."""
+    if not isinstance(items, list) or not all(isinstance(item, dict) for item in items):
+        raise TypeError("search results are not a list of objects")
+    return items
 
 
 def markdown_title(text: str) -> str | None:
@@ -87,7 +98,12 @@ class UpstreamMcpAdapter:
         raise NotImplementedError
 
     def map_get(self, payload: JsonValue, url: str) -> WorkRecord | None:
-        """A fetched page: the Markdown text, titled by its first heading or its URL."""
+        """A fetched page: the Markdown text, titled by its first heading or its URL.
+
+        LLD-sources-v3 5.6 writes ``map_get(self, payload)``. The read tools return only
+        Markdown, so the record's URL identifier has to come from the request: ``url`` is
+        an extra parameter [assumption], recorded in the handoff for the owner.
+        """
         text = tool_text(payload)
         return self.record(url, markdown_title(text) or url, text)
 
@@ -160,6 +176,6 @@ class UpstreamMcpAdapter:
         latency_ms = int((self.ctx.clock.now() - started).total_seconds() * 1000)
         try:
             shape_ok = self.map_get(payload, self.probe_url) is not None
-        except (KeyError, TypeError, ValueError):
+        except _MALFORMED:
             shape_ok = False
         return ProbeResult(ok=True, latency_ms=latency_ms, shape_ok=shape_ok)

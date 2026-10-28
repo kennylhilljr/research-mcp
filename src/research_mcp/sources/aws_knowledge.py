@@ -14,12 +14,11 @@ from typing import Any
 from research_mcp.core.models import JsonValue, SearchRequest, WorkRecord
 from research_mcp.core.specs import RateSpec
 from research_mcp.sources.base import Capability, SourceSpec
-from research_mcp.sources.mcp_upstream import UpstreamMcpAdapter, tool_json
+from research_mcp.sources.mcp_upstream import UpstreamMcpAdapter, object_list, tool_json
 
 _HOST = "knowledge-mcp.global.api.aws"
 
 
-# @spec SRC-22
 @functools.cache
 def _spec() -> SourceSpec:
     # Built on first use, not at import (PLAT-3), like the other adapters.
@@ -60,9 +59,7 @@ class AwsKnowledgeAdapter(UpstreamMcpAdapter):
     def map_search(self, payload: JsonValue) -> list[WorkRecord]:
         data: Any = tool_json(payload)
         # A server that returns structured content wraps the list as {"result": [...]}.
-        items = data["result"] if isinstance(data, dict) else data
-        if not isinstance(items, list):
-            raise TypeError("search results are not a list")
+        items = object_list(data["result"] if isinstance(data, dict) else data)
         ranked = sorted(items, key=lambda item: item.get("rank_order", 0))
         return [self.record(item["url"], item["title"], item.get("context")) for item in ranked]
 

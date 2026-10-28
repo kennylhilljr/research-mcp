@@ -155,6 +155,28 @@ async def test_concurrent_first_calls_open_one_session(stack: Any) -> None:
     assert len(s.server.calls) == 2
 
 
+async def test_a_late_404_on_an_ended_session_keeps_the_reopened_one(
+    stack: Any, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A call still holding the ended session must not drop the one another call reopened."""
+    s = stack()
+    await s.call()
+    stale = s.client._sessions[(SERVER, "upstream")]
+    s.server.expire_sessions()
+    await s.call()
+    assert s.server.methods.count("initialize") == 2
+    # The next call starts with the stale session, as a concurrent call would have.
+    session = s.client._session
+    handed = [stale]
+
+    async def first_stale(server: str, source: str) -> Any:
+        return handed.pop() if handed else await session(server, source)
+
+    monkeypatch.setattr(s.client, "_session", first_stale)
+    await s.call()
+    assert s.server.methods.count("initialize") == 2
+
+
 async def test_json_replies_work_like_event_streams(stack: Any) -> None:
     """A server that answers with JSON bodies is read the same way."""
     s = stack(FakeMcpServer({"echo": echo}, event_stream=False))
