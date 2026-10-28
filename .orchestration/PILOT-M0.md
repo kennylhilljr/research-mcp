@@ -45,12 +45,12 @@ The drive ends with the product owners' report under the ECC state folder (`repo
 
 ## M1 run
 
-M0 was accepted on 2026-10-25 ([M0 handoff](../docs/build/M0-handoff-v1.md)). M1 follows the same steps with [M1 plan v4](../docs/build/M1-plan-v4.md) (31 units in 7 waves, approved 2026-10-27) and the v3 LLDs of platform, health, search and sources. `team.json` names M1 for the product owners' review. The drive dispatches one unit at a time. Keep `main` unchanged while it runs (no pushes, pulls or editor auto-sync), and push `main` when both product owners accept.
+M0 was accepted on 2026-10-25 ([M0 handoff](../docs/build/M0-handoff-v1.md)). M1 follows the same steps with [M1 plan v5](../docs/build/M1-plan-v5.md) (31 units in 7 waves, which the owner approves before the run) and the v3 LLDs of platform, health, search and sources. `team.json` names M1 for the product owners' review. The drive dispatches one unit at a time. Keep `main` unchanged while it runs (no pushes, pulls or editor auto-sync), and push `main` when both product owners accept.
 
 ```sh
 cd ~/Documents/GitHub/research-mcp
-ecc create-run --run-id rm-m1d --plan .orchestration/plan-m1.json
-ecc drive --run-id rm-m1d
+ecc create-run --run-id rm-m1e --plan .orchestration/plan-m1.json
+ecc drive --run-id rm-m1e
 ```
 
 Before the live check and OC-12, add the provider keys to the Keychain (M1 plan section 4).
