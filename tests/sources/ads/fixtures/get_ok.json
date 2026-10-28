@@ -1,0 +1,19 @@
+{
+  "responseHeader": { "status": 0, "QTime": 8 },
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "bibcode": "2005ApJ...622..759B",
+        "title": ["An example astrophysics paper"],
+        "author": ["Researcher, Jane"],
+        "year": "2005",
+        "doi": ["10.1086/123456"],
+        "pub": "The Astrophysical Journal",
+        "doctype": "article",
+        "abstract": "An example abstract."
+      }
+    ]
+  }
+}

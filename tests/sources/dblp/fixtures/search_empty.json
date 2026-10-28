@@ -1,0 +1,12 @@
+{
+  "result": {
+    "query": "no such publication exists",
+    "status": { "@code": "200", "text": "OK" },
+    "hits": {
+      "@total": "0",
+      "@computed": "0",
+      "@sent": "0",
+      "@first": "0"
+    }
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "result": {
+    "query": "data management",
+    "status": { "@code": "200", "text": "OK" },
+    "hits": {
+      "@total": "1",
+      "@computed": "1",
+      "@sent": "1",
+      "@first": "0",
+      "hit": [
+        {
+          "@score": "1",
+          "@id": "2",
+          "info": {
+            "authors": {
+              "author": { "@pid": "2/1", "text": "Solo Author" }
+            },
+            "title": "A paper with no DOI on record.",
+            "venue": "JOEX",
+            "year": "2019",
+            "type": "Journal Articles",
+            "key": "journals/joex/Author19",
+            "url": "https://dblp.org/rec/journals/joex/Author19"
+          }
+        }
+      ]
+    }
+  }
+}

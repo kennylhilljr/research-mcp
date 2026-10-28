@@ -1,0 +1,6 @@
+{
+  "result": {
+    "query": "research",
+    "status": { "@code": "200", "text": "OK" }
+  }
+}

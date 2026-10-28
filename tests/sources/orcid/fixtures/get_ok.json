@@ -1,0 +1,15 @@
+{
+  "expanded-result": [
+    {
+      "orcid-id": "0000-0002-1825-0097",
+      "given-names": "Jane",
+      "family-names": "Researcher",
+      "credit-name": null,
+      "other-name": [],
+      "email": [],
+      "institution-name": ["Example University"],
+      "orcid-path": null
+    }
+  ],
+  "num-found": 1
+}

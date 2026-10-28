@@ -1,0 +1,35 @@
+{
+  "result": {
+    "query": "research",
+    "status": { "@code": "200", "text": "OK" },
+    "hits": {
+      "@total": "1",
+      "@computed": "1",
+      "@sent": "1",
+      "@first": "0",
+      "hit": [
+        {
+          "@score": "1",
+          "@id": "1",
+          "info": {
+            "authors": {
+              "author": [
+                { "@pid": "1/1", "text": "Jane Researcher" },
+                { "@pid": "1/2", "text": "Alex Example" }
+              ]
+            },
+            "title": "An example conference paper.",
+            "venue": "EXAMPLE",
+            "pages": "1-10",
+            "year": "2020",
+            "type": "Conference and Workshop Papers",
+            "key": "conf/example/ResearcherExample20",
+            "doi": "10.1000/example.dblp",
+            "ee": "https://doi.org/10.1000/example.dblp",
+            "url": "https://dblp.org/rec/conf/example/ResearcherExample20"
+          }
+        }
+      ]
+    }
+  }
+}
