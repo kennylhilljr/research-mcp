@@ -2,7 +2,9 @@
 title: "M1 plan: the full catalog, citations, health and credentials"
 type: plan
 version: 4
-status: draft
+status: approved
+approved_by: "Kenny Hill (Engineering)"
+approved: 2026-10-27
 owner: "Kenny Hill"
 milestone: M1
 artifact_type: plan
