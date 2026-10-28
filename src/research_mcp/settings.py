@@ -2,14 +2,26 @@
 
 from __future__ import annotations
 
+import copy
+import functools
 import ipaddress
 import re
+import tomllib
 from datetime import UTC, datetime
+from importlib import resources
 from pathlib import Path
 from typing import Any, Literal
 from urllib.parse import urlsplit
 
-from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, ValidationError, field_validator
+from pydantic import (
+    AwareDatetime,
+    BaseModel,
+    ConfigDict,
+    Field,
+    ValidationError,
+    field_validator,
+    model_validator,
+)
 from pydantic_core import PydanticCustomError
 from pydantic_settings import (
     BaseSettings,
@@ -232,37 +244,15 @@ class CredentialSettings(_Config):
         return None if value is None else value.astimezone(UTC)
 
 
-def _site_sets() -> dict[str, list[str]]:
-    return {
-        "v1_docs": [
-            "keycloak.org",
-            "ory.sh",
-            "supertokens.com",
-            "authelia.com",
-            "goauthentik.io",
-            "zitadel.com",
-            "logto.io",
-            "casdoor.org",
-            "authgear.com",
-            "kanidm.github.io",
-            "freeipa.org",
-            "syncope.apache.org",
-            "openpolicyagent.org",
-            "cerbos.dev",
-            "authzed.com",
-            "casbin.org",
-            "permify.co",
-            "topaz.sh",
-            "warrant.dev",
-            "pomerium.com",
-            "developer.hashicorp.com",
-            "infisical.com",
-            "webauthn.guide",
-            "jwt.io",
-            "datatracker.ietf.org",
-            "zanzibar.academy",
-        ]
-    }
+# Tables of defaults.toml that merge with the owner's by entry name (LLD-sources-v3 3.2).
+_DEFAULT_TABLES = ("site_sets", "sources")
+
+
+@functools.cache
+def _default_data() -> dict[str, Any]:
+    """``packaging/defaults.toml``, read on first use, never at import (PLAT-3)."""
+    text = resources.files("research_mcp.packaging").joinpath("defaults.toml").read_text("utf-8")
+    return tomllib.loads(text)
 
 
 class _Environment(EnvSettingsSource):
@@ -309,15 +299,32 @@ class Settings(BaseSettings):
     backup: BackupSettings = Field(default_factory=BackupSettings)
     sources: dict[str, SourceSettings] = Field(default_factory=dict)
     web: WebSettings = Field(default_factory=WebSettings)
-    site_sets: dict[str, list[str]] = Field(default_factory=_site_sets)
+    site_sets: dict[str, list[str]] = Field(default_factory=dict)
     credentials: dict[str, CredentialSettings] = Field(default_factory=dict)
+
+    # @spec SRC-27
+    @model_validator(mode="before")
+    @classmethod
+    def merge_defaults(cls, data: Any) -> Any:
+        """``defaults.toml`` is the lowest layer: an entry given by name replaces its default."""
+        if not isinstance(data, dict):
+            return data
+        merged = dict(data)
+        for table in _DEFAULT_TABLES:
+            given = data.get(table)
+            if given is None:
+                given = {}
+            if isinstance(given, dict):
+                merged[table] = {**copy.deepcopy(_default_data().get(table, {})), **given}
+        return merged
 
     @field_validator("site_sets")
     @classmethod
     def site_set_names(cls, value: dict[str, list[str]]) -> dict[str, list[str]]:
         if any(not re.fullmatch(r"[a-z0-9_]{1,40}", name) for name in value):
             raise ValueError("site set names must match [a-z0-9_]{1,40}")
-        return value
+        # An empty list removes the set, default or not (LLD-sources-v3 3.2).
+        return {name: domains for name, domains in value.items() if domains}
 
     @field_validator("sources", mode="before")
     @classmethod

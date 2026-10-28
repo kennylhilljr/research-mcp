@@ -98,6 +98,8 @@ class SearchRequest(BaseModel):
     filters: SearchFilters = Field(default_factory=SearchFilters)
     limit: int = 10
     cursor: str | None = None
+    site_set: str | None = None  # the set's name, for logs and results
+    site_domains: tuple[str, ...] = ()  # the set's domains, resolved by federation
 
 
 class SearchPage(BaseModel):
@@ -106,6 +108,7 @@ class SearchPage(BaseModel):
     records: list[WorkRecord]
     total: int | None = None
     next_cursor: str | None = None
+    truncated: bool = False  # the adapter dropped site-set domains
 
 
 class FulltextCandidate(BaseModel):
@@ -132,6 +135,36 @@ class ProbeResult(BaseModel):
     detail_code: str | None = None
     quota_remaining: str | None = None
     credential_expires_at: datetime | None = None
+    api_version: str | None = None  # DSpace version and similar; health stores api_version_seen
+
+
+class AuthorRecord(BaseModel):
+    """One author, as ``search_authors`` returns it and the ``authors`` tool lists it."""
+
+    model_config = ConfigDict(defer_build=True)
+
+    name: str
+    orcid: str | None
+    ids: list[Identifier]
+    affiliations: list[str] = []
+    works_count: int | None
+    found_in: list[str]
+    fuzzy: bool = False
+
+
+_Date = date  # the field below is named date
+
+
+class UpdateNotice(BaseModel):
+    """A retraction, correction or expression of concern that ``updates`` reports."""
+
+    model_config = ConfigDict(defer_build=True)
+
+    kind: Literal["retraction", "correction", "expression_of_concern"]
+    related: Identifier | None = None  # the notice itself, for example its DOI
+    date: _Date | None = None
+    source: str
+    detail_url: str | None = None
 
 
 class Conflict(BaseModel):

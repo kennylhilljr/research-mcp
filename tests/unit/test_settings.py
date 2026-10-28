@@ -20,14 +20,54 @@ def isolated_home(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> None:
 
 def write_config(home: Path, text: str) -> None:
     config = home / ".config/research-mcp/config.toml"
-    config.parent.mkdir(parents=True)
+    config.parent.mkdir(parents=True, exist_ok=True)
     config.write_text(text)
+
+
+V1_DOCS = [
+    "keycloak.org",
+    "ory.sh",
+    "supertokens.com",
+    "authelia.com",
+    "goauthentik.io",
+    "zitadel.com",
+    "logto.io",
+    "casdoor.org",
+    "authgear.com",
+    "kanidm.github.io",
+    "freeipa.org",
+    "syncope.apache.org",
+    "openpolicyagent.org",
+    "cerbos.dev",
+    "authzed.com",
+    "casbin.org",
+    "permify.co",
+    "topaz.sh",
+    "warrant.dev",
+    "pomerium.com",
+    "developer.hashicorp.com",
+    "infisical.com",
+    "webauthn.guide",
+    "jwt.io",
+    "datatracker.ietf.org",
+    "zanzibar.academy",
+]
+DOCS_SITES = {
+    "docs_site_keycloak": "www.keycloak.org",
+    "docs_site_ory": "www.ory.sh",
+    "docs_site_opa": "www.openpolicyagent.org",
+    "docs_site_vault": "developer.hashicorp.com",
+    "docs_site_syncope": "syncope.apache.org",
+    "docs_site_freeipa": "www.freeipa.org",
+}
+DSPACES = {"dspace_mit", "dspace_harvard", "dspace_cornell", "dspace_penn"}
+DEFAULT_INSTANCES = set(DOCS_SITES) | DSPACES
 
 
 def test_defaults(tmp_path: Path) -> None:
     """@spec PLAT-8: Defaults match the settings contract without creating directories."""
     settings = Settings()
-    actual = settings.model_dump(exclude={"paths", "site_sets"})
+    actual = settings.model_dump(exclude={"paths", "site_sets", "sources"})
     assert actual == {
         "server": {
             "host": "127.0.0.1",
@@ -69,7 +109,6 @@ def test_defaults(tmp_path: Path) -> None:
             "free_crit_bytes": 5368709120,
         },
         "backup": {"keep": 7, "drive_copy": False},
-        "sources": {},
         "web": {
             "strategy": "fallback",
             "order": ["vertex_*", "brave_search", "serpapi", "google_pse"],
@@ -78,6 +117,8 @@ def test_defaults(tmp_path: Path) -> None:
     }
     assert len(settings.site_sets["v1_docs"]) == 26
     assert "datatracker.ietf.org" in settings.site_sets["v1_docs"]
+    # The only default sources are the instances that defaults.toml ships (LLD-sources 3.3).
+    assert set(settings.sources) == DEFAULT_INSTANCES
     assert not (tmp_path / "Library").exists()
     assert SourceSettings().enabled is None
     assert SourceSettings().budget_cap is None
@@ -347,3 +388,72 @@ def test_rotate_by_is_utc(monkeypatch: pytest.MonkeyPatch) -> None:
     monkeypatch.setenv("RESEARCH_MCP_CREDENTIALS__CORE_API_KEY__ROTATE_BY", "2027-01-01T00:00:00")
     with pytest.raises(ValidationError, match="rotate_by"):
         Settings()
+
+
+def test_site_sets_override_by_name_empty_list_removes_and_invalid_name_fails(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """@spec SRC-27: Site sets load from defaults and config; config wins by name.
+
+    A set in the config replaces the default set of that name and leaves the others, an
+    empty list removes a set, and an invalid set name fails validation.
+    """
+    assert Settings().site_sets == {"v1_docs": V1_DOCS}
+    write_config(tmp_path, '[site_sets]\niam_core = ["keycloak.org", "ory.sh"]\n')
+    assert Settings().site_sets == {"v1_docs": V1_DOCS, "iam_core": ["keycloak.org", "ory.sh"]}
+    write_config(tmp_path, '[site_sets]\nv1_docs = ["jwt.io"]\n')
+    assert Settings().site_sets == {"v1_docs": ["jwt.io"]}
+    write_config(tmp_path, '[site_sets]\nv1_docs = []\niam_core = ["keycloak.org"]\n')
+    assert Settings().site_sets == {"iam_core": ["keycloak.org"]}
+    # The environment sits above the config file and merges by name the same way.
+    monkeypatch.setenv("RESEARCH_MCP_SITE_SETS", '{"iam_core": [], "authz": ["cerbos.dev"]}')
+    assert Settings().site_sets == {"authz": ["cerbos.dev"]}
+    monkeypatch.delenv("RESEARCH_MCP_SITE_SETS")
+    for bad in ("Bad-Name", "x" * 41, ""):
+        write_config(tmp_path, f'[site_sets]\n"{bad}" = ["jwt.io"]\n')
+        with pytest.raises(ValidationError, match="site_sets"):
+            Settings()
+    # An invalid name fails even when its list is empty and would remove nothing.
+    write_config(tmp_path, "")
+    with pytest.raises(ValidationError, match="site_sets"):
+        Settings(site_sets={"Bad-Name": []})
+    assert Settings(site_sets={"mine": ["jwt.io"]}).site_sets["v1_docs"] == V1_DOCS
+
+
+def test_defaults_ship_the_v1_instances_and_config_replaces_an_entry_by_id(
+    tmp_path: Path,
+) -> None:
+    """``defaults.toml`` holds the four DSpace and six docs-site instances (LLD-sources 3.3).
+
+    A ``sources.<id>`` table in the config replaces the default entry of that id and leaves
+    the other defaults in place.
+    """
+    sources = Settings().sources
+    for name, host in DOCS_SITES.items():
+        entry = sources[name].model_extra or {}
+        assert entry["instance_of"] == "docs_site"
+        assert entry["allowed_hosts"] == [host]
+        assert entry["title"]
+        assert entry.get("sitemap") or entry.get("seed_urls")
+    extra = {name: sources[name].model_extra or {} for name in DEFAULT_INSTANCES}
+    assert extra["docs_site_ory"]["sitemap"] == "https://www.ory.sh/sitemap.xml"
+    assert extra["docs_site_keycloak"]["path_prefixes"] == ["/docs/", "/securing-apps/", "/guides/"]
+    assert extra["docs_site_vault"]["seed_urls"] == ["https://developer.hashicorp.com/vault/docs"]
+    assert extra["docs_site_vault"]["follow_links"] is True
+    assert extra["docs_site_syncope"]["follow_links"] is False
+    for name in DSPACES:
+        assert extra[name]["instance_of"] == "dspace"
+        assert extra[name]["base_url"].startswith("https://")
+        assert extra[name]["base_url"].endswith("/server/api")
+    assert extra["dspace_mit"]["base_url"] == "https://dspace.mit.edu/server/api"
+    write_config(
+        tmp_path,
+        '[sources.dspace_mit]\ninstance_of = "dspace"\n'
+        'base_url = "https://dspace.mit.edu/server/api"\ntitle = "MIT, my title"\n'
+        "enabled = false\n",
+    )
+    sources = Settings().sources
+    assert set(sources) == DEFAULT_INSTANCES
+    assert sources["dspace_mit"].enabled is False
+    assert (sources["dspace_mit"].model_extra or {})["title"] == "MIT, my title"
+    assert sources["dspace_penn"].enabled is None

@@ -1,7 +1,9 @@
-"""The source registry: discovery, instances, selection and the views (LLD-sources-v2 5.2).
+"""The source registry: discovery, instances, selection and the views (LLD-sources-v3 5.2).
 
 Adapters are found by scanning the ``research_mcp.sources`` package (2.3); instance kinds
-also get one source per settings entry whose ``instance_of`` names them. Credential
+also get one source per settings entry whose ``instance_of`` names them. A module with a
+``SPEC`` and no ``ADAPTER`` is a helper (5.13, ``doi_resolver``): it gives ``policy`` its
+hosts and rate limit and is never listed, selected or checked as a source. Credential
 presence, health, the daily call count and extra detection come in as callables, so
 nothing here imports the secrets, health or store modules.
 """
@@ -110,7 +112,8 @@ class _Kind:
     build: InstanceBuilder
 
 
-def _adapter_modules(modules: Iterable[str] | None) -> Iterator[ModuleType]:
+def _spec_modules(modules: Iterable[str] | None) -> Iterator[ModuleType]:
+    """The scanned modules that define a ``SPEC``: adapters, and helpers without ``ADAPTER``."""
     if modules is None:
         modules = [
             f"{PACKAGE}.{info.name}"
@@ -119,7 +122,7 @@ def _adapter_modules(modules: Iterable[str] | None) -> Iterator[ModuleType]:
         ]
     for name in modules:
         module = importlib.import_module(name)
-        if isinstance(getattr(module, "SPEC", None), SourceSpec) and hasattr(module, "ADAPTER"):
+        if isinstance(getattr(module, "SPEC", None), SourceSpec):
             yield module
 
 
@@ -148,14 +151,17 @@ class SourceRegistry:
         self._has_extra = has_extra
         self._clock = clock
         self._sources: dict[str, RegisteredSource] = {}
+        self._helpers: dict[str, SourceSpec] = {}
         self._needs_instance: set[str] = set()
         self._adapters: dict[str, SourceAdapter] = {}
         kinds: dict[str, _Kind] = {}
-        for module in _adapter_modules(modules):
+        for module in _spec_modules(modules):
             spec: SourceSpec = module.SPEC
             model = getattr(module, "INSTANCE_MODEL", None)
             build = getattr(module, "instance_spec", None)
-            if model is not None and build is not None:
+            if not hasattr(module, "ADAPTER"):
+                self._add_helper(spec)
+            elif model is not None and build is not None:
                 kinds[spec.id] = _Kind(spec, module.ADAPTER, model, build)
             else:
                 self._add(spec, module.ADAPTER, None)
@@ -163,11 +169,21 @@ class SourceRegistry:
             self._add(spec, adapter_cls, None)
         self._add_instances(kinds)
 
+    def _taken(self, id: str) -> None:
+        if id in self._sources or id in self._helpers:
+            raise ValueError(f"two sources share the id {id}")
+
+    def _add_helper(self, spec: SourceSpec) -> None:
+        """A helper spec: a policy for the HTTP client, never a listed or searched source."""
+        if Capability.SEARCH in spec.capabilities:
+            raise ValueError(f"the helper {spec.id} declares search; a helper never searches")
+        self._taken(spec.id)
+        self._helpers[spec.id] = spec
+
     def _add(
         self, spec: SourceSpec, adapter_cls: type[SourceAdapter], instance: BaseModel | None
     ) -> None:
-        if spec.id in self._sources:
-            raise ValueError(f"two sources share the id {spec.id}")
+        self._taken(spec.id)
         settings = self._settings.sources.get(spec.id) or SourceSettings()
         self._sources[spec.id] = RegisteredSource(spec, adapter_cls, settings, instance)
 
@@ -223,12 +239,19 @@ class SourceRegistry:
     def by_group(self, group: str) -> list[RegisteredSource]:
         return [source for source in self.all() if source.spec.group == group]
 
+    def helpers(self) -> list[SourceSpec]:
+        """The helper specs, which only ``policy`` serves (LLD-sources-v3 5.13)."""
+        return [self._helpers[helper] for helper in sorted(self._helpers)]
+
     def policy(self, source: str) -> SourcePolicy:
         """The ``PolicyResolver`` of the HTTP client; an unknown source may call nothing."""
         registered = self._sources.get(source)
-        if registered is None:
-            raise HttpError(ErrorCode.BLOCKED_BY_POLICY)
-        return registered.spec.policy(daily_quota=registered.settings.budget_cap)
+        if registered is not None:
+            return registered.spec.policy(daily_quota=registered.settings.budget_cap)
+        helper = self._helpers.get(source)
+        if helper is not None:
+            return helper.policy()
+        raise HttpError(ErrorCode.BLOCKED_BY_POLICY)
 
     def select(
         self,
@@ -266,6 +289,7 @@ class SourceRegistry:
             selected.append(Selected(source.spec.id, self._adapter(source), skip))
         return selected
 
+    # @spec SRC-24
     def view(self, id: str | None = None) -> list[SourceView]:
         if id is None:
             return [self._view(source) for source in self.all()]

@@ -636,3 +636,106 @@ def test_registry_construction_imports_nothing_when_modules_is_empty() -> None:
     """``modules=[]`` loads no module, so tests see only the adapters they pass in."""
     registry = build(extra=())
     assert registry.all() == []
+
+
+def test_deprecated_days_counts_down_to_shutdown_on(monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec SRC-24: A source with a shutdown date reports ``deprecated(days)`` by the clock.
+
+    The count is whole days from the clock's local date to ``shutdown_on``, 0 on and after
+    the day; the source is still selected, and a source without a date has no count.
+    """
+    import time
+
+    monkeypatch.setenv("TZ", "UTC")
+    time.tzset()
+    try:
+        network = Network()
+        network.clock = FakeClock(datetime(2026, 12, 22, 12, tzinfo=UTC))
+        dated = dataclasses.replace(FAKE_SPEC, id="dated", shutdown_on=date(2027, 1, 1))
+        registry = build(extra=((dated, FakeAdapter), (FAKE_SPEC, FakeAdapter)), network=network)
+        counts = []
+        for days in (0, 9, 1, 3):
+            network.clock.advance(days * 86_400)
+            (view,) = registry.view("dated")
+            assert view.shutdown_on == date(2027, 1, 1)
+            counts.append(view.deprecated_days)
+        assert counts == [10, 1, 0, 0]
+        assert registry.view("fake")[0].deprecated_days is None
+        (selected,) = registry.select(None, Capability.SEARCH, explicit=["dated"])
+        assert selected.skip is None
+    finally:
+        monkeypatch.undo()
+        time.tzset()
+
+
+RESOLVER_MODULE = """\
+from research_mcp.core.specs import RateSpec
+from research_mcp.sources.base import Capability, SourceSpec
+
+SPEC = SourceSpec(
+    id="zz_resolver",
+    title="Test resolver helper",
+    group="reference",
+    capabilities=frozenset({Capability.GET}),
+    id_schemes=frozenset({"doi"}),
+    hosts=frozenset({"resolver.test-helper.org"}),
+    auth=None,
+    rate=RateSpec(rps=2.0, burst=1, concurrency=1),
+)
+"""
+
+
+@pytest.fixture
+def with_resolver(discovered: Path) -> Iterator[Path]:
+    """A helper module (``SPEC`` without ``ADAPTER``) on the scan path, next to the others."""
+    (discovered / "zz_resolver.py").write_text(RESOLVER_MODULE)
+    yield discovered
+    sys.modules.pop("research_mcp.sources.zz_resolver", None)
+
+
+async def test_helper_spec_gives_a_policy_and_stays_out_of_the_listings(
+    with_resolver: Path,
+) -> None:
+    """A helper spec feeds ``policy(id)`` for the HTTP client and is never a listed source."""
+    network = Network()
+    registry = build(network=network, modules=None)
+    policy = registry.policy("zz_resolver")
+    assert policy.source == "zz_resolver"
+    assert policy.hosts == frozenset({"resolver.test-helper.org"})
+    assert policy.rate == RateSpec(rps=2.0, burst=1, concurrency=1)
+    assert [helper.id for helper in registry.helpers()] == ["zz_resolver"]
+    ids = [source.spec.id for source in registry.all()]
+    assert "zz_resolver" not in ids
+    assert "zz_resolver" not in {view.id for view in registry.view()}
+    assert registry.get("zz_resolver") is None
+    assert registry.by_group("reference") == []
+    assert all(s.source != "zz_resolver" for s in registry.select(["reference"], Capability.GET))
+    with pytest.raises(ToolError):
+        registry.view("zz_resolver")
+    with pytest.raises(ToolError):
+        registry.select(None, Capability.GET, explicit=["zz_resolver"])
+    # The shared client calls the helper's host under its policy, and no other host.
+    client = network.client(registry)
+    await client.get_json("https://resolver.test-helper.org/10.5555/x", source="zz_resolver")
+    assert [request.url.host for request in network.requests] == ["resolver.test-helper.org"]
+    from research_mcp.core.errors import HttpError
+
+    with pytest.raises(HttpError) as caught:
+        await client.get_json("https://elsewhere.test-helper.org/", source="zz_resolver")
+    assert caught.value.code is ErrorCode.BLOCKED_BY_POLICY
+    await client.aclose()
+
+
+def test_helper_spec_with_search_or_a_shared_id_fails_at_construction(
+    with_resolver: Path,
+) -> None:
+    """A helper declares no search capability, and its id is unique among all sources."""
+    searching = RESOLVER_MODULE.replace("Capability.GET", "Capability.SEARCH")
+    (with_resolver / "zz_resolver.py").write_text(searching)
+    with pytest.raises(ValueError, match="zz_resolver"):
+        build(modules=["research_mcp.sources.zz_resolver"])
+    sys.modules.pop("research_mcp.sources.zz_resolver", None)
+    (with_resolver / "zz_resolver.py").write_text(RESOLVER_MODULE)
+    clash = dataclasses.replace(FAKE_SPEC, id="zz_resolver")
+    with pytest.raises(ValueError, match="zz_resolver"):
+        build(extra=((clash, FakeAdapter),), modules=["research_mcp.sources.zz_resolver"])

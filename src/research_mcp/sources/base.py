@@ -1,13 +1,13 @@
 """The source contract: ``SourceSpec``, the adapter protocol and its context.
 
-LLD-sources-v2 2.1 and 5.3. Every source module defines ``SPEC: SourceSpec`` and
+LLD-sources-v3 2.1 and 5.3. Every source module defines ``SPEC: SourceSpec`` and
 ``ADAPTER``; the registry discovers them (2.3). Adapters only translate: the shared HTTP
 client reached through ``SourceContext.http`` does the I/O, retries, waits and credentials.
 """
 
 import functools
 import re
-from collections.abc import Awaitable, Callable, Mapping, Sequence
+from collections.abc import Awaitable, Callable, Mapping
 from dataclasses import dataclass as std_dataclass
 from dataclasses import field
 from datetime import date
@@ -17,11 +17,12 @@ from urllib.parse import urlsplit
 
 from defusedxml import DefusedXmlException
 from defusedxml.ElementTree import ParseError
-from pydantic import BaseModel, ConfigDict
+from pydantic import ConfigDict
 from pydantic.dataclasses import dataclass
 
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.models import (
+    AuthorRecord,
     CitationPage,
     Clock,
     FulltextCandidate,
@@ -30,6 +31,7 @@ from research_mcp.core.models import (
     ProbeResult,
     SearchPage,
     SearchRequest,
+    UpdateNotice,
     WorkRecord,
 )
 from research_mcp.core.specs import AuthSpec, ErrorClassifier, ProbeSpec, RateSpec, SourcePolicy
@@ -213,10 +215,10 @@ class SourceContext:
 
 
 class SourceAdapter(Protocol):
-    """An adapter. ``search_authors`` and ``updates`` are called only for the capability.
+    """An adapter. A method is called only when the spec declares its capability.
 
-    ``AuthorRecord`` and ``UpdateNotice`` are not in ``core/models.py`` yet (LLD-sources-v2
-    2.1 and 5.13), so those two return a sequence of models until they are.
+    ``search_authors`` serves ``Capability.AUTHORS`` and ``updates`` serves
+    ``Capability.UPDATES`` (LLD-sources-v3 2.1).
     """
 
     spec: SourceSpec
@@ -234,8 +236,8 @@ class SourceAdapter(Protocol):
     ) -> CitationPage: ...
     async def search_authors(
         self, query: str | None, orcid: str | None, limit: int
-    ) -> Sequence[BaseModel]: ...
-    async def updates(self, ident: Identifier) -> Sequence[BaseModel]: ...
+    ) -> list[AuthorRecord]: ...
+    async def updates(self, ident: Identifier) -> list[UpdateNotice]: ...
     async def probe(self) -> ProbeResult: ...
 
 

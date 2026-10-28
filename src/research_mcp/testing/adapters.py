@@ -1,4 +1,4 @@
-"""A fake source adapter for tests, with its seven fixtures in memory (LLD-sources-v2 5.3).
+"""A fake source adapter for tests, with its seven fixtures in memory (LLD-sources-v3 5.3).
 
 Register it with ``SourceRegistry(..., extra_adapters=[(FAKE_SPEC, FakeAdapter)])`` so the
 conformance suite and the registry tests run before any real adapter exists. The fake
@@ -10,7 +10,6 @@ speaks a small JSON API at ``https://api.fake-source.org`` and does all its I/O 
 import dataclasses
 import functools
 import json
-from collections.abc import Sequence
 from typing import Any, Literal
 from urllib.parse import quote, urlsplit
 
@@ -19,12 +18,14 @@ from pydantic import BaseModel, ConfigDict
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.ids import Identifier, normalize_doi
 from research_mcp.core.models import (
+    AuthorRecord,
     CitationPage,
     FulltextCandidate,
     ProbeResult,
     Provenance,
     SearchPage,
     SearchRequest,
+    UpdateNotice,
     WorkRecord,
 )
 from research_mcp.core.specs import RateSpec
@@ -170,10 +171,10 @@ class FakeAdapter:
 
     async def search_authors(
         self, query: str | None, orcid: str | None, limit: int
-    ) -> Sequence[BaseModel]:
+    ) -> list[AuthorRecord]:
         return []
 
-    async def updates(self, ident: Identifier) -> Sequence[BaseModel]:
+    async def updates(self, ident: Identifier) -> list[UpdateNotice]:
         return []
 
     async def probe(self) -> ProbeResult:

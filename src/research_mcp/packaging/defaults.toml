@@ -1,0 +1,117 @@
+# Default data for Research MCP (LLD-sources-v3 3.3). This file is the lowest settings
+# layer, below ~/.config/research-mcp/config.toml and the RESEARCH_MCP_* environment.
+# A site_sets.<name> or sources.<id> table in the config replaces the entry of the same
+# name here and leaves the others; a site set with an empty list is removed (3.2).
+
+[site_sets]
+# v1's docs-domain list, verbatim (SRC-FR-18).
+v1_docs = [
+  "keycloak.org",
+  "ory.sh",
+  "supertokens.com",
+  "authelia.com",
+  "goauthentik.io",
+  "zitadel.com",
+  "logto.io",
+  "casdoor.org",
+  "authgear.com",
+  "kanidm.github.io",
+  "freeipa.org",
+  "syncope.apache.org",
+  "openpolicyagent.org",
+  "cerbos.dev",
+  "authzed.com",
+  "casbin.org",
+  "permify.co",
+  "topaz.sh",
+  "warrant.dev",
+  "pomerium.com",
+  "developer.hashicorp.com",
+  "infisical.com",
+  "webauthn.guide",
+  "jwt.io",
+  "datatracker.ietf.org",
+  "zanzibar.academy",
+]
+
+# The four DSpace repositories v1 searched (catalog rows 24 to 27; LLD-sources-v3 5.12).
+# The owner confirms the Harvard, Cornell and Penn base URLs and every title before M1-29.
+
+[sources.dspace_mit]
+instance_of = "dspace"
+title = "DSpace@MIT"
+base_url = "https://dspace.mit.edu/server/api"
+
+[sources.dspace_harvard]
+instance_of = "dspace"
+title = "DASH (Harvard)"
+base_url = "https://dash.harvard.edu/server/api"
+
+[sources.dspace_cornell]
+instance_of = "dspace"
+title = "eCommons (Cornell)"
+base_url = "https://ecommons.cornell.edu/server/api"
+
+[sources.dspace_penn]
+instance_of = "dspace"
+title = "Penn repository"
+base_url = "https://repository.upenn.edu/server/api"
+
+# The six docs sites of v1's crawl projects, with their seeds and filters (3.3).
+
+[sources.docs_site_keycloak]
+instance_of = "docs_site"
+title = "Keycloak documentation"
+allowed_hosts = ["www.keycloak.org"]
+path_prefixes = ["/docs/", "/securing-apps/", "/guides/"]
+sitemap = "https://www.keycloak.org/sitemap.xml"
+
+[sources.docs_site_ory]
+instance_of = "docs_site"
+title = "Ory documentation"
+allowed_hosts = ["www.ory.sh"]
+path_prefixes = ["/docs/"]
+sitemap = "https://www.ory.sh/sitemap.xml"
+
+[sources.docs_site_opa]
+instance_of = "docs_site"
+title = "Open Policy Agent documentation"
+allowed_hosts = ["www.openpolicyagent.org"]
+path_prefixes = ["/docs/"]
+sitemap = "https://www.openpolicyagent.org/sitemap.xml"
+
+[sources.docs_site_vault]
+instance_of = "docs_site"
+title = "HashiCorp Vault documentation"
+allowed_hosts = ["developer.hashicorp.com"]
+path_prefixes = ["/vault/docs"]
+seed_urls = ["https://developer.hashicorp.com/vault/docs"]
+follow_links = true
+
+# The seed pages only. The owner confirms these four URLs before M1-29: no approved
+# document lists them, and they follow the Syncope site's /docs/<version>/ layout.
+[sources.docs_site_syncope]
+instance_of = "docs_site"
+title = "Apache Syncope documentation"
+allowed_hosts = ["syncope.apache.org"]
+path_prefixes = [
+  "/docs/4.1/reference-guide.html",
+  "/docs/4.1/getting-started.html",
+  "/docs/4.0/reference-guide.html",
+  "/docs/4.0/getting-started.html",
+]
+seed_urls = [
+  "https://syncope.apache.org/docs/4.1/reference-guide.html",
+  "https://syncope.apache.org/docs/4.1/getting-started.html",
+  "https://syncope.apache.org/docs/4.0/reference-guide.html",
+  "https://syncope.apache.org/docs/4.0/getting-started.html",
+]
+follow_links = false
+
+[sources.docs_site_freeipa]
+instance_of = "docs_site"
+title = "FreeIPA documentation"
+allowed_hosts = ["www.freeipa.org"]
+path_prefixes = ["/page/"]
+seed_urls = ["https://www.freeipa.org/page/Documentation.html"]
+follow_links = true
