@@ -448,7 +448,8 @@
      "tests/sources/ms_learn/",
      "src/research_mcp/platform/http.py",
      "src/research_mcp/testing/adapters.py",
-     "tests/unit/platform/test_http.py"
+     "tests/unit/platform/test_http.py",
+     "tests/sources/conftest.py"
     ]
    },
    "acceptance": {
@@ -938,7 +939,8 @@
      "src/research_mcp/mcp_app/server.py",
      "tests/contract/test_tools_discovery.py",
      "tests/contract/test_tool_contract.py",
-     "src/research_mcp/app.py"
+     "src/research_mcp/app.py",
+     "src/research_mcp/mcp_app/prompts.py"
     ]
    },
    "acceptance": {
@@ -1003,7 +1005,7 @@
    "schema_version": "1.0",
    "id": "M1-25",
    "title": "Health service: telemetry, rollups, probes and local targets",
-   "description": "Read AGENTS.md first. Build work unit M1-25 exactly as docs/build/M1-plan-v6.md specifies: its task row and the low level designs it implements: docs/lld/LLD-health-v3.md (\u00a73, \u00a75.3, \u00a75.4, \u00a75.6); docs/lld/LLD-platform-v3.md (\u00a75.10); SPEC-v5 7. docs/build/M1-plan-v6.md section 2.2 lists clarifications for this unit; they are requirements. The LLDs own every name. Write a test for each acceptance criterion this unit owns: HLTH-1, HLTH-2, HLTH-3, HLTH-4, HLTH-11, HLTH-44 (their text is in docs/prd/components/PRD-health-v4.md section 2.4); start each test's docstring with `@spec <ID>:` and put a `# @spec <ID>` comment on the behavior's entry point in code. Keep tools/ci.sh --python-only green, including `node tools/sdd/cli.mjs check`; gates run commands without a shell, so tools/ci.sh stays executable with a #!/usr/bin/env bash line. Branch rules (AGENTS.md): work only on the branch you are on and commit there; never push, never create or switch branches, never commit to main. ECC merges main into your branch before each attempt; if it did, keep both sides and make your unit pass on top. If a file your unit needs belongs to a dependency that is not merged yet, do not create it: finish what you can and report status blocked naming the missing unit; ECC re-runs you after it merges. Do not add __init__.py files under tests/ and do not edit pyproject.toml, uv.lock or any package __init__.py (M0-01 created them; in M1 only M1-01, which has pyproject.toml and uv.lock in its scope, edits them). Never touch the v1 repository (my-research-mcp-server) or ~/arxiv-papers, never read real credentials or the Keychain, and use fakes and recorded fixtures for every external system; tests pass with the network blocked. A prior attempt exists read-only at ~/Documents/GitHub/my-research-mcp; you may read it, but the LLDs win wherever they differ, and the plan's clarifications list defects that attempt shipped.",
+   "description": "Read AGENTS.md first. Build work unit M1-25 exactly as docs/build/M1-plan-v6.md specifies: its task row and the low level designs it implements: docs/lld/LLD-health-v3.md (\u00a73, \u00a75.3, \u00a75.4, \u00a75.6); docs/lld/LLD-platform-v3.md (\u00a75.10); SPEC-v5 7. docs/build/M1-plan-v6.md section 2.2 lists clarifications for this unit; they are requirements. The LLDs own every name. Write a test for each acceptance criterion this unit owns: HLTH-1, HLTH-2, HLTH-3, HLTH-4, HLTH-11, HLTH-44, HLTH-25 (their text is in docs/prd/components/PRD-health-v4.md section 2.4); start each test's docstring with `@spec <ID>:` and put a `# @spec <ID>` comment on the behavior's entry point in code. Keep tools/ci.sh --python-only green, including `node tools/sdd/cli.mjs check`; gates run commands without a shell, so tools/ci.sh stays executable with a #!/usr/bin/env bash line. Branch rules (AGENTS.md): work only on the branch you are on and commit there; never push, never create or switch branches, never commit to main. ECC merges main into your branch before each attempt; if it did, keep both sides and make your unit pass on top. If a file your unit needs belongs to a dependency that is not merged yet, do not create it: finish what you can and report status blocked naming the missing unit; ECC re-runs you after it merges. Do not add __init__.py files under tests/ and do not edit pyproject.toml, uv.lock or any package __init__.py (M0-01 created them; in M1 only M1-01, which has pyproject.toml and uv.lock in its scope, edits them). Never touch the v1 repository (my-research-mcp-server) or ~/arxiv-papers, never read real credentials or the Keychain, and use fakes and recorded fixtures for every external system; tests pass with the network blocked. A prior attempt exists read-only at ~/Documents/GitHub/my-research-mcp; you may read it, but the LLDs win wherever they differ, and the plan's clarifications list defects that attempt shipped.",
    "depends_on": [
     "M1-02",
     "M1-24",
@@ -1015,12 +1017,13 @@
     "files": [
      "src/research_mcp/services/health.py",
      "src/research_mcp/platform/scheduler.py",
-     "tests/services/test_health.py"
+     "tests/services/test_health.py",
+     "tests/services/test_credentials.py"
     ]
    },
    "acceptance": {
     "commands": [
-     "uv run pytest tests/services/test_health.py -q",
+     "uv run pytest tests/services/test_health.py tests/services/test_credentials.py -q",
      "tools/ci.sh --python-only"
     ]
    },
@@ -1090,6 +1093,7 @@
    "title": "Notify service: once-only notices, digest, quiet hours, macOS notifier",
    "description": "Read AGENTS.md first. Build work unit M1-27 exactly as docs/build/M1-plan-v6.md specifies: its task row and the low level designs it implements: docs/lld/LLD-health-v3.md (\u00a72, \u00a75.8); SPEC-v5 7. docs/build/M1-plan-v6.md section 2.2 lists clarifications for this unit; they are requirements. The LLDs own every name. Write a test for each acceptance criterion this unit owns: HLTH-30, HLTH-31, HLTH-32, HLTH-33, HLTH-34, HLTH-35 (their text is in docs/prd/components/PRD-health-v4.md section 2.4); start each test's docstring with `@spec <ID>:` and put a `# @spec <ID>` comment on the behavior's entry point in code. Keep tools/ci.sh --python-only green, including `node tools/sdd/cli.mjs check`; gates run commands without a shell, so tools/ci.sh stays executable with a #!/usr/bin/env bash line. Branch rules (AGENTS.md): work only on the branch you are on and commit there; never push, never create or switch branches, never commit to main. ECC merges main into your branch before each attempt; if it did, keep both sides and make your unit pass on top. If a file your unit needs belongs to a dependency that is not merged yet, do not create it: finish what you can and report status blocked naming the missing unit; ECC re-runs you after it merges. Do not add __init__.py files under tests/ and do not edit pyproject.toml, uv.lock or any package __init__.py (M0-01 created them; in M1 only M1-01, which has pyproject.toml and uv.lock in its scope, edits them). Never touch the v1 repository (my-research-mcp-server) or ~/arxiv-papers, never read real credentials or the Keychain, and use fakes and recorded fixtures for every external system; tests pass with the network blocked. A prior attempt exists read-only at ~/Documents/GitHub/my-research-mcp; you may read it, but the LLDs win wherever they differ, and the plan's clarifications list defects that attempt shipped.",
    "depends_on": [
+    "M1-25",
     "M1-26",
     "M1-31"
    ],
@@ -1147,12 +1151,13 @@
      "src/research_mcp/services/doctor.py",
      "tests/contract/test_status_contract.py",
      "tests/unit/test_cli.py",
-     "tests/integration/test_app.py"
+     "tests/integration/test_app.py",
+     "tests/contract/test_tool_contract.py"
     ]
    },
    "acceptance": {
     "commands": [
-     "uv run pytest tests/contract/test_status_contract.py tests/unit/test_cli.py tests/integration/test_app.py -q",
+     "uv run pytest tests/contract/test_status_contract.py tests/unit/test_cli.py tests/integration/test_app.py tests/contract/test_tool_contract.py -q",
      "tools/ci.sh --python-only"
     ]
    },
