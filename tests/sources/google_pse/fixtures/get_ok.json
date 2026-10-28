@@ -1,0 +1,11 @@
+{
+  "kind": "customsearch#search",
+  "searchInformation": {"totalResults": "1"},
+  "items": [
+    {
+      "title": "Research methods",
+      "link": "https://example.org/research-methods",
+      "snippet": "An overview of research methods."
+    }
+  ]
+}

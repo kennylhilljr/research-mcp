@@ -1,0 +1,11 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "2",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "search_metadata": {"status": "Error"},
+    "error": "Your account has run out of searches this month."
+  }
+}

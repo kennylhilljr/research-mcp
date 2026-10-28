@@ -1,0 +1,12 @@
+{
+  "query": {"original": "research"},
+  "web": {
+    "results": [
+      {
+        "title": "Research methods",
+        "url": "https://example.org/research-methods",
+        "description": "An overview of research methods."
+      }
+    ]
+  }
+}

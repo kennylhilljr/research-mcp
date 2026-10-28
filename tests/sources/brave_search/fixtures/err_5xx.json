@@ -1,0 +1,10 @@
+{
+  "status": 503,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "type": "ErrorResponse",
+    "error": {"code": "SERVICE_UNAVAILABLE", "detail": "The service is temporarily unavailable."}
+  }
+}

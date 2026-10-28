@@ -1,0 +1,10 @@
+{
+  "status": 503,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "search_metadata": {"status": "Error"},
+    "error": "The service is temporarily unavailable."
+  }
+}

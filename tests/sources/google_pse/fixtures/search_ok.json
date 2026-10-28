@@ -1,0 +1,20 @@
+{
+  "kind": "customsearch#search",
+  "searchInformation": {"totalResults": "3"},
+  "items": [
+    {
+      "title": "Server Administration Guide",
+      "link": "https://www.keycloak.org/docs/latest/server_admin/index.html",
+      "snippet": "Keycloak is a single sign on solution for web apps and RESTful web services."
+    },
+    {
+      "title": "Introduction to Ory Kratos",
+      "link": "https://www.ory.sh/docs/kratos/ory-kratos-intro",
+      "snippet": "Ory Kratos is an API-first identity and user management system."
+    },
+    {
+      "title": "OAuth 2.0 Authorization Framework",
+      "link": "https://datatracker.ietf.org/doc/html/rfc6749"
+    }
+  ]
+}

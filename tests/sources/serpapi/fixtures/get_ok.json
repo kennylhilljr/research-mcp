@@ -1,0 +1,7 @@
+{
+  "account_email": "owner@example.com",
+  "plan_id": "free",
+  "searches_per_month": 100,
+  "this_month_usage": 3,
+  "total_searches_left": 97
+}

@@ -1,0 +1,11 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "2",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "type": "ErrorResponse",
+    "error": {"code": "RATE_LIMITED", "detail": "Rate limit exceeded."}
+  }
+}
