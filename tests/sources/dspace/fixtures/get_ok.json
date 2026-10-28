@@ -1,0 +1,13 @@
+{
+  "uuid": "22222222-2222-2222-2222-222222222222",
+  "handle": "1721.1/100002",
+  "name": "Another Research Item",
+  "metadata": {
+    "dc.contributor.author": [{ "value": "Doe, Jane" }],
+    "dc.date.issued": [{ "value": "2020-11-15" }],
+    "dc.description.abstract": [{ "value": "Another abstract." }],
+    "dc.type": [{ "value": "Thesis" }],
+    "dc.identifier.doi": [{ "value": "10.1000/example.another" }]
+  },
+  "dspaceVersion": "7.6.1"
+}
