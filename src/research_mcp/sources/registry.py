@@ -253,6 +253,7 @@ class SourceRegistry:
             return helper.policy()
         raise HttpError(ErrorCode.BLOCKED_BY_POLICY)
 
+    # @spec SRC-28, SRC-29
     def select(
         self,
         groups: Iterable[str] | None,
@@ -288,6 +289,39 @@ class SourceRegistry:
             skip = None if state is None else SourceStatus(source=source.spec.id, state=state)
             selected.append(Selected(source.spec.id, self._adapter(source), skip))
         return selected
+
+    def web_chain(
+        self, strategy: Literal["fallback", "all"], order: Iterable[str] | None = None
+    ) -> list[Selected]:
+        """The ``web`` group in chain order (LLD-sources-v3 5.9).
+
+        ``order`` defaults to ``web.order``; an entry ending in ``*`` expands to the
+        registered ids with that prefix, in id order; a name that is not registered is
+        dropped. ``strategy`` decides how the caller runs the chain, not this order or skip.
+        """
+        names = list(self._settings.web.order) if order is None else list(order)
+        chain: list[RegisteredSource] = []
+        seen: set[str] = set()
+        for name in names:
+            matches = (
+                sorted(
+                    (s for s in self.all() if s.spec.id.startswith(name[:-1])),
+                    key=lambda s: s.spec.id,
+                )
+                if name.endswith("*")
+                else [s for s in (self._sources.get(name),) if s is not None]
+            )
+            for source in matches:
+                if source.spec.id not in seen:
+                    seen.add(source.spec.id)
+                    chain.append(source)
+        return [self._chain_selected(source) for source in chain]
+
+    def _chain_selected(self, source: RegisteredSource) -> Selected:
+        own = self._own_skip(source)
+        state = own.state if own is not None else self._health_skip(source.spec.id)
+        skip = None if state is None else SourceStatus(source=source.spec.id, state=state)
+        return Selected(source.spec.id, self._adapter(source), skip)
 
     # @spec SRC-24
     def view(self, id: str | None = None) -> list[SourceView]:
