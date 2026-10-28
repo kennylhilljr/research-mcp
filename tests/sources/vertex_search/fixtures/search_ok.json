@@ -1,0 +1,55 @@
+{
+  "results": [
+    {
+      "id": "8b1d1c6f0a2e4b7d",
+      "document": {
+        "name": "projects/123456789012/locations/global/collections/default_collection/dataStores/docs-store/branches/0/documents/8b1d1c6f0a2e4b7d",
+        "id": "8b1d1c6f0a2e4b7d",
+        "derivedStructData": {
+          "title": "Server Administration Guide",
+          "htmlTitle": "Server <b>Administration</b> Guide",
+          "link": "https://www.keycloak.org/docs/latest/server_admin/index.html",
+          "displayLink": "www.keycloak.org",
+          "snippets": [
+            {
+              "snippet": "Keycloak is a single sign on solution for web apps and RESTful web services.",
+              "htmlSnippet": "Keycloak is a single sign on solution for web apps and RESTful web services."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "c3f09e5a7d214e10",
+      "document": {
+        "name": "projects/123456789012/locations/global/collections/default_collection/dataStores/docs-store/branches/0/documents/c3f09e5a7d214e10",
+        "id": "c3f09e5a7d214e10",
+        "derivedStructData": {
+          "title": "Introduction to Ory Kratos",
+          "link": "https://www.ory.sh/docs/kratos/ory-kratos-intro",
+          "displayLink": "www.ory.sh",
+          "snippets": [
+            {
+              "snippet": "Ory Kratos is an API-first identity and user management system."
+            }
+          ]
+        }
+      }
+    },
+    {
+      "id": "f41a7b2c9e6d3058",
+      "document": {
+        "name": "projects/123456789012/locations/global/collections/default_collection/dataStores/docs-store/branches/0/documents/f41a7b2c9e6d3058",
+        "id": "f41a7b2c9e6d3058",
+        "derivedStructData": {
+          "title": "OAuth 2.0 Authorization Framework",
+          "link": "https://datatracker.ietf.org/doc/html/rfc6749",
+          "displayLink": "datatracker.ietf.org"
+        }
+      }
+    }
+  ],
+  "totalSize": 3,
+  "attributionToken": "recorded-attribution-token",
+  "nextPageToken": "recorded-next-page-token"
+}

@@ -1,0 +1,14 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "2",
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "error": {
+      "code": 429,
+      "message": "Quota exceeded for quota metric 'Search requests'.",
+      "status": "RESOURCE_EXHAUSTED"
+    }
+  }
+}
