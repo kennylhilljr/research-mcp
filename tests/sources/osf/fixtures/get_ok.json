@@ -1,0 +1,26 @@
+{
+  "data": {
+    "id": "ezcuj",
+    "type": "preprints",
+    "attributes": {
+      "title": "Replication Crisis in Social Psychology",
+      "description": "A study of replication rates in social psychology research.",
+      "date_published": "2023-01-15T00:00:00.000Z",
+      "doi": "10.31234/osf.io/ezcuj"
+    },
+    "relationships": {
+      "provider": { "data": { "id": "psyarxiv" } }
+    },
+    "embeds": {
+      "contributors": {
+        "data": [
+          { "embeds": { "users": { "data": { "attributes": { "full_name": "Jane Doe" } } } } }
+        ]
+      }
+    },
+    "links": {
+      "html": "https://osf.io/ezcuj",
+      "preprint_doi": "https://doi.org/10.31234/osf.io/ezcuj"
+    }
+  }
+}

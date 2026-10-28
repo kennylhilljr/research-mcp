@@ -1,0 +1,13 @@
+[
+  {
+    "paper": {
+      "id": "1706.03762",
+      "title": "Attention Is All You Need",
+      "summary": "We propose a new simple network architecture, the Transformer.",
+      "publishedAt": "2017-06-12T00:00:00.000Z",
+      "authors": [{ "name": "Ashish Vaswani" }],
+      "upvotes": 100
+    },
+    "numComments": 10
+  }
+]

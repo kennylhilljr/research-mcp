@@ -1,0 +1,15 @@
+{
+  "collection": [
+    {
+      "doi": "10.1101/2020.02.02.020000",
+      "title": "A Clinical Study of Something Important",
+      "authors": "Lee, K.; Patel, R.",
+      "date": "2020-02-03",
+      "version": "2",
+      "category": "infectious diseases",
+      "abstract": "An abstract describing the clinical study.",
+      "server": "medrxiv"
+    }
+  ],
+  "messages": [{ "status": "ok", "total": "1" }]
+}

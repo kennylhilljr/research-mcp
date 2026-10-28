@@ -1,0 +1,13 @@
+[
+  {
+    "paper": {
+      "id": "2301.00001",
+      "title": "A Transformer That Learns Everything",
+      "summary": "We propose a new transformer architecture that learns everything.",
+      "publishedAt": "2023-01-01T00:00:00.000Z",
+      "authors": [{ "name": "Jane Doe" }, { "name": "John Smith" }],
+      "upvotes": 42
+    },
+    "numComments": 3
+  }
+]

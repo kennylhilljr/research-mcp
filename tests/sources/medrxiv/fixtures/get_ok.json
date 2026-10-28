@@ -1,0 +1,21 @@
+{
+  "collection": [
+    {
+      "doi": "10.1101/2020.02.02.020000",
+      "title": "A Clinical Study of Something Important",
+      "authors": "Lee, K.; Patel, R.",
+      "author_corresponding": "Lee, K.",
+      "author_corresponding_institution": "Example Medical School",
+      "date": "2020-02-03",
+      "version": "2",
+      "type": "new results",
+      "license": "cc_by_nd",
+      "category": "infectious diseases",
+      "jatsxml": "https://api.biorxiv.org/content/10.1101/2020.02.02.020000.source.xml",
+      "abstract": "An abstract describing the clinical study.",
+      "published": "NA",
+      "server": "medrxiv"
+    }
+  ],
+  "messages": [{ "status": "ok", "interval": "1", "total": "1" }]
+}

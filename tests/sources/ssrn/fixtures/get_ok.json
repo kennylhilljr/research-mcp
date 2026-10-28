@@ -1,0 +1,10 @@
+{
+  "message": {
+    "DOI": "10.2139/ssrn.1234567",
+    "title": ["Capital Structure and Firm Value: Evidence from SSRN"],
+    "author": [{ "given": "Alice", "family": "Nguyen" }],
+    "issued": { "date-parts": [[2021, 6, 1]] },
+    "container-title": ["SSRN Working Paper Series"],
+    "type": "report"
+  }
+}

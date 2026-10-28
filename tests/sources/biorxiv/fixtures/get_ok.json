@@ -1,0 +1,21 @@
+{
+  "collection": [
+    {
+      "doi": "10.1101/2020.01.01.012345",
+      "title": "A Study of Something Interesting",
+      "authors": "Doe, J.; Smith, A.",
+      "author_corresponding": "Doe, J.",
+      "author_corresponding_institution": "Example University",
+      "date": "2020-01-02",
+      "version": "1",
+      "type": "new results",
+      "license": "cc_by",
+      "category": "genomics",
+      "jatsxml": "https://api.biorxiv.org/content/10.1101/2020.01.01.012345.source.xml",
+      "abstract": "An abstract describing the study.",
+      "published": "NA",
+      "server": "biorxiv"
+    }
+  ],
+  "messages": [{ "status": "ok", "interval": "1", "total": "1" }]
+}
