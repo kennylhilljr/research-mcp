@@ -1,0 +1,40 @@
+{
+  "version": "6.9",
+  "hitCount": 1,
+  "nextCursorMark": "AoJw1",
+  "resultList": {
+    "result": [
+      {
+        "id": "23555192",
+        "source": "MED",
+        "pmid": "23555192",
+        "pmcid": "PMC3625057",
+        "doi": "10.1000/example.europepmc.1",
+        "title": "An example paper on a sample biomedical topic.",
+        "authorString": "Smith J, Doe A.",
+        "journalTitle": "Journal of Example Biomedicine",
+        "pubYear": "2013",
+        "firstPublicationDate": "2013-03-15",
+        "abstractText": "An example abstract about a sample biomedical topic.",
+        "pubType": "research-article",
+        "isOpenAccess": "Y",
+        "fullTextUrlList": {
+          "fullTextUrl": [
+            {
+              "availability": "Open access",
+              "documentStyle": "pdf",
+              "site": "Europe_PMC",
+              "url": "https://europepmc.org/articles/PMC3625057?pdf=render"
+            },
+            {
+              "availability": "Open access",
+              "documentStyle": "html",
+              "site": "Europe_PMC",
+              "url": "https://europepmc.org/articles/PMC3625057"
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

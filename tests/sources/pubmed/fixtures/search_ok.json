@@ -1,0 +1,21 @@
+{
+  "esearchresult": {
+    "count": "1",
+    "retmax": "1",
+    "retstart": "0",
+    "idlist": ["23555192"]
+  },
+  "result": {
+    "uids": ["23555192"],
+    "23555192": {
+      "uid": "23555192",
+      "title": "An example randomized trial of a sample intervention.",
+      "authors": [
+        { "name": "Smith J", "authtype": "Author" },
+        { "name": "Doe A", "authtype": "Author" }
+      ],
+      "pubdate": "2021 Jun 15",
+      "fulljournalname": "Journal of Example Medicine"
+    }
+  }
+}

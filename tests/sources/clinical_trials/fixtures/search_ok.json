@@ -1,0 +1,25 @@
+{
+  "totalCount": 1,
+  "nextPageToken": null,
+  "studies": [
+    {
+      "protocolSection": {
+        "identificationModule": {
+          "nctId": "NCT00000419",
+          "briefTitle": "A Sample Trial of an Example Intervention",
+          "officialTitle": "A Sample Randomized Trial of an Example Intervention in Adults"
+        },
+        "statusModule": {
+          "overallStatus": "COMPLETED",
+          "startDateStruct": { "date": "2000-06-15" }
+        },
+        "sponsorCollaboratorsModule": {
+          "leadSponsor": { "name": "Example University" }
+        },
+        "descriptionModule": {
+          "briefSummary": "An example summary of a sample clinical trial."
+        }
+      }
+    }
+  ]
+}
