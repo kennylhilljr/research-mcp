@@ -1,0 +1,7 @@
+{
+  "status": 503,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": { "message": "service unavailable" }
+}

@@ -1,0 +1,17 @@
+{
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "id": "EJ1197742",
+        "title": "Supporting Student Learning through Formative Assessment",
+        "author": ["Smith, Jane", "Doe, John"],
+        "description": "A study of formative assessment practices in classrooms.",
+        "publicationdateyear": 2019,
+        "publicationtype": ["Journal Articles", "Reports - Research"],
+        "subject": ["Formative Evaluation", "Student Evaluation"]
+      }
+    ]
+  }
+}
