@@ -1,5 +1,5 @@
 """Builds the ECC plans from the task tables of the milestone plans: .orchestration/plan-m0.json from
-docs/build/M0-plan-v4.md and .orchestration/plan-m1.json from docs/build/M1-plan-v3.md.
+docs/build/M0-plan-v4.md and .orchestration/plan-m1.json from docs/build/M1-plan-v4.md.
 
 Tasks whose status is `done` are already on main: they are left out, and so are dependencies on them.
 A scope entry ending in `/` is a folder the unit owns whole (ECC scopes cover a folder's subtree).
@@ -13,7 +13,7 @@ import sys
 ROOT = pathlib.Path(__file__).resolve().parents[1]
 PLANS = (
     ("M0", "docs/build/M0-plan-v4.md", ".orchestration/plan-m0.json", "(M0-01 owns them)"),
-    ("M1", "docs/build/M1-plan-v3.md", ".orchestration/plan-m1.json",
+    ("M1", "docs/build/M1-plan-v4.md", ".orchestration/plan-m1.json",
      "(M0-01 created them; in M1 only M1-01, which has pyproject.toml and uv.lock in its scope, edits them)"),
 )
 
