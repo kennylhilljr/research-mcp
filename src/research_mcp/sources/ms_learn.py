@@ -54,6 +54,7 @@ class MsLearnAdapter(UpstreamMcpAdapter):
     get_tool = "microsoft_docs_fetch"
     probe_url = "https://learn.microsoft.com/en-us/azure/storage/blobs/storage-blobs-introduction"
     venue = "Microsoft Learn"
+    doc_hosts = frozenset({"learn.microsoft.com"})
 
     def search_arguments(self, req: SearchRequest, limit: int) -> dict[str, JsonValue]:
         return {"query": req.query}

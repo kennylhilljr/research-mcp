@@ -145,6 +145,28 @@ async def test_session_is_reused_and_reopened_once_when_it_expires(stack: Any) -
     assert s.requests[-1].headers["mcp-session-id"] == "fake-session-2"
 
 
+@pytest.mark.parametrize(
+    ("answered", "sent"),
+    [
+        ("2025-03-26", "2025-03-26"),
+        ("2025-06-18\r\nX-Injected: 1", PROTOCOL_VERSION),
+        ("latest", PROTOCOL_VERSION),
+        ("2025-6-18", PROTOCOL_VERSION),
+        (20250618, PROTOCOL_VERSION),
+        (["2025-06-18"], PROTOCOL_VERSION),
+    ],
+)
+async def test_only_a_dated_protocol_version_from_the_server_is_sent_back(
+    stack: Any, answered: Any, sent: str
+) -> None:
+    """A server's ``protocolVersion`` goes in the header only as ``YYYY-MM-DD``; else ours."""
+    s = stack(FakeMcpServer({"echo": echo}, protocol_version=answered))
+    await s.call(q="v")
+    for request in s.requests[1:]:
+        assert request.headers["mcp-protocol-version"] == sent
+        assert "x-injected" not in request.headers
+
+
 async def test_concurrent_first_calls_open_one_session(stack: Any) -> None:
     """Two calls that start together share one initialize."""
     s = stack()

@@ -13,6 +13,7 @@ from __future__ import annotations
 
 import json
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.ids import Identifier, normalize_url
@@ -82,6 +83,8 @@ class UpstreamMcpAdapter:
     search_tool: str
     get_tool: str
     probe_url: str  # a page the get tool reads for the probe
+    # The documentation hosts ``get`` reads; the vendor's server fetches the URL itself.
+    doc_hosts: frozenset[str]
     venue: str
 
     def __init__(self, spec: SourceSpec, ctx: SourceContext) -> None:
@@ -139,9 +142,29 @@ class UpstreamMcpAdapter:
         payload = await self.call(self.search_tool, self.search_arguments(req, limit))
         return SearchPage(records=self.map_search(payload)[:limit])
 
+    def is_doc_url(self, url: str) -> bool:
+        """True for an ``https`` URL on ``doc_hosts`` with no user info and no port.
+
+        The vendor's server fetches the URL ``get`` sends, so any other URL (an internal
+        host, a token in a query) would leave the machine; it is never sent.
+        """
+        try:
+            parts = urlsplit(url)
+            port = parts.port
+        except ValueError:
+            return False
+        return (
+            parts.scheme == "https"
+            and parts.hostname in self.doc_hosts
+            and parts.username is None
+            and parts.password is None
+            and port is None
+        )
+
+    # @spec SRC-20
     @translate_errors
     async def get(self, ident: Identifier) -> WorkRecord | None:
-        if ident.scheme != "url":
+        if ident.scheme != "url" or not self.is_doc_url(ident.value):
             return None
         payload = await self.call(self.get_tool, self.get_arguments(ident.value))
         return self.map_get(payload, ident.value)

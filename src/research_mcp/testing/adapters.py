@@ -244,14 +244,21 @@ class FakeMcpServer:
     returns its ``Mcp-Session-Id``; every later request must carry a live one (404 for an
     unknown or expired id, 400 for none, as the MCP rules say). ``tools/call`` runs the
     named handler, whose return value is the call's ``result``. Replies are event streams,
-    or JSON bodies with ``event_stream=False``. ``calls`` keeps each tool call made.
+    or JSON bodies with ``event_stream=False``. ``initialize`` answers with the client's
+    protocol version, or with ``protocol_version`` when it is given. ``calls`` keeps each
+    tool call made.
     """
 
     def __init__(
-        self, tools: Mapping[str, ToolHandler] | None = None, *, event_stream: bool = True
+        self,
+        tools: Mapping[str, ToolHandler] | None = None,
+        *,
+        event_stream: bool = True,
+        protocol_version: JsonValue = None,
     ) -> None:
         self.tools = dict(tools or {})
         self.event_stream = event_stream
+        self.protocol_version = protocol_version
         self.sessions: set[str] = set()
         self.calls: list[tuple[str, dict[str, Any]]] = []
         self.methods: list[str] = []
@@ -310,8 +317,9 @@ class FakeMcpServer:
         session = f"fake-session-{next(self._ids)}"
         self.sessions.add(session)
         params = body.get("params") or {}
-        result = {
-            "protocolVersion": params.get("protocolVersion", "2025-06-18"),
+        version = self.protocol_version or params.get("protocolVersion", "2025-06-18")
+        result: dict[str, JsonValue] = {
+            "protocolVersion": version,
             "capabilities": {"tools": {}},
             "serverInfo": {"name": "fake-mcp", "version": "1"},
         }

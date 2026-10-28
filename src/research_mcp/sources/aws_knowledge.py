@@ -52,6 +52,7 @@ class AwsKnowledgeAdapter(UpstreamMcpAdapter):
     get_tool = "aws___read_documentation"
     probe_url = "https://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html"
     venue = "AWS documentation"
+    doc_hosts = frozenset({"docs.aws.amazon.com"})
 
     def search_arguments(self, req: SearchRequest, limit: int) -> dict[str, JsonValue]:
         return {"search_phrase": req.query, "limit": limit}

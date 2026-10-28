@@ -159,3 +159,24 @@ async def test_conformance_runs_over_the_upstream_mcp_port(
     (call,) = harness.requests
     assert call.url == httpx.URL(SERVER)
     assert json.loads(call.content)["params"]["name"] == SEARCH
+
+
+@pytest.mark.parametrize(
+    "url",
+    [
+        "https://internal.corp.example/admin?token=secret",
+        "http://169.254.169.254/latest/meta-data/",
+        "http://docs.aws.amazon.com/AmazonS3/latest/userguide/Welcome.html",
+        "https://docs.aws.amazon.com.evil.example/x",
+        "https://user:pw@docs.aws.amazon.com/x",
+        "https://docs.aws.amazon.com:8443/x",
+        "https://learn.microsoft.com/en-us/azure/",
+        "not a url",
+    ],
+)
+async def test_get_sends_no_url_off_the_aws_documentation_host(mcp_stack: Any, url: str) -> None:
+    """@spec SRC-20: ``get`` answers None for a URL not on AWS documentation; nothing is sent."""
+    stack = stack_for(mcp_stack)
+    assert await stack.adapter.get(Identifier("url", url)) is None
+    assert stack.server.calls == []
+    assert stack.server.methods == []

@@ -17,6 +17,7 @@ health layers classify it like any upstream error and no upstream text reaches a
 from __future__ import annotations
 
 import itertools
+import re
 from collections.abc import Mapping
 from dataclasses import dataclass
 from typing import Protocol
@@ -30,6 +31,8 @@ from research_mcp.version import __version__
 
 PROTOCOL_VERSION = "2025-06-18"
 PROTOCOL_HEADER = "MCP-Protocol-Version"
+# A server's protocolVersion goes into a request header, so only a dated version is used.
+_DATED_VERSION = re.compile(r"\d{4}-\d{2}-\d{2}")
 ACCEPT = "application/json, text/event-stream"
 CLIENT_NAME = "research-mcp"
 
@@ -117,10 +120,9 @@ class McpClient:
         )
         result = self._result(reply, rpc_id)
         version = result.get("protocolVersion")
-        session = _Session(
-            session_id=reply.session_id,
-            protocol_version=version if isinstance(version, str) else PROTOCOL_VERSION,
-        )
+        if not isinstance(version, str) or _DATED_VERSION.fullmatch(version) is None:
+            version = PROTOCOL_VERSION
+        session = _Session(session_id=reply.session_id, protocol_version=version)
         notice: dict[str, JsonValue] = {"jsonrpc": "2.0", "method": "notifications/initialized"}
         await self._http.post_events(
             server, source=source, json=notice, headers=self._headers(session)

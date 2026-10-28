@@ -39,6 +39,8 @@ from research_mcp.testing.clock import FakeClock, FakeSleeper
 
 SOURCES_TESTS = Path(__file__).parent
 CONTACT_EMAIL = "conformance@research-mcp.dev"
+# The host of test_conformance.CONFORMANCE_IDS["url"].
+CONFORMANCE_HOST = "conformance.invalid"
 CONTENT_TYPES = {".json": "application/json", ".xml": "application/atom+xml"}
 
 McpFactory = Callable[[HttpClient], McpUpstreamPort]
@@ -196,6 +198,9 @@ class Harness:
         self.mcp = None if mcp is None else mcp(self.http)
         self.mcp_server = None if mcp is None else FakeMcpServer()
         self.adapter: SourceAdapter = source.adapter_cls(source.spec, self._context(source.spec))
+        if isinstance(self.adapter, UpstreamMcpAdapter):
+            # The suite's url identifier is on CONFORMANCE_HOST, which no vendor serves.
+            self.adapter.doc_hosts = self.adapter.doc_hosts | {CONFORMANCE_HOST}
 
     def _credentials(self) -> SecretCache:
         auth = self.spec.auth
