@@ -1,0 +1,11 @@
+{
+  "id": 38953630,
+  "doi": "10.1016/j.example.2020.01.001",
+  "title": "An example open access research output",
+  "authors": [{ "name": "Jane Researcher" }],
+  "yearPublished": 2020,
+  "publisher": "Elsevier",
+  "documentType": "research",
+  "abstract": "An example abstract.",
+  "downloadUrl": "https://core.ac.uk/download/38953630.pdf"
+}

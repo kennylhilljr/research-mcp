@@ -1,0 +1,21 @@
+{
+  "data": [
+    {
+      "id": "10.5061/dryad.8515",
+      "type": "dois",
+      "attributes": {
+        "doi": "10.5061/dryad.8515",
+        "titles": [{ "title": "Data from: Phenotypic and genetic structure study" }],
+        "creators": [
+          { "name": "Researcher, Jane", "givenName": "Jane", "familyName": "Researcher" }
+        ],
+        "publicationYear": 2015,
+        "publisher": "Dryad",
+        "types": { "resourceTypeGeneral": "Dataset" },
+        "url": "https://datadryad.org/stash/dataset/doi:10.5061/dryad.8515",
+        "descriptions": [{ "description": "An example dataset.", "descriptionType": "Abstract" }]
+      }
+    }
+  ],
+  "meta": { "total": 1, "totalPages": 1, "page": 1 }
+}

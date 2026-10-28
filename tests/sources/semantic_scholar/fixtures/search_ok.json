@@ -1,0 +1,17 @@
+{
+  "total": 1,
+  "offset": 0,
+  "data": [
+    {
+      "paperId": "544783878925a1e49473ad93329796726b5fa592",
+      "externalIds": { "DOI": "10.18653/v1/N18-3011", "ArXiv": "1805.02262" },
+      "title": "Construction of the Literature Graph in Semantic Scholar",
+      "abstract": "We describe a deployed scalable system for organizing published literature.",
+      "year": 2018,
+      "venue": "NAACL",
+      "publicationDate": "2018-06-01",
+      "authors": [{ "authorId": "1699545", "name": "Waleed Ammar" }],
+      "openAccessPdf": { "url": "https://aclanthology.org/N18-3011.pdf", "status": "GREEN" }
+    }
+  ]
+}

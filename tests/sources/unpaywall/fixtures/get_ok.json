@@ -1,0 +1,17 @@
+{
+  "doi": "10.1038/nature12373",
+  "title": "An example research article",
+  "genre": "journal-article",
+  "is_oa": true,
+  "year": 2013,
+  "journal_name": "Nature",
+  "published_date": "2013-07-01",
+  "z_authors": [{ "given": "Jane", "family": "Researcher" }],
+  "best_oa_location": {
+    "url": "https://example.org/paper.pdf",
+    "url_for_pdf": "https://example.org/paper.pdf",
+    "host_type": "publisher",
+    "license": "cc-by",
+    "version": "publishedVersion"
+  }
+}

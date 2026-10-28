@@ -1,0 +1,8 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "5",
+    "Content-Type": "application/vnd.api+json"
+  },
+  "body": { "errors": [{ "status": "429", "title": "Too Many Requests" }] }
+}
