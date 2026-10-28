@@ -48,7 +48,7 @@ def test_brave_batches_at_most_3_of_380_chars_query_domains_first() -> None:
     """@spec SRC-31: Brave splits into at most 3 batches of at most 380 chars, named first."""
     query = "keycloak upgrade guide"
     domains = [f"example-site-{i:02d}.org" for i in range(40)]
-    domains.insert(0, "docs.keycloak.org")  # not named by position; ranked by the label match
+    domains.insert(20, "docs.keycloak.org")  # starts mid-list; must be ranked first, not kept there
     result = site_batches(query, domains, max_chars=380, max_batches=3)
     assert len(result.queries) <= 3
     assert all(len(q) <= 380 for q in result.queries)

@@ -277,27 +277,26 @@ class SourceRegistry:
             if not wanted:
                 wanted = set(self._settings.federation.default_groups) - {"web"}
             chosen = [source for source in self.all() if source.spec.group in wanted]
-        selected: list[Selected] = []
-        for source in chosen:
-            if capability not in source.spec.capabilities:
-                continue
-            own = self._own_skip(source)
-            state = own.state if own is not None else None
-            if state is None and not named:
-                # An explicit request for an unhealthy source tries it once (SRCH-FR-8).
-                state = self._health_skip(source.spec.id)
-            skip = None if state is None else SourceStatus(source=source.spec.id, state=state)
-            selected.append(Selected(source.spec.id, self._adapter(source), skip))
-        return selected
+        # An explicit request for an unhealthy source tries it once (SRCH-FR-8): only a
+        # group or default selection is skipped for health.
+        return [
+            self._selected(source, check_health=not named)
+            for source in chosen
+            if capability in source.spec.capabilities
+        ]
 
     def web_chain(
-        self, strategy: Literal["fallback", "all"], order: Iterable[str] | None = None
+        self,
+        # Kept for the LLD-specified signature (LLD-sources-v3 5.9): FederationService
+        # (M1-17) reads this to decide how it runs the chain, not this method.
+        strategy: Literal["fallback", "all"],
+        order: Iterable[str] | None = None,
     ) -> list[Selected]:
         """The ``web`` group in chain order (LLD-sources-v3 5.9).
 
         ``order`` defaults to ``web.order``; an entry ending in ``*`` expands to the
         registered ids with that prefix, in id order; a name that is not registered is
-        dropped. ``strategy`` decides how the caller runs the chain, not this order or skip.
+        dropped.
         """
         names = list(self._settings.web.order) if order is None else list(order)
         chain: list[RegisteredSource] = []
@@ -315,11 +314,14 @@ class SourceRegistry:
                 if source.spec.id not in seen:
                     seen.add(source.spec.id)
                     chain.append(source)
-        return [self._chain_selected(source) for source in chain]
+        return [self._selected(source, check_health=True) for source in chain]
 
-    def _chain_selected(self, source: RegisteredSource) -> Selected:
+    def _selected(self, source: RegisteredSource, *, check_health: bool) -> Selected:
+        """A source's ``Selected``: its own skip, then a health skip when ``check_health``."""
         own = self._own_skip(source)
-        state = own.state if own is not None else self._health_skip(source.spec.id)
+        state = own.state if own is not None else None
+        if state is None and check_health:
+            state = self._health_skip(source.spec.id)
         skip = None if state is None else SourceStatus(source=source.spec.id, state=state)
         return Selected(source.spec.id, self._adapter(source), skip)
 
