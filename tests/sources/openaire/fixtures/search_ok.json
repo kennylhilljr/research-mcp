@@ -1,0 +1,25 @@
+{
+  "header": { "numFound": 1, "nextCursor": null },
+  "results": [
+    {
+      "id": "openaire____::f1a2b3c4d5e6f7a8b9c0",
+      "type": "publication",
+      "mainTitle": "Toward a unified theory of example attention",
+      "authors": [
+        { "fullName": "Jane Researcher", "orcid": "0000-0002-1825-0097" }
+      ],
+      "publicationDate": "2020-05-01",
+      "publisher": "Journal of Examples",
+      "pids": [
+        { "scheme": "doi", "value": "10.1037/0003-066X.59.1.29" }
+      ],
+      "descriptions": ["An example abstract."],
+      "instances": [
+        {
+          "urls": ["https://example.org/fulltext.pdf"],
+          "accessRight": { "code": "OPEN" }
+        }
+      ]
+    }
+  ]
+}

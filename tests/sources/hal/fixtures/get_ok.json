@@ -1,0 +1,19 @@
+{
+  "response": {
+    "numFound": 1,
+    "start": 0,
+    "docs": [
+      {
+        "halId_s": "hal-01440606",
+        "title_s": ["Toward a unified theory of example attention"],
+        "authFullName_s": ["Jane Researcher"],
+        "producedDate_s": "2016-12-20",
+        "docType_s": "ART",
+        "doiId_s": "10.1037/0003-066X.59.1.29",
+        "uri_s": "https://hal.science/hal-01440606",
+        "abstract_s": ["An example abstract."],
+        "openAccess_bool": true
+      }
+    ]
+  }
+}

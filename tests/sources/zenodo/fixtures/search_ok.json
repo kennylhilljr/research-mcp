@@ -1,0 +1,29 @@
+{
+  "hits": {
+    "total": 1,
+    "hits": [
+      {
+        "id": 1234567,
+        "doi": "10.5281/zenodo.1234567",
+        "metadata": {
+          "title": "An example dataset of attention records",
+          "creators": [
+            { "name": "Researcher, Jane", "orcid": "0000-0002-1825-0097" }
+          ],
+          "publication_date": "2020-05-01",
+          "description": "<p>An example description.</p>",
+          "resource_type": { "type": "dataset" }
+        },
+        "files": [
+          {
+            "key": "paper.pdf",
+            "links": {
+              "self": "https://zenodo.org/api/records/1234567/files/paper.pdf/content"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "links": { "next": null }
+}

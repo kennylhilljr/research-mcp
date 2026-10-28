@@ -1,0 +1,24 @@
+{
+  "total": 1,
+  "page": 1,
+  "pageSize": 1,
+  "results": [
+    {
+      "id": "abc123def456",
+      "bibjson": {
+        "title": "Toward a unified theory of example attention",
+        "author": [{ "name": "Jane Researcher" }],
+        "year": "2020",
+        "month": "05",
+        "identifier": [
+          { "type": "doi", "id": "10.1037/0003-066X.59.1.29" }
+        ],
+        "journal": { "title": "Journal of Examples" },
+        "abstract": "An example abstract.",
+        "link": [
+          { "type": "fulltext", "url": "https://example.org/article.pdf" }
+        ]
+      }
+    }
+  ]
+}
