@@ -1,0 +1,28 @@
+{
+  "resultsPerPage": 1,
+  "startIndex": 0,
+  "totalResults": 1,
+  "format": "NVD_CVE",
+  "version": "2.0",
+  "timestamp": "2024-01-01T00:00:00.000",
+  "vulnerabilities": [
+    {
+      "cve": {
+        "id": "CVE-2021-44228",
+        "sourceIdentifier": "cve@mitre.org",
+        "published": "2021-12-10T10:15:00.000",
+        "lastModified": "2021-12-14T00:00:00.000",
+        "vulnStatus": "Analyzed",
+        "descriptions": [
+          {
+            "lang": "en",
+            "value": "Apache Log4j2 JNDI features used in configuration, log messages, and parameters do not protect against attacker controlled LDAP and other JNDI related endpoints."
+          }
+        ],
+        "references": [
+          { "url": "https://logging.apache.org/log4j/2.x/security.html", "source": "cve@mitre.org" }
+        ]
+      }
+    }
+  ]
+}

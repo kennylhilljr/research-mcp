@@ -1,0 +1,4 @@
+{
+  "meta": { "limit": 20, "offset": 0, "total_count": 1, "next": null, "previous": null },
+  "objects": [{ "title": "Missing the name field" }]
+}

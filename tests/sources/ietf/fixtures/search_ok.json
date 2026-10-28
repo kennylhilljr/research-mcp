@@ -1,0 +1,16 @@
+{
+  "meta": { "limit": 20, "offset": 0, "total_count": 1, "next": null, "previous": null },
+  "objects": [
+    {
+      "name": "rfc8259",
+      "title": "The JavaScript Object Notation (JSON) Data Format",
+      "rev": "00",
+      "pages": 16,
+      "time": "2017-12-01T00:00:00",
+      "std_level": "Internet Standard",
+      "abstract": "JavaScript Object Notation (JSON) is a lightweight, text-based, language-independent data interchange format.",
+      "obsoletes": ["rfc7159"],
+      "obsoleted_by": []
+    }
+  ]
+}

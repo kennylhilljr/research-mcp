@@ -1,0 +1,8 @@
+{
+  "status": 429,
+  "headers": {
+    "Retry-After": "4",
+    "Content-Type": "application/json"
+  },
+  "body": { "error": { "code": 429, "message": "Quota exceeded", "status": "RESOURCE_EXHAUSTED" } }
+}
