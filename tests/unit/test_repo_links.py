@@ -20,13 +20,17 @@ REPO_LINK = re.compile(
     r"github\.com[/:](?P<owner>[A-Za-z0-9_.-]+)/" + re.escape(CANONICAL_REPO) + r"(?![A-Za-z0-9_-])"
 )
 TEXT_SUFFIXES = {".md", ".toml", ".yaml", ".yml", ".json", ".py", ".mjs", ".sh", ".txt", ".cfg"}
-SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "dist", "build", "__pycache__", ".mypy_cache"}
+SKIP_DIRS = {".git", ".venv", "venv", "node_modules", "__pycache__", ".mypy_cache"}
+# Build artifacts at the top level only; docs/build/ holds tracked plans.
+SKIP_TOP_DIRS = {"dist", "build"}
 
 
 def _text_files() -> list[Path]:
     files = []
     for path in ROOT.rglob("*"):
         rel = path.relative_to(ROOT)
+        if rel.parts and rel.parts[0] in SKIP_TOP_DIRS:
+            continue
         if any(part in SKIP_DIRS or part.endswith(".egg-info") for part in rel.parts):
             continue
         if path.is_file() and path.suffix in TEXT_SUFFIXES:
