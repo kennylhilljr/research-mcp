@@ -104,7 +104,7 @@ Rules enforced throughout:
 ### Development install (M0)
 
 ```bash
-git clone https://github.com/khillerkb/research-mcp.git
+git clone https://github.com/kennylhilljr/research-mcp.git
 cd research-mcp
 uv sync --frozen
 ```
