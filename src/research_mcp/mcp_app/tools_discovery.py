@@ -129,7 +129,10 @@ def register(mcp: "FastMCP", services: Services) -> None:
         )
         works = result.works if detail == "full" else [compact(w) for w in result.works]
         return ToolResult[list[CompactWork] | list[Work]](
-            data=works, source_status=result.statuses, next_cursor=result.next_cursor
+            data=works,
+            source_status=result.statuses,
+            warnings=result.warnings,
+            next_cursor=result.next_cursor,
         )
 
     # @spec SRCH-23

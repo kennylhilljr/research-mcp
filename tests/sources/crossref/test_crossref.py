@@ -12,7 +12,7 @@ from __future__ import annotations
 from typing import Any
 
 from research_mcp.core.ids import Identifier
-from research_mcp.core.models import SearchRequest
+from research_mcp.core.models import SearchFilters, SearchRequest
 from research_mcp.settings import SourceSettings
 from research_mcp.sources.base import Capability
 from research_mcp.sources.crossref import ADAPTER, SPEC, CrossrefUpdate
@@ -79,3 +79,21 @@ async def test_crossref_mailto_doi_date_mapping_and_updates_capability(
     assert notice.related is not None and notice.related.value == "10.1037/0003-066x.59.1.30"
     assert notice.date is not None and notice.date.year == 2021
     assert notice.source == "crossref"
+
+
+# @spec SRC-11
+async def test_crossref_sends_year_filters_upstream(harness_for: Any, fixtures_of: Any) -> None:
+    """@spec SRC-11: Crossref maps a year range onto from-pub-date and until-pub-date."""
+    source = _registered()
+    fx = fixtures_of(source)
+    harness = harness_for(source)
+    harness.serve(fx["search_ok"])
+    filters = SearchFilters(year_from=2019, year_to=2021)
+    await harness.adapter.search(SearchRequest(query="attention", limit=1, filters=filters))
+    params = harness.requests[0].url.params
+    assert params["filter"] == "from-pub-date:2019,until-pub-date:2021"
+
+    plain = harness_for(source)
+    plain.serve(fx["search_ok"])
+    await plain.adapter.search(SearchRequest(query="attention", limit=1))
+    assert "filter" not in plain.requests[0].url.params

@@ -18,6 +18,7 @@ from research_mcp.core.errors import ErrorCode, ToolError
 from research_mcp.core.models import (
     FederatedResult,
     JsonValue,
+    SearchFilters,
     SearchPage,
     SearchRequest,
     Work,
@@ -30,6 +31,36 @@ from research_mcp.sources.registry import SourceRegistry
 RRF_K = 60
 MULTI_SOURCE_BOOST = 0.1
 _log = logging.getLogger(__name__)
+
+# Upstream type names mapped onto the ``search`` tool's ``work_type`` values, so a
+# ``work_type`` filter matches Crossref, OpenAlex and ERIC records alike [assumption].
+_WORK_TYPES = {
+    "journal-article": "article",
+    "proceedings-article": "article",
+    "review": "article",
+    "letter": "article",
+    "editorial": "article",
+    "posted-content": "preprint",
+    "monograph": "book",
+    "edited-book": "book",
+    "reference-book": "book",
+    "book-part": "book-chapter",
+    "book-section": "book-chapter",
+    "dissertation": "thesis",
+    "report-component": "report",
+    "software": "code",
+    "journal articles": "article",
+    "books": "book",
+    "book/product reviews": "article",
+}
+_WORK_TYPE_PREFIXES = (
+    ("reports", "report"),
+    ("dissertations", "thesis"),
+    ("guides", "report"),
+    ("numerical/quantitative data", "dataset"),
+)
+# Filters no source or merged work can express yet; they are reported, not silently dropped.
+UNSUPPORTED_FILTERS = ("provider", "repository")
 
 RecordSearch = Callable[[SearchRequest, FederatedResult, int], Awaitable[None]]
 
@@ -60,6 +91,43 @@ def rank(pages: Sequence[tuple[str, SearchPage]], *, fuzzy: bool = True) -> list
         score += MULTI_SOURCE_BOOST * (len(best) - 1)
         scored.append((-score, index, merge(members)))
     return [work for _, _, work in sorted(scored, key=lambda item: item[:2])]
+
+
+def canonical_work_type(raw: str) -> str:
+    """A record's upstream type in the ``search`` tool's ``work_type`` vocabulary."""
+    key = raw.strip().lower()
+    if key in _WORK_TYPES:
+        return _WORK_TYPES[key]
+    for prefix, kind in _WORK_TYPE_PREFIXES:
+        if key.startswith(prefix):
+            return kind
+    return key
+
+
+def matches(work: Work, filters: SearchFilters) -> bool:
+    """Whether a merged work satisfies the year, work type and open access filters.
+
+    A work with no year fails a year filter, and one with no open access location fails
+    ``oa_only``: the filter only holds for what the sources actually reported.
+    """
+    if filters.year_from is not None and (work.year is None or work.year < filters.year_from):
+        return False
+    if filters.year_to is not None and (work.year is None or work.year > filters.year_to):
+        return False
+    if filters.work_type is not None and canonical_work_type(work.work_type) != (
+        canonical_work_type(filters.work_type)
+    ):
+        return False
+    return not (filters.oa_only and not work.oa_locations)
+
+
+def filter_warnings(filters: SearchFilters) -> list[str]:
+    """One ``filter_not_applied:<name>`` warning for each set filter nothing can honor."""
+    return [
+        f"filter_not_applied:{name}"
+        for name in UNSUPPORTED_FILTERS
+        if getattr(filters, name) is not None
+    ]
 
 
 def _binding(req: SearchRequest, explicit: list[str] | None, groups: Sequence[str]) -> str:
@@ -159,13 +227,17 @@ class FederationService:
             pages.append((item.source, answer.value))
             if answer.value.next_cursor is not None:
                 next_slots[item.source] = answer.value.next_cursor
-        works = rank(pages, fuzzy=federation.fuzzy_merge)[: req.limit]
+        # Adapters push what they can upstream; every filter is enforced here on the merged
+        # works, so a source that ignores a filter cannot leak non-matching results.
+        ranked = rank(pages, fuzzy=federation.fuzzy_merge)
+        works = [work for work in ranked if matches(work, req.filters)][: req.limit]
         # [assumption] Only a source with more pages keeps the listing open, so a source
         # that keeps failing cannot hold a cursor open by itself.
         more = any(isinstance(value, str) for value in next_slots.values())
         result = FederatedResult(
             works=works,
             statuses=[statuses[item.source] for item in selected],
+            warnings=filter_warnings(req.filters),
             next_cursor=encode_cursor({"q": binding, "s": next_slots}, self._cursor_key)
             if more
             else None,

@@ -148,6 +148,13 @@ class CrossrefAdapter:
         limit = min(req.limit, self.spec.max_page_size)
         offset = int(req.cursor) if req.cursor else 0
         params = {"query": req.query, "rows": str(limit), "offset": str(offset)}
+        upstream = []
+        if req.filters.year_from is not None:
+            upstream.append(f"from-pub-date:{req.filters.year_from}")
+        if req.filters.year_to is not None:
+            upstream.append(f"until-pub-date:{req.filters.year_to}")
+        if upstream:
+            params["filter"] = ",".join(upstream)
         if self.ctx.contact_email:
             params["mailto"] = self.ctx.contact_email
         data: Any = await self.ctx.http.get_json(_WORKS_URL, source=self.spec.id, params=params)

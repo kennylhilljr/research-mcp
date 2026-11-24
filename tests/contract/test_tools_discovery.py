@@ -150,3 +150,25 @@ async def test_get_work_id_forms(contract: Any) -> None:
         bad = await session.call("get_work", {"id": "not an identifier"})
         assert bad.isError
         assert contract.body(bad)["code"] == "invalid_argument"
+
+
+async def test_search_applies_filters_and_reports_unsupported(contract: Any) -> None:
+    """@spec SRCH-20: search filters change the result and unsupported ones are warned about."""
+    contract.add(
+        contract.spec("aa"),
+        contract.page(
+            contract.record("aa", "10.1/old", year=2015),
+            contract.record("aa", "10.1/new", year=2023),
+        ),
+    )
+    async with contract.connect(contract.services()) as session:
+        result = await session.call("search", {"query": "q", "year_from": 2020})
+        assert not result.isError
+        assert result.structuredContent is not None
+        assert [w["ids"][0]["value"] for w in result.structuredContent["data"]] == ["10.1/new"]
+        assert result.structuredContent["warnings"] == []
+
+        warned = await session.call("search", {"query": "q", "provider": "x"})
+        assert warned.structuredContent is not None
+        assert warned.structuredContent["warnings"] == ["filter_not_applied:provider"]
+        assert len(warned.structuredContent["data"]) == 2
