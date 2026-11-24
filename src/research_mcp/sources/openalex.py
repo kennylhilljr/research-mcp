@@ -32,15 +32,18 @@ from research_mcp.sources.base import Capability, SourceContext, SourceSpec, tra
 
 ADAPTER_VERSION = "1"
 
-# The ``search`` tool's work types that OpenAlex can filter on, as OpenAlex names them.
+# The ``search`` tool's work types that OpenAlex can filter on, as OpenAlex names them
+# (``|`` is OpenAlex's OR). They match the aliases federation's ``canonical_work_type``
+# treats as the same type, so the upstream filter never drops a work it would keep.
 _TYPES = {
-    "article": "article",
+    "article": "article|review|letter|editorial",
     "preprint": "preprint",
     "book": "book",
     "book-chapter": "book-chapter",
     "dataset": "dataset",
     "thesis": "dissertation",
     "report": "report",
+    "code": "software",
 }
 
 _HOST = "api.openalex.org"

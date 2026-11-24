@@ -151,6 +151,17 @@ async def test_openalex_sends_year_and_oa_filters_upstream(
         "type:dissertation"
     )
 
+    for work_type, upstream in (
+        ("article", "type:article|review|letter|editorial"),
+        ("code", "type:software"),
+    ):
+        typed = harness_for(source)
+        typed.serve(fx["search_ok"])
+        await typed.adapter.search(
+            SearchRequest(query="q", filters=SearchFilters(work_type=work_type))
+        )
+        assert typed.requests[0].url.params["filter"] == upstream
+
     plain = harness_for(source)
     plain.serve(fx["search_ok"])
     await plain.adapter.search(SearchRequest(query="open access"))
