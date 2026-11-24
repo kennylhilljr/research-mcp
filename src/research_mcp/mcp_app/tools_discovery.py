@@ -11,12 +11,14 @@ from typing import TYPE_CHECKING, Annotated, Literal
 from mcp.types import ToolAnnotations
 from pydantic import BaseModel, ConfigDict, Field, ValidationError
 
+from research_mcp.core.budget import MAX_CURSOR_CHARS
 from research_mcp.core.envelope import ToolResult
 from research_mcp.core.errors import ErrorCode, ToolError
 from research_mcp.core.ids import Identifier
 from research_mcp.core.models import Author, SearchFilters, SearchRequest, Work
 from research_mcp.mcp_app.server import Services, tool_boundary
-from research_mcp.sources.registry import SourceView
+from research_mcp.sources.base import GROUPS
+from research_mcp.sources.registry import SourceView, unknown_group_message
 
 if TYPE_CHECKING:
     from mcp.server.fastmcp import FastMCP
@@ -37,6 +39,11 @@ WorkType = Literal[
     "code",
     "webpage",
 ]
+# [assumption] The LLD gives no bounds for these strings; they only have to be generous
+# enough for any real value while keeping hostile input small.
+SourceId = Annotated[str, Field(min_length=1, max_length=64)]
+GroupName = Annotated[str, Field(min_length=1, max_length=32)]
+FilterText = Annotated[str, Field(min_length=1, max_length=200)]
 
 
 def read_only(open_world: bool) -> ToolAnnotations:
@@ -98,17 +105,17 @@ def register(mcp: "FastMCP", services: Services) -> None:
     @boundary
     async def search(
         query: Annotated[str, Field(min_length=1, max_length=500)],
-        sources: Literal["auto"] | Annotated[list[str], Field(max_length=20)] = "auto",
-        groups: list[str] = [],  # noqa: B006 - the SDK validates into a new list per call
+        sources: Literal["auto"] | Annotated[list[SourceId], Field(max_length=20)] = "auto",
+        groups: Annotated[list[GroupName], Field(max_length=len(GROUPS))] = [],  # noqa: B006 - the SDK validates into a new list per call
         year_from: Annotated[int, Field(ge=1800, le=2100)] | None = None,
         year_to: Annotated[int, Field(ge=1800, le=2100)] | None = None,
         work_type: WorkType | None = None,
         oa_only: bool = False,
-        provider: str | None = None,
-        repository: str | None = None,
+        provider: FilterText | None = None,
+        repository: FilterText | None = None,
         limit: Annotated[int, Field(ge=1, le=50)] = 20,
         per_source_limit: Annotated[int, Field(ge=1, le=25)] = 10,
-        cursor: str | None = None,
+        cursor: Annotated[str, Field(min_length=1, max_length=MAX_CURSOR_CHARS)] | None = None,
         detail: Literal["compact", "full"] = "compact",
     ) -> ToolResult[list[CompactWork] | list[Work]]:
         """Search many sources at once; one merged, ranked page with a status per source."""
@@ -149,10 +156,12 @@ def register(mcp: "FastMCP", services: Services) -> None:
     @mcp.tool(annotations=read_only(open_world=False))
     @boundary
     async def list_sources(
-        group: str | None = None,
-        state: str | None = None,
+        group: GroupName | None = None,
+        state: Annotated[str, Field(min_length=1, max_length=32)] | None = None,
     ) -> ToolResult[list[SourceView]]:
         """Every source with its state and, when it cannot run, the exact fix."""
+        if group is not None and group not in GROUPS:
+            raise ToolError(ErrorCode.INVALID_ARGUMENT, unknown_group_message())
         views = [
             view
             for view in services.registry.view()

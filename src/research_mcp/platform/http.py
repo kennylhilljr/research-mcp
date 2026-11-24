@@ -278,6 +278,9 @@ class HttpClient:
             limits=httpx.Limits(max_connections=MAX_CONNECTIONS),
             follow_redirects=False,
             transport=transport,
+            # Proxy, netrc and CA settings come from settings, never from the environment:
+            # source calls carry API keys (the downloader's transport does the same).
+            trust_env=False,
         )
 
     async def __aenter__(self) -> HttpClient:
@@ -479,27 +482,40 @@ class HttpClient:
         async with self._rates.slot(policy.source, policy.rate), self._host_gate(request.url.host):
             ts = self._clock.now()
             started = time.perf_counter()
-            result = await self._send(request, cap)
+            result = await self._send(request, cap, policy.timeout_s)
             latency_ms = int((time.perf_counter() - started) * 1000)
         if result.error is None and result.status is not None and not 200 <= result.status < 300:
             self._classify(policy, result, ts)
         self._record(policy.source, op, attempt, ts, latency_ms, result)
         return result
 
-    async def _send(self, request: httpx.Request, cap: int) -> _Attempt:
-        """One exchange, streamed under the byte cap; transport failures become codes."""
+    async def _send(self, request: httpx.Request, cap: int, timeout_s: float) -> _Attempt:
+        """One exchange, streamed under the byte cap and one overall deadline.
+
+        httpx's timeouts are per phase, so a server that drips bytes could hold the rate
+        slot and the host gate indefinitely; ``fail_after`` bounds the whole exchange.
+        Transport failures become codes.
+        """
         result = _Attempt()
         try:
-            response = await self._client.send(request, stream=True)
-            try:
-                result.status = response.status_code
-                result.headers = response.headers
-                result.encoding = response.charset_encoding
-                result.content = b"".join([chunk async for chunk in capped_body(response, cap)])
-            finally:
-                await response.aclose()
+            with anyio.fail_after(timeout_s):
+                response = await self._client.send(request, stream=True)
+                try:
+                    result.status = response.status_code
+                    result.headers = response.headers
+                    result.encoding = response.charset_encoding
+                    body = [chunk async for chunk in capped_body(response, cap)]
+                    result.content = b"".join(body)
+                finally:
+                    # Shielded: after the deadline the scope is cancelled, and the
+                    # connection must still be released.
+                    with anyio.CancelScope(shield=True):
+                        await response.aclose()
         except HttpError as exc:
             result.error = exc
+        except TimeoutError as exc:
+            result.error = HttpError(ErrorCode.UPSTREAM_TIMEOUT)
+            result.exception = type(exc).__name__
         except httpx.TimeoutException as exc:
             result.error = HttpError(ErrorCode.UPSTREAM_TIMEOUT)
             result.exception = type(exc).__name__

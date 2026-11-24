@@ -20,9 +20,11 @@ Milestone M0 is in progress. Core, platform (HTTP client, secrets, stores, loggi
 
 An agent calls one tool, `search`, with a query. The server fans the query out to every configured scholarly source in parallel, applies per-source timeouts and an overall deadline, normalizes each result into a `WorkRecord`, groups records by shared identifiers (DOI, arXiv ID, OpenAlex ID, and others), merges duplicates, and returns ranked results with a per-source status list. If a source is down, slow, or over quota, the others still answer.
 
-Once a paper is of interest, `fetch` downloads its open-access PDF safely, extracts and chunks the text in a worker subprocess, embeds the chunks, and stores everything in a local SQLite cache. `read` returns bounded windows of the document. `get_work` resolves any identifier, merges metadata from all sources that know the paper, and reports open-access locations and cache state.
+`get_work` resolves any identifier, merges metadata from all sources that know the paper, and reports open-access locations. `list_sources` lists every registered source with its state and, when it cannot run, the exact fix. These three (`search`, `get_work`, `list_sources`) are the only tools the server registers today.
 
-At 120 days the owner gets a macOS notification. The review UI shows expiring papers; the owner archives (copies to Google Drive, keeps text searchable in the local cache) or discards (7-day trash before purge). Archived papers remain findable through their text and embeddings.
+Planned for M2: once a paper is of interest, `fetch` will download its open-access PDF safely, extract and chunk the text in a worker subprocess, embed the chunks, and store everything in a local SQLite cache, and `read` will return bounded windows of the document. The safe downloader is built but no tool calls it yet.
+
+Planned for later milestones: at 120 days the owner gets a macOS notification. The review UI shows expiring papers; the owner archives (copies to Google Drive, keeps text searchable in the local cache) or discards (7-day trash before purge). Archived papers remain findable through their text and embeddings.
 
 ## Architecture
 

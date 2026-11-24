@@ -75,6 +75,7 @@ def test_cursors():
         ("!", key),
         ("", key),
         ("研究", key),
+        ("A" * 2049, key),
     ]:
         with pytest.raises(ToolError) as exc:
             decode_cursor(value, supplied_key)
