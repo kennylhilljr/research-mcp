@@ -19,6 +19,7 @@ from research_mcp.core.errors import ErrorCode, HttpError, ToolError
 from research_mcp.core.ids import Identifier
 from research_mcp.core.models import (
     FederatedResult,
+    OaLocation,
     Provenance,
     SearchFilters,
     SearchPage,
@@ -500,3 +501,96 @@ async def test_default_recording_port_does_nothing() -> None:
     )
     result = await FederationService(registry, config, KEY).search(SearchRequest(query="q"))
     assert states(result) == {"ready": "ok"}
+
+
+def typed(source: str, doi: str, *, year: int | None, work_type: str, oa: bool) -> WorkRecord:
+    record = rec(source, doi)
+    locations = [OaLocation(url=f"https://oa.example/{doi}", source=source, kind="pdf")]
+    return record.model_copy(
+        update={"year": year, "work_type": work_type, "oa_locations": locations if oa else []}
+    )
+
+
+def mixed(source: str) -> Search:
+    """A source that ignores every filter, as an adapter without upstream support does."""
+
+    async def search(req: SearchRequest) -> SearchPage:
+        return SearchPage(
+            records=[
+                typed(source, "10.1/old", year=2015, work_type="journal-article", oa=True),
+                typed(source, "10.1/new", year=2022, work_type="journal-article", oa=False),
+                typed(source, "10.1/pre", year=2023, work_type="posted-content", oa=True),
+                typed(source, "10.1/undated", year=None, work_type="article", oa=True),
+            ]
+        )
+
+    return search
+
+
+def dois(result: FederatedResult) -> list[str]:
+    return sorted(w.ids[0].value for w in result.works)
+
+
+async def test_filters_change_the_merged_results() -> None:
+    """@spec SRCH-20: year, work type and open access filters hold even if a source ignores them."""
+    harness = Harness()
+    harness.add(spec("loose"), mixed("loose"))
+    service = harness.service()
+
+    everything = await service.search(SearchRequest(query="q"))
+    assert dois(everything) == ["10.1/new", "10.1/old", "10.1/pre", "10.1/undated"]
+
+    def ask(**filters: Any) -> SearchRequest:
+        return SearchRequest(query="q", filters=SearchFilters(**filters))
+
+    assert dois(await service.search(ask(year_from=2020))) == ["10.1/new", "10.1/pre"]
+    assert dois(await service.search(ask(year_to=2020))) == ["10.1/old"]
+    assert dois(await service.search(ask(year_from=2020, oa_only=True))) == ["10.1/pre"]
+    assert dois(await service.search(ask(oa_only=True))) == [
+        "10.1/old",
+        "10.1/pre",
+        "10.1/undated",
+    ]
+    assert dois(await service.search(ask(work_type="article"))) == [
+        "10.1/new",
+        "10.1/old",
+        "10.1/undated",
+    ]
+    assert dois(await service.search(ask(work_type="preprint"))) == ["10.1/pre"]
+    # The source status still counts what the source returned.
+    filtered = await service.search(ask(year_from=2020))
+    assert [(s.state, s.count) for s in filtered.statuses] == [("ok", 4)]
+    assert filtered.warnings == []
+
+
+async def test_filters_nothing_can_honor_are_reported() -> None:
+    """@spec SRCH-20: provider and repository filters are reported as not applied."""
+    harness = Harness()
+    harness.add(spec("loose"), mixed("loose"))
+    result = await harness.service().search(
+        SearchRequest(query="q", filters=SearchFilters(provider="p", repository="r"))
+    )
+    assert result.warnings == ["filter_not_applied:provider", "filter_not_applied:repository"]
+    assert len(result.works) == 4
+
+
+async def test_source_removed_entirely_by_filters_is_named() -> None:
+    """@spec SRCH-20: a source whose whole page fails the filters is named in a warning."""
+    harness = Harness()
+    harness.add(spec("loose"), mixed("loose"))
+    harness.add(spec("closed"), page("closed", "10.1/c1", "10.1/c2"))
+    result = await harness.service().search(
+        SearchRequest(query="q", filters=SearchFilters(oa_only=True))
+    )
+    assert result.warnings == ["filter_excluded_all:closed"]
+    assert all(w.found_in == ["loose"] for w in result.works)
+    assert states(result) == {"loose": "ok", "closed": "ok"}
+
+
+async def test_filters_reach_the_adapters() -> None:
+    """@spec SRCH-20: every adapter receives the request's filters for upstream use."""
+    harness = Harness()
+    harness.add(spec("one"), page("one", "10.1/a"))
+    filters = SearchFilters(year_from=2021, oa_only=True)
+    await harness.service().search(SearchRequest(query="q", filters=filters))
+    assert [req.filters for _, req in harness.calls] == [filters]

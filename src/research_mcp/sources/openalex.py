@@ -32,6 +32,20 @@ from research_mcp.sources.base import Capability, SourceContext, SourceSpec, tra
 
 ADAPTER_VERSION = "1"
 
+# The ``search`` tool's work types that OpenAlex can filter on, as OpenAlex names them
+# (``|`` is OpenAlex's OR). They match the aliases federation's ``canonical_work_type``
+# treats as the same type, so the upstream filter never drops a work it would keep.
+_TYPES = {
+    "article": "article|review|letter|editorial",
+    "preprint": "preprint",
+    "book": "book",
+    "book-chapter": "book-chapter",
+    "dataset": "dataset",
+    "thesis": "dissertation",
+    "report": "report",
+    "code": "software",
+}
+
 _HOST = "api.openalex.org"
 _WORKS_URL = f"https://{_HOST}/works"
 _AUTHORS_URL = f"https://{_HOST}/authors"
@@ -200,6 +214,17 @@ class OpenAlexAdapter:
     async def search(self, req: SearchRequest) -> SearchPage:
         limit = min(req.limit, self.spec.max_page_size)
         params = {"search": req.query, "per_page": str(limit), "cursor": req.cursor or "*"}
+        upstream = []
+        if req.filters.year_from is not None:
+            upstream.append(f"from_publication_date:{req.filters.year_from}-01-01")
+        if req.filters.year_to is not None:
+            upstream.append(f"to_publication_date:{req.filters.year_to}-12-31")
+        if req.filters.oa_only:
+            upstream.append("is_oa:true")
+        if req.filters.work_type in _TYPES:
+            upstream.append(f"type:{_TYPES[req.filters.work_type]}")
+        if upstream:
+            params["filter"] = ",".join(upstream)
         data: Any = await self.ctx.http.get_json(_WORKS_URL, source=self.spec.id, params=params)
         meta = data.get("meta") or {}
         records = [

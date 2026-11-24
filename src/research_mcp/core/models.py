@@ -200,6 +200,7 @@ class FederatedResult(BaseModel):
     works: list[Work]
     statuses: list[SourceStatus]
     next_cursor: str | None
+    warnings: list[str] = []
 
 
 class TextResponse(BaseModel):

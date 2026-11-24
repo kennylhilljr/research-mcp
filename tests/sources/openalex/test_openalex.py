@@ -19,7 +19,7 @@ import pytest
 
 from research_mcp.core.errors import ErrorCode, HttpError
 from research_mcp.core.ids import Identifier
-from research_mcp.core.models import SearchRequest
+from research_mcp.core.models import SearchFilters, SearchRequest
 from research_mcp.settings import SourceSettings
 from research_mcp.sources.openalex import ADAPTER, SPEC, OpenAlexAuthor, classify_openalex
 from research_mcp.sources.registry import RegisteredSource
@@ -133,3 +133,36 @@ async def test_openalex_classify_openalex_maps_insufficient_budget(harness_for: 
         await harness.adapter.search(SearchRequest(query="open access", limit=1))
     assert caught.value.code is ErrorCode.BUDGET_EXHAUSTED
     assert caught.value.detail == "daily budget"
+
+
+# @spec SRC-12
+async def test_openalex_sends_year_and_oa_filters_upstream(
+    harness_for: Any, fixtures_of: Any
+) -> None:
+    """@spec SRC-12: OpenAlex maps years, oa_only and work type onto its filter parameter."""
+    source = _registered()
+    fx = fixtures_of(source)
+    harness = harness_for(source)
+    harness.serve(fx["search_ok"])
+    filters = SearchFilters(year_from=2019, year_to=2021, oa_only=True, work_type="thesis")
+    await harness.adapter.search(SearchRequest(query="open access", filters=filters))
+    assert harness.requests[0].url.params["filter"] == (
+        "from_publication_date:2019-01-01,to_publication_date:2021-12-31,is_oa:true,"
+        "type:dissertation"
+    )
+
+    for work_type, upstream in (
+        ("article", "type:article|review|letter|editorial"),
+        ("code", "type:software"),
+    ):
+        typed = harness_for(source)
+        typed.serve(fx["search_ok"])
+        await typed.adapter.search(
+            SearchRequest(query="q", filters=SearchFilters(work_type=work_type))
+        )
+        assert typed.requests[0].url.params["filter"] == upstream
+
+    plain = harness_for(source)
+    plain.serve(fx["search_ok"])
+    await plain.adapter.search(SearchRequest(query="open access"))
+    assert "filter" not in plain.requests[0].url.params
