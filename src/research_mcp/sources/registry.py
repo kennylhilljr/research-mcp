@@ -28,7 +28,13 @@ from research_mcp.core.models import Clock, SearchFilters
 from research_mcp.core.specs import SourcePolicy
 from research_mcp.core.timeutil import SystemClock
 from research_mcp.settings import Settings, SourceSettings
-from research_mcp.sources.base import Capability, SourceAdapter, SourceContext, SourceSpec
+from research_mcp.sources.base import (
+    GROUPS,
+    Capability,
+    SourceAdapter,
+    SourceContext,
+    SourceSpec,
+)
 
 PACKAGE = "research_mcp.sources"
 SYSTEM_CLOCK = SystemClock()
@@ -44,6 +50,11 @@ _log = logging.getLogger(__name__)
 
 SkipState = Literal["disabled", "unconfigured", "budget_exhausted", "skipped_unhealthy"]
 InstanceBuilder = Callable[[SourceSpec, str, BaseModel], SourceSpec]
+
+
+def unknown_group_message() -> str:
+    """The error for a group outside ``GROUPS``; it names the valid ones, not the input."""
+    return f"unknown group; expected one of: {', '.join(sorted(GROUPS))}"
 
 
 def default_has_extra(extra: str) -> bool:
@@ -266,6 +277,11 @@ class SourceRegistry:
         ``explicit`` ids win over ``groups``; with neither, the default groups without
         ``web``. ``filters`` go to the adapters and do not change selection.
         """
+        # A misspelt group would otherwise select nothing and look like an empty result;
+        # reject it like an unknown source id.
+        wanted = set(groups or ())
+        if wanted - GROUPS:
+            raise ToolError(ErrorCode.INVALID_ARGUMENT, unknown_group_message())
         named = list(dict.fromkeys(explicit or ()))
         if named:
             unknown = [source for source in named if source not in self._sources]
@@ -273,7 +289,6 @@ class SourceRegistry:
                 raise ToolError(ErrorCode.INVALID_ARGUMENT, f"unknown source: {unknown[0]}")
             chosen = [self._sources[source] for source in named]
         else:
-            wanted = set(groups or ())
             if not wanted:
                 wanted = set(self._settings.federation.default_groups) - {"web"}
             chosen = [source for source in self.all() if source.spec.group in wanted]

@@ -6,6 +6,7 @@ wait goes through ``FakeSleeper``, so nothing touches the network or sleeps for 
 
 from __future__ import annotations
 
+import dataclasses
 import gzip
 import zlib
 from collections.abc import AsyncIterator, Callable, Iterable
@@ -13,6 +14,7 @@ from datetime import timedelta
 from email.utils import format_datetime
 from typing import Any, cast
 
+import anyio
 import httpx
 import pytest
 
@@ -315,6 +317,45 @@ async def test_timeout_is_upstream_timeout() -> None:
     harness = Harness(replies(httpx.ReadTimeout("slow", request=request)))
     error = await fails(harness)
     assert error.code is ErrorCode.UPSTREAM_TIMEOUT
+
+
+class DripStream(httpx.AsyncByteStream):
+    """A body that arrives one byte at a time, each well inside any per-read timeout."""
+
+    def __init__(self) -> None:
+        self.pulled = 0
+
+    async def __aiter__(self) -> AsyncIterator[bytes]:
+        while True:
+            self.pulled += 1
+            yield b"x"
+            await anyio.sleep(0.01)
+
+
+async def test_dripping_body_hits_the_overall_deadline() -> None:
+    """@spec PLAT-36: a body that never finishes fails with upstream_timeout at timeout_s."""
+    quick = dataclasses.replace(CROSSREF, timeout_s=0.2)
+    stream = DripStream()
+    harness = Harness(lambda request: httpx.Response(200, stream=stream), quick)
+    # The outer bound makes a missing deadline fail the test instead of hanging it.
+    with anyio.fail_after(5):
+        error = await fails(harness)
+    assert error.code is ErrorCode.UPSTREAM_TIMEOUT
+    assert stream.pulled > 1
+    assert len(harness.requests) == 1
+    (record,) = harness.sink.records
+    assert record.error_code == ErrorCode.UPSTREAM_TIMEOUT.value
+
+
+def test_proxy_environment_is_ignored(monkeypatch: pytest.MonkeyPatch) -> None:
+    """@spec SEC-8: proxy variables never route keyed source calls through a third party."""
+    for name in ("HTTP_PROXY", "HTTPS_PROXY", "ALL_PROXY", "http_proxy", "https_proxy"):
+        monkeypatch.setenv(name, "http://proxy.invalid:3128")
+    clock = FakeClock()
+    client = HttpClient(Policies(CROSSREF), Credentials(), Sink(), clock, FakeSleeper(clock), None)
+    inner = client._client  # noqa: SLF001 - the setting under test has no public accessor
+    assert inner.trust_env is False
+    assert inner._mounts == {}  # noqa: SLF001
 
 
 async def test_invalid_json_is_upstream_error() -> None:

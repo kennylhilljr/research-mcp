@@ -74,6 +74,11 @@ class Budget:
     fit = staticmethod(fit)
 
 
+# A real cursor is a few hundred characters; the cap bounds the base64 decode and the HMAC
+# of an untrusted string.
+MAX_CURSOR_CHARS = 2048
+
+
 def encode_cursor(payload: dict[str, JsonValue], key: bytes) -> str:
     body = json.dumps(payload, separators=(",", ":"), sort_keys=True, allow_nan=False).encode()
     tag = hmac.digest(key, body, hashlib.sha256)
@@ -83,6 +88,8 @@ def encode_cursor(payload: dict[str, JsonValue], key: bytes) -> str:
 # @spec PLAT-34
 def decode_cursor(cursor: str, key: bytes) -> dict[str, JsonValue]:
     try:
+        if len(cursor) > MAX_CURSOR_CHARS:
+            raise ValueError("Cursor too long")
         raw = base64.b64decode(cursor + "=" * (-len(cursor) % 4), altchars=b"-_", validate=True)
         body, tag = raw[:-32], raw[-32:]
         if len(tag) != 32 or not hmac.compare_digest(tag, hmac.digest(key, body, hashlib.sha256)):

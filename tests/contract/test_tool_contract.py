@@ -71,11 +71,22 @@ BAD_ARGUMENTS: list[tuple[str, dict[str, Any]]] = [
     ("search", {"query": "q", "unknown": 1}),
     ("search", {"query": "q", "site_set": "papers"}),
     ("search", {"query": "q", "cursor": "forged"}),
+    ("search", {"query": "q", "cursor": "A" * 2049}),
+    ("search", {"query": "q", "groups": ["scholary"]}),
+    ("search", {"query": "q", "groups": ["g" * 33]}),
+    ("search", {"query": "q", "groups": ["scholarly"] * 12}),
+    ("search", {"query": "q", "sources": ["aa"], "groups": ["scholary"]}),
+    ("search", {"query": "q", "sources": ["s" * 65]}),
+    ("search", {"query": "q", "provider": "p" * 201}),
+    ("search", {"query": "q", "repository": "r" * 201}),
     ("search", {}),
     ("get_work", {"id": ""}),
     ("get_work", {"id": "1" * 301}),
     ("get_work", {"id": "10.1/a", "extra": True}),
     ("list_sources", {"verbose": True}),
+    ("list_sources", {"group": "scholary"}),
+    ("list_sources", {"group": "g" * 33}),
+    ("list_sources", {"state": "s" * 33}),
 ]
 
 

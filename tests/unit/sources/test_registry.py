@@ -386,6 +386,20 @@ def test_disabled_source_is_skipped_and_records_no_request() -> None:
     assert network.records == []
 
 
+def test_unknown_group_is_invalid_argument_not_an_empty_selection() -> None:
+    """@spec SRCH-21: a misspelt group is rejected like an unknown source, never selects nothing."""
+    network = Network()
+    registry = build(OfflineSettings(), network=network)
+    for kwargs in ({}, {"explicit": ["fake"]}):
+        with pytest.raises(ToolError) as caught:
+            registry.select(["scholary"], Capability.SEARCH, **kwargs)
+        assert caught.value.code is ErrorCode.INVALID_ARGUMENT
+    assert [s.source for s in registry.select(["scholarly"], Capability.SEARCH)] == ["fake"]
+    one_shot = (group for group in ["preprints"])
+    assert registry.select(one_shot, Capability.SEARCH) == []
+    assert network.requests == []
+
+
 async def test_enabled_source_reaches_the_network_through_select() -> None:
     """The same registry with the source enabled calls it, so the disabled case is real."""
     network = Network()
