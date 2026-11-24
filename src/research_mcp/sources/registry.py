@@ -279,7 +279,8 @@ class SourceRegistry:
         """
         # A misspelt group would otherwise select nothing and look like an empty result;
         # reject it like an unknown source id.
-        if set(groups or ()) - GROUPS:
+        wanted = set(groups or ())
+        if wanted - GROUPS:
             raise ToolError(ErrorCode.INVALID_ARGUMENT, unknown_group_message())
         named = list(dict.fromkeys(explicit or ()))
         if named:
@@ -288,7 +289,6 @@ class SourceRegistry:
                 raise ToolError(ErrorCode.INVALID_ARGUMENT, f"unknown source: {unknown[0]}")
             chosen = [self._sources[source] for source in named]
         else:
-            wanted = set(groups or ())
             if not wanted:
                 wanted = set(self._settings.federation.default_groups) - {"web"}
             chosen = [source for source in self.all() if source.spec.group in wanted]

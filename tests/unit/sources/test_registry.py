@@ -395,6 +395,8 @@ def test_unknown_group_is_invalid_argument_not_an_empty_selection() -> None:
             registry.select(["scholary"], Capability.SEARCH, **kwargs)
         assert caught.value.code is ErrorCode.INVALID_ARGUMENT
     assert [s.source for s in registry.select(["scholarly"], Capability.SEARCH)] == ["fake"]
+    one_shot = (group for group in ["preprints"])
+    assert registry.select(one_shot, Capability.SEARCH) == []
     assert network.requests == []
 
 
