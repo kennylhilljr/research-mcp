@@ -32,6 +32,17 @@ from research_mcp.sources.base import Capability, SourceContext, SourceSpec, tra
 
 ADAPTER_VERSION = "1"
 
+# The ``search`` tool's work types that OpenAlex can filter on, as OpenAlex names them.
+_TYPES = {
+    "article": "article",
+    "preprint": "preprint",
+    "book": "book",
+    "book-chapter": "book-chapter",
+    "dataset": "dataset",
+    "thesis": "dissertation",
+    "report": "report",
+}
+
 _HOST = "api.openalex.org"
 _WORKS_URL = f"https://{_HOST}/works"
 _AUTHORS_URL = f"https://{_HOST}/authors"
@@ -207,6 +218,8 @@ class OpenAlexAdapter:
             upstream.append(f"to_publication_date:{req.filters.year_to}-12-31")
         if req.filters.oa_only:
             upstream.append("is_oa:true")
+        if req.filters.work_type in _TYPES:
+            upstream.append(f"type:{_TYPES[req.filters.work_type]}")
         if upstream:
             params["filter"] = ",".join(upstream)
         data: Any = await self.ctx.http.get_json(_WORKS_URL, source=self.spec.id, params=params)

@@ -574,6 +574,19 @@ async def test_filters_nothing_can_honor_are_reported() -> None:
     assert len(result.works) == 4
 
 
+async def test_source_removed_entirely_by_filters_is_named() -> None:
+    """@spec SRCH-20: a source whose whole page fails the filters is named in a warning."""
+    harness = Harness()
+    harness.add(spec("loose"), mixed("loose"))
+    harness.add(spec("closed"), page("closed", "10.1/c1", "10.1/c2"))
+    result = await harness.service().search(
+        SearchRequest(query="q", filters=SearchFilters(oa_only=True))
+    )
+    assert result.warnings == ["filter_excluded_all:closed"]
+    assert all(w.found_in == ["loose"] for w in result.works)
+    assert states(result) == {"loose": "ok", "closed": "ok"}
+
+
 async def test_filters_reach_the_adapters() -> None:
     """@spec SRCH-20: every adapter receives the request's filters for upstream use."""
     harness = Harness()

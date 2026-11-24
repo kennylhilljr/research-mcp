@@ -139,15 +139,16 @@ async def test_openalex_classify_openalex_maps_insufficient_budget(harness_for: 
 async def test_openalex_sends_year_and_oa_filters_upstream(
     harness_for: Any, fixtures_of: Any
 ) -> None:
-    """@spec SRC-12: OpenAlex maps a year range and oa_only onto its filter parameter."""
+    """@spec SRC-12: OpenAlex maps years, oa_only and work type onto its filter parameter."""
     source = _registered()
     fx = fixtures_of(source)
     harness = harness_for(source)
     harness.serve(fx["search_ok"])
-    filters = SearchFilters(year_from=2019, year_to=2021, oa_only=True)
+    filters = SearchFilters(year_from=2019, year_to=2021, oa_only=True, work_type="thesis")
     await harness.adapter.search(SearchRequest(query="open access", filters=filters))
     assert harness.requests[0].url.params["filter"] == (
-        "from_publication_date:2019-01-01,to_publication_date:2021-12-31,is_oa:true"
+        "from_publication_date:2019-01-01,to_publication_date:2021-12-31,is_oa:true,"
+        "type:dissertation"
     )
 
     plain = harness_for(source)

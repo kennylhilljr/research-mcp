@@ -230,14 +230,25 @@ class FederationService:
         # Adapters push what they can upstream; every filter is enforced here on the merged
         # works, so a source that ignores a filter cannot leak non-matching results.
         ranked = rank(pages, fuzzy=federation.fuzzy_merge)
-        works = [work for work in ranked if matches(work, req.filters)][: req.limit]
+        kept = [work for work in ranked if matches(work, req.filters)]
+        works = kept[: req.limit]
+        warnings = filter_warnings(req.filters)
+        # A source whose whole page failed the filters is named, so an agent can tell
+        # "nothing matched" from "this source cannot express the filter" (for example
+        # Crossref reports no open access locations, so ``oa_only`` removes all of it).
+        surviving = {source for work in kept for source in work.found_in}
+        warnings += [
+            f"filter_excluded_all:{source}"
+            for source, answer in pages
+            if answer.records and source not in surviving
+        ]
         # [assumption] Only a source with more pages keeps the listing open, so a source
         # that keeps failing cannot hold a cursor open by itself.
         more = any(isinstance(value, str) for value in next_slots.values())
         result = FederatedResult(
             works=works,
             statuses=[statuses[item.source] for item in selected],
-            warnings=filter_warnings(req.filters),
+            warnings=warnings,
             next_cursor=encode_cursor({"q": binding, "s": next_slots}, self._cursor_key)
             if more
             else None,
